@@ -297,7 +297,7 @@ plot_points_us<-function(x,y,z,n_classes=6,col_scheme='RdYlBu',col_rev=FALSE,col
    }
 
   # reset layout
-  layout(1,heights=1,widths=1)
+  # layout(1,heights=1,widths=1) # commented to use layout in another part of the script
 
 }
 
