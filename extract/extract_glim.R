@@ -189,8 +189,12 @@ dev.off()
 # only keep significant decimals
 glim_1st_frac<-round(glim_1st_frac,3)
 glim_2nd_frac<-round(glim_2nd_frac,3)
+glim_carbonate_rocks_frac<-round(glim_carbonate_rocks_frac,3)
 
-catch_geol_glim<-data.frame(gage_id=catch_topo$gage_id,glim_1st_class,glim_1st_frac,glim_2nd_class,glim_2nd_frac,glim_carbonate_rocks_frac)
+catch_geol_glim<-data.frame(gauge_id=catch_topo$gauge_id,glim_1st_class,glim_1st_frac,glim_2nd_class,glim_2nd_frac,glim_carbonate_rocks_frac)
 
 # save data to temp directory
 save(catch_geol_glim,file=paste(dir_catch_attr_temp,'catch_geol_glim_',country,'.Rdata',sep=''))
+
+write.table(catch_geol_glim,file=paste(dir_catch_attr,'catch_geol_glim_',country,'.txt',sep=''),
+            row.names=FALSE,quote=FALSE,sep=';')
