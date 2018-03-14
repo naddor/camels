@@ -7,9 +7,9 @@ colnames(gauge_table)<-c('huc_02','gage_id','gage_name','gage_lat','gage_lon','a
 
 ### LOAD DATA FOR DESIRED CATCHMENT INTO INDIVIDUAL ARRAYS (prec, temp, etc)
 
-get_catchment_data_arrays<-function(huc,id,start_date,end_date){
+get_catchment_data_arrays<-function(huc,id,start_date,end_date,forcing_dataset='daymet'){
 
-  catch_data<-get_catchment_data_dataframe(huc,id,start_date,end_date)
+  catch_data<-get_catchment_data_dataframe(huc,id,start_date,end_date,forcing_dataset)
 
   prec<<-catch_data$prec
   temp<<-(catch_data$temp_min+catch_data$temp_max)/2
@@ -25,24 +25,24 @@ get_catchment_data_arrays<-function(huc,id,start_date,end_date){
 ### ALSO SAVE missing_days_sim, prop_na_obs, prop_est_obs AS GLOBAL ARRAY (the last two correspond to the poportion of NA and estimate values in discharge measurments
 ### between the beginning and the end of the streamflow reccord, i.e. NA values added at the beginning and end of the time series if it's too short are negelected)
 
-get_catchment_data_dataframe<-function(huc,id,start_date='19801001',end_date='20080930',dataset='daymet'){
+get_catchment_data_dataframe<-function(huc,id,start_date='19801001',end_date='20080930',forcing_dataset='daymet'){
 
-  # import forcing data
-  if(dataset=='daymet'){
+  # IMPORT FORCING DATA
+  if(forcing_dataset=='daymet'){
 
     forcing_table<-read.table(paste(dir_basin_dataset,'basin_mean_forcing/daymet/',huc,'/',id,'_lump_cida_forcing_leap.txt',sep=''),skip=3,header=TRUE)
 
-  } else if(dataset=='maurer'){
+  } else if(forcing_dataset=='maurer'){
 
     forcing_table<-read.table(paste(dir_basin_dataset,'basin_mean_forcing/maurer/',huc,'/',id,'_lump_maurer_forcing_leap.txt',sep=''),skip=3,header=TRUE)
 
   } else {
 
-    stop(paste('Unkown forcing data set',dataset))
+    stop(paste('Unkown forcing forcing data set',forcing_dataset))
 
   }
 
-  # rename variables
+  # rename forcing variables
   colnames(forcing_table)<-tolower(colnames(forcing_table)) # converting to lower case, as Daymet and Maurer files use different upper/lower case combinations
 
   if(all(colnames(forcing_table)==c("year","mnth","day","hr","dayl.s.","prcp.mm.day.","srad.w.m2.","swe.mm.","tmax.c.","tmin.c.","vp.pa."))){
@@ -57,36 +57,35 @@ get_catchment_data_dataframe<-function(huc,id,start_date='19801001',end_date='20
 
   t_forcing<-as.Date(paste(forcing_table$year,sprintf('%02d',as.numeric(forcing_table$month)),sprintf('%02d',as.numeric(forcing_table$day)),sep=''),'%Y%m%d')
 
-  # import observed streamflow data
+  # IMPORT STREAMFLOW DATA
   # A ->  streaflow value is certified by USGS as the actual daily mean flow
   # A:e -> streamflow value is certified by the USGS as the actual ESTIMATED daily mean flow
   streamflow_table<-read.table(paste(dir_basin_dataset,'usgs_streamflow/',huc,'/',id,'_streamflow_qc.txt',sep=''),header=FALSE,col.names=c('ID','Y','M','D','Q','QC_FLAG'),fill=TRUE) # fill=TRUE handles cases QC_FLAG is missing
   t_streamflow<-as.Date(paste(streamflow_table$Y,sprintf('%02d',as.numeric(streamflow_table$M)),sprintf('%02d',as.numeric(streamflow_table$D)),sep=''),'%Y%m%d')
 
-  # missing values: change -999 to NA
-  streamflow_table$Q[streamflow_table$Q==-999]<-NA
+  streamflow_table$Q[streamflow_table$Q==-999]<-NA # missing values: change -999 to NA
   if(sum(streamflow_table$QC_FLAG=='M')!=sum(is.na(streamflow_table$Q))){stop('Inconsistency between number of M flags and number of -999 values')}
 
   # determine the actual start and end date of the streamflow observations - the first day and last day which are not NA
-  q_obs_na<-is.na(streamflow_table$Q)
-  i_qobs_start<-min(which(!q_obs_na))
-  i_qobs_end<-max(which(!q_obs_na))
+  # q_obs_na<-is.na(streamflow_table$Q)
+  # i_qobs_start<-min(which(!q_obs_na))
+  # i_qobs_end<-max(which(!q_obs_na))
 
   # trim observed discharge time series
-  streamflow_table<-streamflow_table[i_qobs_start:i_qobs_end,]
-  t_streamflow<-t_streamflow[i_qobs_start:i_qobs_end]
+  # streamflow_table<-streamflow_table[i_qobs_start:i_qobs_end,]
+  # t_streamflow<-t_streamflow[i_qobs_start:i_qobs_end]
 
   prop_na_q_obs<<-round(sum(streamflow_table$QC_FLAG=='M')/length(t_streamflow),2)
   prop_est_q_obs<<-round(sum(streamflow_table$QC_FLAG=='A:e')/length(t_streamflow),2)
 
   # convert streamflow to mm/day
   streamflow<-streamflow_table$Q*(0.3048^3) # convert ft^3/sec to m^3/sec
-#  streamflow<-streamflow*3600*24*1000/(gauge_table$area_usgs_km2[gauge_table$gage_id==id]*1E6) # convert m^3/sec to mm/day
-#  streamflow<-streamflow*3600*24*1000/(camels_topo$area_gages2[camels_name$gauge_id==id]*1E6) # convert m^3/sec to mm/day
+  #  streamflow<-streamflow*3600*24*1000/(gauge_table$area_usgs_km2[gauge_table$gage_id==id]*1E6) # convert m^3/sec to mm/day
+  #  streamflow<-streamflow*3600*24*1000/(camels_topo$area_gages2[camels_name$gauge_id==id]*1E6) # convert m^3/sec to mm/day
   streamflow<-streamflow*3600*24*1000/(camels_topo$area_geospa_fabric[camels_name$gauge_id==id]*1E6) # convert m^3/sec to mm/day
 
-  # # import ET and PET from hydrological model (Sacramento) output - COMPUTE MEAN ACCROSS TEN MEMBERS
-  output_hydro_files<-system(paste('ls ',dir_basin_dataset,'model_output/flow_timeseries/',dataset,'/',huc,'/',id,'_??_model_output.txt',sep=''),intern = TRUE)
+  # IMPORT ET AND PET FROM SACRAMENTO OUTPUT - COMPUTE MEAN ACCROSS TEN MEMBERS
+  output_hydro_files<-system(paste('ls ',dir_basin_dataset,'model_output/flow_timeseries/',forcing_dataset,'/',huc,'/',id,'_??_model_output.txt',sep=''),intern = TRUE)
 
   if(length(output_hydro_files)!=10){stop('Unexpected number of hydrological output files')}
 
@@ -133,7 +132,7 @@ get_catchment_data_dataframe<-function(huc,id,start_date='19801001',end_date='20
   ### 14 MAR 2016: There used to be missing days in the simulations, now this is fixed in version 1.2, but still checking
   ### 8 MAR 2018: Two entries for 2008/12/31 in Maurer simulations (last two entries of each file)
 
-  if(dataset=='maurer'){
+  if(forcing_dataset=='maurer'){
 
     i_20081231<-which(t_hydro_sim==as.Date('2008-12-31'))
 
@@ -158,104 +157,82 @@ get_catchment_data_dataframe<-function(huc,id,start_date='19801001',end_date='20
 
   ### EXTRACT DESIRED PERIOD FROM EACH TIME SERIES AND SAVE DAY AS GLOBAL ARRAY
 
-  day<<-seq(as.Date(start_date,'%Y%m%d'),as.Date(end_date,'%Y%m%d'),by='day')
+  t_input<<-seq(as.Date(start_date,'%Y%m%d'),as.Date(end_date,'%Y%m%d'),by='day')
 
   ### TRIM FORCING DATA
 
-  if(min(t_forcing)<=min(day)&max(t_forcing)>=max(day)){
+  if(min(t_forcing)<=min(t_input)&max(t_forcing)>=max(t_input)){
 
-    forcing_table<-forcing_table[t_forcing>=min(day)&t_forcing<=max(day),]
+    forcing_table<-forcing_table[t_forcing>=min(t_input)&t_forcing<=max(t_input),]
 
-  } else{
+    if(any(t_forcing[t_forcing>=min(t_input)&t_forcing<=max(t_input)]!=t_input)){
 
-    stop(paste('Forcing data does not fully cover period ',start_date,' to ',end_date,'.',sep=''))
+      stop('t_forcing and t_input differ')
+
+    }
+
+  } else if(min(t_forcing)>min(t_input)){
+
+    stop(paste('Forcing data start on ',min(t_forcing),' so forcing for ',min(t_input),' cannot be extracted.',sep=''))
+
+  } else if(max(t_forcing)<max(t_input)){
+
+    stop(paste('Forcing data end on ',max(t_forcing),' so forcing for ',max(t_input),' cannot be extracted.',sep=''))
 
   }
 
   ### TRIM STREAMFLOW DATA
 
-  if(min(t_streamflow)<=min(day)){
+  if(min(t_streamflow)<=min(t_input)&max(t_streamflow)>=max(t_input)){
 
-    streamflow<-streamflow[t_streamflow>=min(day)] # remove begining of time series
-    t_streamflow<-t_streamflow[t_streamflow>=min(day)]
+    streamflow<-streamflow[t_streamflow>=min(t_input)&t_streamflow<=max(t_input)]
 
-  } else {
+    if(any(t_streamflow[t_streamflow>=min(t_input)&t_streamflow<=max(t_input)]!=t_input)){
 
-    stop(paste('Streamflow obs start on ',min(t_streamflow),', so do not cover ', min(day),sep=''))
+      stop('t_streamflow and t_input differ')
 
-    #streamflow<-c(rep(NA,min(t_streamflow)-min(day)),streamflow) # add NA padding at the beginning, no NA added if min(t_streamflow)==min(day)
-    #t_streamflow<-c(rep(NA,min(t_streamflow)-min(day)),t_streamflow)
+    }
 
-  }
+  } else if(min(t_streamflow)>min(t_input)){
 
-  if(max(t_streamflow)>=max(day)){
+    stop(paste('Streamflow observations start on ',min(t_streamflow),' so streamflow for ',min(t_input),' cannot be extracted.',sep=''))
 
-    streamflow<-streamflow[t_streamflow<=max(day)] # remove end of time series
-    t_streamflow<-t_streamflow[t_streamflow<=max(day)]
+  } else if(max(t_streamflow)<max(t_input)){
 
-  } else {
-
-    stop(paste('Streamflow obs end on ',max(t_streamflow),', so do not cover ', max(day),sep=''))
-
-    #streamflow<-c(streamflow,rep(NA,max(day)-max(t_streamflow,na.rm=TRUE))) # add NA padding at the end
-    #t_streamflow<-c(t_streamflow,rep(NA,max(day)-max(t_streamflow,na.rm=TRUE)))
+    stop(paste('Streamflow observations end on ',max(t_streamflow),' so streamflow for ',max(t_input),' cannot be extracted.',sep=''))
 
   }
 
-  if(length(t_streamflow)!=length(day)){stop('Length of streamflow time series with NA padding does not match length of day time series')}
+  ### TRIM SAC HYDROLOGICAL SIMULATIONS AND ADD NA PADDING IF TIME SERIES TOO SHORT
 
-  ### TRIM HYDROLOGICAL SIMULATIONS AND ADD NA PADDING IF TIME SERIES TOO SHORT
+  if(min(t_hydro_sim)<=min(t_input)&max(t_hydro_sim)>=max(t_input)){
 
-  if(min(t_hydro_sim)>min(day)){ # sim starts too late
+    pet<-pet[t_hydro_sim>=min(t_input)&t_hydro_sim<=max(t_input)]
+    et<-et[t_hydro_sim>=min(t_input)&t_hydro_sim<=max(t_input)]
+    q_obs_sac<-q_obs_sac[t_hydro_sim>=min(t_input)&t_hydro_sim<=max(t_input)]
+    q_sim_sac<-q_sim_sac[t_hydro_sim>=min(t_input)&t_hydro_sim<=max(t_input)]
 
-    pet<-c(rep(NA,min(t_hydro_sim)-min(day)),pet) # add NA padding at the beginning
-    et<-c(rep(NA,min(t_hydro_sim)-min(day)),et)
-    q_obs_sac<-c(rep(NA,min(t_hydro_sim)-min(day)),q_obs_sac)
-    q_sim_sac<-c(rep(NA,min(t_hydro_sim)-min(day)),q_sim_sac)
+    if(any(t_hydro_sim[t_hydro_sim>=min(t_input)&t_hydro_sim<=max(t_input)]!=t_input)){
 
-    t_hydro_sim<-c(rep(NA,min(t_hydro_sim)-min(day)),t_hydro_sim)
+      stop('t_hydro_sim and t_input differ')
 
-  } else if (min(t_hydro_sim)<min(day)){ # sim start earlier than needed
+    }
 
-    pet<-pet[t_hydro_sim>=min(day)] # remove begining of time series
-    et<-et[t_hydro_sim>=min(day)]
-    q_obs_sac<-q_obs_sac[t_hydro_sim>=min(day)]
-    q_sim_sac<-q_sim_sac[t_hydro_sim>=min(day)]
+  } else if(min(t_hydro_sim)>min(t_input)){
 
-    t_hydro_sim<-t_hydro_sim[t_hydro_sim>=min(day)]
+    stop(paste('SAC simulations start on ',min(t_hydro_sim),' so simulations for ',min(t_input),' cannot be extracted.',sep=''))
 
-  }
+  } else if(max(t_hydro_sim)<max(t_input)){
 
-  if(max(t_hydro_sim)<max(day)){ # sim ends too early
-
-    pet<-c(pet,rep(NA,max(day)-max(t_hydro_sim,na.rm=TRUE))) # add NA padding at the end
-    et<-c(et,rep(NA,max(day)-max(t_hydro_sim,na.rm=TRUE)))
-    q_obs_sac<-c(q_obs_sac,rep(NA,max(day)-max(t_hydro_sim,na.rm=TRUE)))
-    q_sim_sac<-c(q_sim_sac,rep(NA,max(day)-max(t_hydro_sim,na.rm=TRUE)))
-
-    t_hydro_sim<-c(t_hydro_sim,rep(NA,max(day)-max(t_hydro_sim,na.rm=TRUE)))
-
-  } else if (max(t_hydro_sim)>max(day)){ # sim ends later than needed
-
-    pet<-pet[t_hydro_sim<=max(day)] # remove end of time series
-    et<-et[t_hydro_sim<=max(day)]
-    q_obs_sac<-q_obs_sac[t_hydro_sim<=max(day)]
-    q_sim_sac<-q_sim_sac[t_hydro_sim<=max(day)]
-
-    t_hydro_sim<-t_hydro_sim[t_hydro_sim<=max(day)]
+    stop(paste('SAC simulations end on ',max(t_hydro_sim),' so simulations for ',max(t_input),' cannot be extracted.',sep=''))
 
   }
 
-  if(length(t_hydro_sim)!=length(day)){stop('Length of hydrological simulation with NA padding does not match length of day time series')}
-
-  ### NOTE ON 11 NOV 2015: even when a NA is added, there is still a delay of one day between the two obs time series
-  if(any(abs(q_obs_sac/streamflow)-1>0.01,na.rm=TRUE)){stop('q_obs_sac and streamflow do not match')}
-  #max_error<-which.max(q_obs_sac-streamflow)
-  #plot(q_obs_sac[max_error+(-50:50)],type='l')
-  #lines(streamflow[max_error+(-50:50)],type='l')
+  # check consistence of q_obs and sac_q_obs
+  if(any(abs(q_obs_sac-streamflow)>0.1,na.rm=TRUE)){stop('q_obs_sac and streamflow do not match')}
 
   # create table with all data
-  output_table<-data.frame(date=format(day,'%Y%m%d'),
+  output_table<-data.frame(date=format(t_input,'%Y%m%d'),
                            day_length=forcing_table[,'dayl(s)'],
                            prec=forcing_table[,'prcp(mm/day)'],
                            sw_inc_rad=forcing_table[,'srad(W/m2)'],
