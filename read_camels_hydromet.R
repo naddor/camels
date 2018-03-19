@@ -7,9 +7,9 @@ colnames(gauge_table)<-c('huc_02','gage_id','gage_name','gage_lat','gage_lon','a
 
 ### LOAD DATA FOR DESIRED CATCHMENT INTO INDIVIDUAL ARRAYS (prec, temp, etc)
 
-get_catchment_data_arrays<-function(huc,id,start_date,end_date,forcing_dataset='daymet'){
+get_catchment_data_arrays<-function(huc,id,date_start,date_end,forcing_dataset='daymet'){
 
-  catch_data<-get_catchment_data_dataframe(huc,id,start_date,end_date,forcing_dataset)
+  catch_data<-get_catchment_data_dataframe(huc,id,date_start,date_end,forcing_dataset)
 
   prec<<-catch_data$prec
   temp<<-(catch_data$temp_min+catch_data$temp_max)/2
@@ -25,7 +25,7 @@ get_catchment_data_arrays<-function(huc,id,start_date,end_date,forcing_dataset='
 ### ALSO SAVE missing_days_sim, prop_na_obs, prop_est_obs AS GLOBAL ARRAY (the last two correspond to the poportion of NA and estimate values in discharge measurments
 ### between the beginning and the end of the streamflow reccord, i.e. NA values added at the beginning and end of the time series if it's too short are negelected)
 
-get_catchment_data_dataframe<-function(huc,id,start_date='19801001',end_date='20080930',forcing_dataset='daymet'){
+get_catchment_data_dataframe<-function(huc,id,date_start='19801001',date_end='20080930',forcing_dataset='daymet'){
 
   # IMPORT FORCING DATA
   if(forcing_dataset=='daymet'){
@@ -157,7 +157,7 @@ get_catchment_data_dataframe<-function(huc,id,start_date='19801001',end_date='20
 
   ### EXTRACT DESIRED PERIOD FROM EACH TIME SERIES AND SAVE DAY AS GLOBAL ARRAY
 
-  t_input<<-seq(as.Date(start_date,'%Y%m%d'),as.Date(end_date,'%Y%m%d'),by='day')
+  t_input<<-seq(as.Date(date_start,'%Y%m%d'),as.Date(date_end,'%Y%m%d'),by='day')
 
   ### TRIM FORCING DATA
 
@@ -229,7 +229,13 @@ get_catchment_data_dataframe<-function(huc,id,start_date='19801001',end_date='20
   }
 
   # check consistence of q_obs and sac_q_obs
-  if(any(abs(q_obs_sac-streamflow)>0.1,na.rm=TRUE)){stop('q_obs_sac and streamflow do not match')}
+  # if(any(abs(q_obs_sac-streamflow)>1,na.rm=TRUE)){stop('q_obs_sac and streamflow do not match')}
+
+  # i_max_error<-which.max(q_obs_sac-streamflow)
+  # half_window<-50
+  # plot(streamflow[i_max_error+(-half_window:half_window)],type='l')
+  # lines(q_obs_sac[i_max_error+(-half_window:half_window)],type='l',col='orange')
+  # lines(q_sim_sac[i_max_error+(-half_window:half_window)],type='l',col='blue')
 
   # create table with all data
   output_table<-data.frame(date=format(t_input,'%Y%m%d'),
