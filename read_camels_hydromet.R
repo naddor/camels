@@ -34,7 +34,16 @@ get_catchment_data_dataframe<-function(huc,id,date_start='19801001',date_end='20
 
   } else if(forcing_dataset=='maurer'){
 
-    forcing_table<-read.table(paste(dir_basin_dataset,'basin_mean_forcing/maurer/',huc,'/',id,'_lump_maurer_forcing_leap.txt',sep=''),skip=3,header=TRUE)
+    if(id%in%c('02108000','05120500','07067000','09492400')){ # header is incomplete in orginial files
+
+      forcing_table<-read.table(paste(dir_basin_dataset,'basin_mean_forcing/maurer/',huc,'/',id,'_lump_maurer_forcing_leap.txt',sep=''),skip=4,header=FALSE)
+      colnames(forcing_table)<-c("year","mnth","day","hr","dayl.s.","prcp.mm.day.","srad.w.m2.","swe.mm.","tmax.c.","tmin.c.","vp.pa.")
+
+    }else{
+
+      forcing_table<-read.table(paste(dir_basin_dataset,'basin_mean_forcing/maurer/',huc,'/',id,'_lump_maurer_forcing_leap.txt',sep=''),skip=3,header=TRUE)
+
+    }
 
   } else {
 
@@ -151,7 +160,7 @@ get_catchment_data_dataframe<-function(huc,id,date_start='19801001',date_end='20
 
   if(any(diff(t_hydro_sim)!=1)){
 
-    stop('There are still missing days in the simulated time series')
+    stop('There are missing or duplicated days in the simulated time series')
 
   }
 
@@ -181,52 +190,19 @@ get_catchment_data_dataframe<-function(huc,id,date_start='19801001',date_end='20
 
   }
 
-  ### TRIM STREAMFLOW DATA
+  ### STREAMFLOW: TRIM OR ADD NA USING MERGE - # all.x adds NA when obs not available
 
-  if(min(t_streamflow)<=min(t_input)&max(t_streamflow)>=max(t_input)){
+  streamflow_input<-merge(data.frame(t_input),data.frame(streamflow,t_streamflow),by.x='t_input',by.y='t_streamflow',all.x=TRUE)
 
-    streamflow<-streamflow[t_streamflow>=min(t_input)&t_streamflow<=max(t_input)]
+  #plot(t_input[1:1000],streamflow_input$streamflow[1:1000],type='l')
+  #lines(t_streamflow[1:1000],streamflow[1:1000],col='orange')
 
-    if(any(t_streamflow[t_streamflow>=min(t_input)&t_streamflow<=max(t_input)]!=t_input)){
+  ### SAC HYDROLOGICAL SIMULATIONS: TRIM OR ADD NA USING MERGE - all.x adds NA when obs not available
 
-      stop('t_streamflow and t_input differ')
-
-    }
-
-  } else if(min(t_streamflow)>min(t_input)){
-
-    stop(paste('Streamflow observations start on ',min(t_streamflow),' so streamflow for ',min(t_input),' cannot be extracted.',sep=''))
-
-  } else if(max(t_streamflow)<max(t_input)){
-
-    stop(paste('Streamflow observations end on ',max(t_streamflow),' so streamflow for ',max(t_input),' cannot be extracted.',sep=''))
-
-  }
-
-  ### TRIM SAC HYDROLOGICAL SIMULATIONS AND ADD NA PADDING IF TIME SERIES TOO SHORT
-
-  if(min(t_hydro_sim)<=min(t_input)&max(t_hydro_sim)>=max(t_input)){
-
-    pet<-pet[t_hydro_sim>=min(t_input)&t_hydro_sim<=max(t_input)]
-    et<-et[t_hydro_sim>=min(t_input)&t_hydro_sim<=max(t_input)]
-    q_obs_sac<-q_obs_sac[t_hydro_sim>=min(t_input)&t_hydro_sim<=max(t_input)]
-    q_sim_sac<-q_sim_sac[t_hydro_sim>=min(t_input)&t_hydro_sim<=max(t_input)]
-
-    if(any(t_hydro_sim[t_hydro_sim>=min(t_input)&t_hydro_sim<=max(t_input)]!=t_input)){
-
-      stop('t_hydro_sim and t_input differ')
-
-    }
-
-  } else if(min(t_hydro_sim)>min(t_input)){
-
-    stop(paste('SAC simulations start on ',min(t_hydro_sim),' so simulations for ',min(t_input),' cannot be extracted.',sep=''))
-
-  } else if(max(t_hydro_sim)<max(t_input)){
-
-    stop(paste('SAC simulations end on ',max(t_hydro_sim),' so simulations for ',max(t_input),' cannot be extracted.',sep=''))
-
-  }
+  pet_input<-merge(data.frame(t_input),data.frame(pet,t_hydro_sim),by.x='t_input',by.y='t_hydro_sim',all.x=TRUE)
+  et_input<-merge(data.frame(t_input),data.frame(et,t_hydro_sim),by.x='t_input',by.y='t_hydro_sim',all.x=TRUE)
+  q_obs_sac_input<-merge(data.frame(t_input),data.frame(q_obs_sac,t_hydro_sim),by.x='t_input',by.y='t_hydro_sim',all.x=TRUE)
+  q_sim_sac_input<-merge(data.frame(t_input),data.frame(q_sim_sac,t_hydro_sim),by.x='t_input',by.y='t_hydro_sim',all.x=TRUE)
 
   # check consistence of q_obs and sac_q_obs
   # if(any(abs(q_obs_sac-streamflow)>1,na.rm=TRUE)){stop('q_obs_sac and streamflow do not match')}
@@ -245,11 +221,11 @@ get_catchment_data_dataframe<-function(huc,id,date_start='19801001',date_end='20
                            temp_min=forcing_table[,'tmin(C)'],
                            temp_max=forcing_table[,'tmax(C)'],
                            vapor_pressure=forcing_table[,'vp(Pa)'],
-                           pet=pet,
-                           et=et,
-                           q_obs=streamflow,
-                           q_obs_sac=q_obs_sac,
-                           q_sim_sac=q_sim_sac)
+                           pet=pet_input$pet,
+                           et=et_input$et,
+                           q_obs=streamflow_input$streamflow,
+                           q_obs_sac=q_obs_sac_input$q_obs_sac,
+                           q_sim_sac=q_sim_sac_input$q_sim_sac)
 
   return(output_table)
 
