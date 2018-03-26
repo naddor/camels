@@ -1,36 +1,34 @@
 source(paste(dir_r_scripts,'camels/time/time_tools.R',sep='')) # for month2sea
-
 # Based on Sawicz, K., Wagener, T., Sivapalan, M., Troch, P. a. and Carrillo, G.:
 # Catchment classification: Empirical analysis of hydrologic similarity based
 # on catchment function in the eastern USA, Hydrol. Earth Syst. Sci.,
 # 15(9), 2895–2911, doi:10.5194/hess-15-2895-2011, 2011.
 
 # Wrapper to compute all signatures at once
-
-compute_hydro_signatures_sawicz<-function(q,p,t,d,tol=0.05){
-
+compute_hydro_signatures_sawicz<-function(q,p,t,d,tol,hem){
+  # input variables: 
+  # q: discharge time series
+  # p: precipitation time series
+  # t: mean daily temperature time series
+  # d:  array of dates of class Date
+  # tol: tolerated proportion of NA values in time series
+  # hem: optional argument, character 'n' for northern hemisphere (default value) or 's' for southern hemisphere 
+  if (missing(hem)){hem<-'n'}
+  
   r_qp<-comp_r_qp(q,p,tol)
   s_fdc<-comp_s_fdc(q,tol)
-  s_fdc_log<-comp_s_fdc_log(q,tol)
   i_bf<-comp_i_bf_landson(q)
-  e_qp<-comp_e_qp(q,p,d,tol)
+  e_qp<-comp_e_qp(q,p,d,tol,hem)
   r_sd<-comp_r_sd(t,p,tol)
-
   # r_ld<-comp_r_ld(q,tol) # commented out because takes a while to run
 
-  return(data.frame(r_qp=r_qp,s_fdc=s_fdc,s_fdc_log=s_fdc_log,i_bf=i_bf,e_qp,r_sd))
+  return(data.frame(r_qp=r_qp,s_fdc,i_bf=i_bf,e_qp,r_sd))
 
 }
 
 # I. Runoff ratio - ratio of long-term average streamflow to long-term average precipitation
 
-comp_r_qp<-function(q,p,tol=0.05){
-
-  # input variables
-  # q: discharge time series
-  # p: precipitation time series
-  # tol: tolerated proportion of NA values in time series
-
+comp_r_qp<-function(q,p,tol){
   avail_data<-find_avail_data_matrix(cbind(q,p),tol) # time steps for which obs and sim are available
 
   r_qp<-mean(q[avail_data])/mean(p[avail_data])
@@ -47,57 +45,81 @@ comp_r_qp<-function(q,p,tol=0.05){
 
 # II. Slope of FDC in log space between 33rd and 66th percentile
 
-comp_s_fdc_log<-function(q,tol=0.05){
+comp_s_fdc<-function(q,tol){
 
   # input variables
   # q: discharge time series
-  # tol: tolerated proportion of NA values in time series
+  # tol: tolerated fraction of NA values in time series
 
-  avail_data<-find_avail_data_array(q,tol) # time steps for which obs and sim are available
+  # time for which obs are available this also set the whole timeseries
+  # as unavailable is the proportion of NA values is greater than tol
+  avail_data<-find_avail_data_array(q,tol)
 
-  q33<-as.numeric(quantile(q[avail_data],0.33,na.rm=TRUE)) # use empirical quantiles
-  q66<-as.numeric(quantile(q[avail_data],0.66,na.rm=TRUE))
+  if(any(!is.na(avail_data))){
 
-  # plot FDC
-  quant<-seq(0,1,0.001)
-  fdc<-rev(as.numeric(quantile(q[avail_data],quant,na.rm=TRUE))) # rev because probability of exceedance
-  #plot(quant,fdc,log='y',ylab='Discharge [mm/day]',xlab='Probability of exceedance',type='l')
+    # define quantiles for the FDC
+    quant<-seq(0,1,0.001)
+    fdc<-as.numeric(rev(quantile(q[avail_data],quant))) # rev because probability of exceedance
 
-  i33<-which(quant==0.33)
-  i66<-which(quant==0.66)
+    # retrieve Q33 and Q66
+    q33<-fdc[quant==0.33] # flow exceeded 33% of the time
+    q66<-fdc[quant==0.66] # flow exceeded 66% of the time
+    q_med<-fdc[quant==0.50] # median flow
+    q_mean<-mean(q[avail_data])
 
-  #points(quant[c(i33,i66)],fdc[c(i33,i66)],col='orange',pch=1)
+    # use empirical quantiles
+    q33_quant<-as.numeric(quantile(q[avail_data],0.33)) # flow exceeded 67% (100-33%) of the time
+    q66_quant<-as.numeric(quantile(q[avail_data],0.66)) # flow exceeded 34% (100-66%)) of the time
 
-  if(q33==0|is.na(q33)){ # if more than a thrid of data are 0, log(q33) can't be computed
+    # plot FDC
+    # plot(quant,fdc,log='y',ylab='Discharge [mm/day]',xlab='Percentage time flow is exceeded',type='l')
+    # points(c(0.33,0.66),c(q33,q66),col='red',pch=16)
 
-    return(NA)
+    if(q66!=0&!is.na(q66)){ # if more than a thrid of data are 0, log(q66) can't be computed
 
-  }else{
+      # Sawicz et al 2010:, Eq. 3: 10.5194/hess-15-2895-2011
+      # "the slope of the FDC is calculated between the 33rd and 66th streamflow percentiles,
+      # since at semi-log scale this represents a relatively linear part of the FDC"
+      sfdc_sawicz_2010<-(log(q33)-log(q66))/(0.66-0.33)
 
-    s_fdc<-(log(q66)-log(q33))/(0.66-0.33)
+      # Yadav et al 2007, Table 3: 10.1016/j.advwatres.2007.01.005
+      # Westerberg and McMillan 2015, Table 2: 10.5194/hess-19-3951-2015
+      # "Slope of the FDC between the 33 and 66% exceedance values of streamflow normalised by its mean"
+      sfdc_yadav_2007<-(q33/q_mean-q66/q_mean)/(0.66-0.33)
 
-    return(s_fdc)
+      # McMillan et al 2017: see text and Figure 1b: 10.1002/hyp.11300
+      # "slope in the interval 0.33 to 0.66, in log space, normalised by median flow"
+      sfdc_mcmillan_2017<-(log(q33/q_med)-log(q66/q_med))/(0.66-0.33)
+
+    } else {
+
+      sfdc_sawicz_2010<-NA
+      sfdc_yadav_2007<-NA # could be computed, but the Q33-Q66 section is not very curved, so computing a slope is inadequate
+      sfdc_mcmillan_2017<-NA
+
+    }
+
+    if(q66!=0&!is.na(q66)){
+
+      # Addor et al 2017
+      sfdc_addor_2017<-(log(q66_quant)-log(q33_quant))/(0.66-0.33)
+
+    }else{
+
+      sfdc_addor_2017<-NA
+
+    }
+
+  } else { # the whole time series is considered as unavailable
+
+    sfdc_sawicz_2010<-NA
+    sfdc_yadav_2007<-NA # could be computed, but the Q33-Q66 section is not very curved, so computing a slope is inadequate
+    sfdc_mcmillan_2017<-NA
+    sfdc_addor_2017<-NA
 
   }
 
-}
-
-comp_s_fdc<-function(q,tol=0.05){
-
-  # input variables
-  # q: discharge time series
-  # tol: tolerated proportion of NA values in time series
-
-  avail_data<-find_avail_data_array(q,tol) # time steps for which obs and sim are available
-
-  q33<-as.numeric(quantile(q[avail_data],0.33,na.rm=TRUE)) # use empirical quantiles
-  q66<-as.numeric(quantile(q[avail_data],0.66,na.rm=TRUE))
-  qmean<-mean(q[avail_data],na.rm=TRUE)
-
-  s_fdc<-(q66-q33)/(qmean*(0.66-0.33)) # slope of normalized
-
-  return(s_fdc)
-
+  return(data.frame(sfdc_yadav_2007,sfdc_sawicz_2010,sfdc_mcmillan_2017,sfdc_addor_2017))
 
 }
 
@@ -117,7 +139,7 @@ comp_i_bf_landson<-function(q,alpha=0.925,passes=3){
 
 }
 
-comp_i_bf<-function(q,tol=0.05){
+comp_i_bf<-function(q,tol){
 
   # input variables
   # q: discharge time series
@@ -136,7 +158,7 @@ comp_i_bf<-function(q,tol=0.05){
 
 # Estimate direct flow using a one-parameter single pass digital filter method
 
-comp_q_d<-function(q,c_const=0.925,tol=0.05){
+comp_q_d<-function(q,c_const=0.925,tol){
 
   # input variables
   # q: discharge time series
@@ -161,7 +183,8 @@ comp_q_d<-function(q,c_const=0.925,tol=0.05){
 
 # IV. Streamflow elasticity: sensitivity of a catchment’s streamflow response to changes in precipitation at the annual time scale
 
-comp_e_qp<-function(q,p,d,tol=0.05){
+comp_e_qp<-function(q,p,d,tol,hem){
+  if (missing(hem)){hem<-'n'}
 
   # input variables
   # q: discharge time series
@@ -173,7 +196,7 @@ comp_e_qp<-function(q,p,d,tol=0.05){
 
   if(length(q)!=length(d)|length(p)!=length(d)){stop('P, Q and D must have the same length')}
 
-  hy<-get_hydro_year(d)
+  hy<-get_hydro_year(d,hem)
 
   if(any(table(hy)<365)){stop('Not all the hydrological years are complete')}
 
@@ -205,7 +228,7 @@ comp_e_qp<-function(q,p,d,tol=0.05){
 # V. Snow day ratio - the number of days that experience precipitation when the average daily air temperature is below 2°C,
 # divided by the total number of days per year with precipitation. Note that it does not account for the amount of precipiation.
 
-comp_r_sd<-function(t,p,tol=0.05){
+comp_r_sd<-function(t,p,tol){
 
   # input variables
   # t: temperature time series
@@ -233,7 +256,7 @@ comp_r_sd<-function(t,p,tol=0.05){
 
 ### Mix of signatures and indicators
 
-compute_hydro_signatures_seas<-function(q,d,tol=0.05){
+compute_hydro_signatures_seas<-function(q,d,tol){
 
   q_mean<-compute_q_mean(q,d,tol)
   q_seas<-compute_q_seas(q,d,tol)
@@ -243,7 +266,7 @@ compute_hydro_signatures_seas<-function(q,d,tol=0.05){
 
 }
 
-compute_q_mean<-function(q,d,tol=0.05){
+compute_q_mean<-function(q,d,tol){
 
   avail_data<-find_avail_data_array(q,tol)
 
@@ -252,15 +275,18 @@ compute_q_mean<-function(q,d,tol=0.05){
       sea<-month2sea(format(d[avail_data],'%m')) # determine season
       table_sea<-table(sea)
 
-      if(abs(table_sea[['djf']]-table_sea[['jja']])>0.05*table_sea[['djf']]){
-        stop('Seasonal discharge cannot be computed because number of days in DJF and JJA differ significantly')
-      }
-
-      q_sea<-rapply(split(q[avail_data],sea),mean)
-
-      q_mean_yea<-mean(q[avail_data])
-      q_mean_djf<-q_sea['djf']
-      q_mean_jja<-q_sea['jja']
+      if(abs(table_sea[['djf']]-table_sea[['jja']])>tol*table_sea[['djf']]){ # 0.05 was change for tol (to allow consistent NA missing rercords)
+        warning('Seasonal discharge cannot be computed because number of days in DJF and JJA differ significantly')
+        q_sea<-rapply(split(q[avail_data],sea),mean)
+        q_mean_yea<-mean(q[avail_data])
+        q_mean_djf<-NA
+        q_mean_jja<-NA
+        } else{
+        q_sea<-rapply(split(q[avail_data],sea),mean)
+        q_mean_yea<-mean(q[avail_data])
+        q_mean_djf<-q_sea['djf']
+        q_mean_jja<-q_sea['jja']
+        }
 
   } else {
 
@@ -276,7 +302,7 @@ compute_q_mean<-function(q,d,tol=0.05){
 
 }
 
-compute_q_seas<-function(q,d,tol=0.05){
+compute_q_seas<-function(q,d,tol){
 
   avail_data<-find_avail_data_array(q,tol)
 
@@ -287,7 +313,7 @@ compute_q_seas<-function(q,d,tol=0.05){
 
 }
 
-compute_q_peak<-function(q,d,tol=0.05){
+compute_q_peak<-function(q,d,tol){
 
   avail_data<-find_avail_data_array(q,tol)
 
@@ -305,10 +331,11 @@ compute_q_peak<-function(q,d,tol=0.05){
 
 # Wrapper to compute all misc signatures at once
 
-compute_hydro_signatures_misc<-function(q,d,thres=0,tol=0.05){
+compute_hydro_signatures_misc<-function(q,d,thres=0,tol,hem){
+  if (missing(hem)){hem<-'n'}
 
   no_flow<-compute_no_flow(q,thres,tol)
-  hfd<-compute_hfd_mean_sd(q,d,tol)
+  hfd<-compute_hfd_mean_sd(q,d,tol,hem)
 
   return(data.frame(no_flow,hfd))
 
@@ -316,7 +343,7 @@ compute_hydro_signatures_misc<-function(q,d,thres=0,tol=0.05){
 
 # Proportion of time series with dischare below or at a given threshold (0 by default)
 
-compute_no_flow<-function(q,thres=0,tol=0.05){
+compute_no_flow<-function(q,thres=0,tol){
 
   avail_data<-find_avail_data_array(q,tol)
 
@@ -326,11 +353,12 @@ compute_no_flow<-function(q,thres=0,tol=0.05){
 
 # Half flow date (Court, 1962): the date on which the cumulative discharge since the beginning of the hydrological year (starting on 1 October) reaches half of the annual discharge
 
-compute_hfd_mean_sd<-function(q,d,tol=0.05){
+compute_hfd_mean_sd<-function(q,d,tol,hem){
+  if (missing(hem)){hem<-'n'}
 
   avail_data<-find_avail_data_array(q,tol)
 
-  hy<-get_hydro_year(d)
+  hy<-get_hydro_year(d,hem)
 
   hy_q<-split(q[avail_data],hy[avail_data]) # discharge for each hydrological year
 
@@ -365,7 +393,7 @@ compute_hfd_mean_sd<-function(q,d,tol=0.05){
 
 # Wrapper to compute all signatures at once
 
-compute_hydro_signatures_westerberg<-function(q,d,tol=0.05){
+compute_hydro_signatures_westerberg<-function(q,d,tol){
 
   qXX<-compute_qXX(q,thres=c(0.95,0.05),tol)
   hf_freq_dur<-compute_hf_freq_dur(q,d,tol)
@@ -377,7 +405,7 @@ compute_hydro_signatures_westerberg<-function(q,d,tol=0.05){
 
 # Flow precentiles, i.e. Q95 is exceeded 95% of the time
 
-compute_qXX<-function(q,thres,tol=0.05){
+compute_qXX<-function(q,thres,tol){
 
   if(any(thres<0|thres>1)){stop('Threshold must be between 0 and 1')}
 
@@ -401,7 +429,7 @@ compute_qXX<-function(q,thres,tol=0.05){
 
 # Frequency and duration of high flows
 
-compute_hf_freq_dur<-function(q,d,tol=0.05){
+compute_hf_freq_dur<-function(q,d,tol){
 
   avail_data<-find_avail_data_array(q,tol)   # time steps for which obs and sim are available
 
@@ -449,7 +477,7 @@ compute_hf_freq_dur<-function(q,d,tol=0.05){
 
 # Frequency and duration of low flows
 
-compute_lf_freq_dur<-function(q,d,tol=0.05){
+compute_lf_freq_dur<-function(q,d,tol){
 
   avail_data<-find_avail_data_array(q,tol)    # time steps for which obs and sim are available
 

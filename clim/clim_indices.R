@@ -58,12 +58,13 @@ compute_climate_indices_berghuijs<-function(temp,prec,pet,day){
 
 }
 
-compute_dry_wet_climate_indices<-function(prec,day,rel_hp_thres=5,abs_lp_thres=1){
+compute_dry_wet_climate_indices<-function(prec,day,rel_hp_thres=5,abs_lp_thres=1,hem){
+  if (missing(hem)){hem<-'n'}
 
   if(any(diff(day)>1)){stop('Time series must be continious')}
 
   s<-as.factor(month2sea(format(day,'%m')))
-  hy<-compute_hy(day)
+  hy<-get_hydro_year(day,hem)
 
   ### FREQUENCY AND DURATION OF HIGH INTENSITY PRECIPITATION EVENTS
   hp<-prec>=rel_hp_thres*mean(prec)
