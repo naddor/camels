@@ -25,7 +25,11 @@ get_catchment_data_arrays<-function(huc,id,date_start,date_end,forcing_dataset='
 ### ALSO SAVE missing_days_sim, prop_na_obs, prop_est_obs AS GLOBAL ARRAY (the last two correspond to the poportion of NA and estimate values in discharge measurments
 ### between the beginning and the end of the streamflow reccord, i.e. NA values added at the beginning and end of the time series if it's too short are negelected)
 
-get_catchment_data_dataframe<-function(huc,id,date_start='19801001',date_end='20080930',forcing_dataset='daymet'){
+get_catchment_data_dataframe<-function(huc,id,date_start='19801001',date_end='20080930',
+                                       forcing_dataset='daymet',ens_method='best'){
+
+  # ARGUMENTS
+  # ens_method: should the SAC runs be averages ('mean') or should only the best one be used ('best')?
 
   # IMPORT FORCING DATA
   if(forcing_dataset=='daymet'){
@@ -34,7 +38,7 @@ get_catchment_data_dataframe<-function(huc,id,date_start='19801001',date_end='20
 
   } else if(forcing_dataset=='maurer'){
 
-    if(id%in%c('02108000','05120500','07067000','09492400')){ # header is incomplete in orginial files
+    if(id%in%c('02108000','05120500','07067000','09492400')){ # header is incomplete in original files
 
       forcing_table<-read.table(paste(dir_basin_dataset,'basin_mean_forcing/maurer/',huc,'/',id,'_lump_maurer_forcing_leap.txt',sep=''),skip=4,header=FALSE)
       colnames(forcing_table)<-c("year","mnth","day","hr","dayl.s.","prcp.mm.day.","srad.w.m2.","swe.mm.","tmax.c.","tmin.c.","vp.pa.")
@@ -45,9 +49,9 @@ get_catchment_data_dataframe<-function(huc,id,date_start='19801001',date_end='20
 
     }
 
-  } else {
+  }else{
 
-    stop(paste('Unkown forcing forcing data set',forcing_dataset))
+    stop(paste('Unkown forcing forcing data set:',forcing_dataset))
 
   }
 
@@ -88,44 +92,75 @@ get_catchment_data_dataframe<-function(huc,id,date_start='19801001',date_end='20
   prop_est_q_obs<<-round(sum(streamflow_table$QC_FLAG=='A:e')/length(t_streamflow),2)
 
   # convert streamflow to mm/day
-  streamflow<-streamflow_table$Q*(0.3048^3) # convert ft^3/sec to m^3/sec
+  streamflow<-streamflow_table$Q*(0.3048^3)
+  streamflow<-streamflow*3600*24*1000/(camels_topo$area_geospa_fabric[camels_name$gauge_id==id]*1E6) # convert m^3/sec to mm/day
   #  streamflow<-streamflow*3600*24*1000/(gauge_table$area_usgs_km2[gauge_table$gage_id==id]*1E6) # convert m^3/sec to mm/day
   #  streamflow<-streamflow*3600*24*1000/(camels_topo$area_gages2[camels_name$gauge_id==id]*1E6) # convert m^3/sec to mm/day
-  streamflow<-streamflow*3600*24*1000/(camels_topo$area_geospa_fabric[camels_name$gauge_id==id]*1E6) # convert m^3/sec to mm/day
 
   # IMPORT ET AND PET FROM SACRAMENTO OUTPUT - COMPUTE MEAN ACCROSS TEN MEMBERS
   output_hydro_files<-system(paste('ls ',dir_basin_dataset,'model_output/flow_timeseries/',forcing_dataset,'/',huc,'/',id,'_??_model_output.txt',sep=''),intern = TRUE)
 
   if(length(output_hydro_files)!=10){stop('Unexpected number of hydrological output files')}
 
-  et<-array(0)
-  pet<-array(0)
-  q_obs_sac<-array(0)
-  q_sim_sac<-array(0)
   first_file<-TRUE
 
-  for(f in output_hydro_files){
+  for(f in output_hydro_files){ # loop through the 10 files and store their content in arrays
 
     hydro_sim<-read.table(f,header=TRUE)
-    et<-et+hydro_sim$ET
-    pet<-pet+hydro_sim$PET
-    q_sim_sac<-q_sim_sac+hydro_sim$MOD_RUN
 
     if(first_file){
 
+      et_ens<-hydro_sim$ET
+      pet_ens<-hydro_sim$PET
+      q_sim_sac_ens<-hydro_sim$MOD_RUN
       q_obs_sac<-hydro_sim$OBS_RUN
+      t_hydro_sim<-as.Date(paste(hydro_sim$YR,sprintf('%02d',hydro_sim$MNTH),sprintf('%02d',hydro_sim$DY),sep=''),format='%Y%m%d')
+
       first_file<-FALSE
 
-    } else {
+    }else{
+
+      et_ens<-cbind(et_ens,hydro_sim$ET)
+      pet_ens<-cbind(pet_ens,hydro_sim$PET)
+      q_sim_sac_ens<-cbind(q_sim_sac_ens,hydro_sim$MOD_RUN)
 
       if(any(q_obs_sac!=hydro_sim$OBS_RUN)){stop('OBS discharge in different model output files do not match')}
-
+      if(any(t_hydro_sim!=as.Date(paste(hydro_sim$YR,sprintf('%02d',hydro_sim$MNTH),sprintf('%02d',hydro_sim$DY),sep=''),format='%Y%m%d'))){
+        stop('The model runs cover different periods')
+      }
     }
   }
 
-  et<-et/10
-  pet<-pet/10
-  q_sim_sac<-q_sim_sac/10
+  if(ens_method=='mean'){
+
+      et<-rowMeans(et_ens)
+      pet<-rowMeans(pet_ens)
+      q_sim_sac<-rowMeans(q_sim_sac_ens)
+
+  }else if(ens_method=='best'){
+
+    # COMPUTE RMSE AND FOR ALL MODEL RUNS OVER THE CALIBRATION PERIOD
+    # For the spin up, the first year was run repeatedly until the soil moisture stabilized. Simulations over this
+    # spin up period were not saved in the output files, i.e. the output files only contain the post-spin up period.
+    # Model calibration was performed over the first 15 years
+
+    start_cal<-t_hydro_sim[1] # start of calibration period
+    end_cal<-seq(start_cal,by='year',length.out=16)[16]-1 # end of calibration period
+    cal_period<-t_hydro_sim%in%seq(start_cal,end_cal,by='day')
+
+    sac_rmse<-apply(q_sim_sac_ens[cal_period,],2,compute_rmse,obs=q_obs_sac[cal_period])
+    sac_nse<-apply(q_sim_sac_ens[cal_period,],2,compute_nse,obs=q_obs_sac[cal_period])
+    best_ps_rmse<-which.min(sac_rmse) # find best parameter set
+
+    et<-et_ens[best_ps_rmse,]
+    pet<-pet_ens[best_ps_rmse,]
+    q_sim_sac<-q_sim_sac_ens[best_ps_rmse,]
+
+  }else{
+
+    stop(paste('Unkown method for the aggregation of the SAC runs:',ens_method))
+
+  }
 
   ### 3 MAR 2016: PET computed by Andy can sometimes negative (e.g. 12054000 min PET is -0.13)
   ### 14 MAR 2016: Now this is fixed in version 1.2, but still checking
@@ -135,8 +170,6 @@ get_catchment_data_dataframe<-function(huc,id,date_start='19801001',date_end='20
     stop('Some PET values are negative')
 
   }
-
-  t_hydro_sim<-as.Date(paste(hydro_sim$YR,sprintf('%02d',hydro_sim$MNTH),sprintf('%02d',hydro_sim$DY),sep=''),format='%Y%m%d')
 
   ### 14 MAR 2016: There used to be missing days in the simulations, now this is fixed in version 1.2, but still checking
   ### 8 MAR 2018: Two entries for 2008/12/31 in Maurer simulations (last two entries of each file)
