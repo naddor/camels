@@ -28,7 +28,6 @@ if(!dir.exists(dir_camels_attr)){
 }
 
 # LOAD FUNCTIONS
-#source(paste(dir_r_scripts,'camels/clim/clim_indices.R',sep=''))
 #source(paste(dir_r_scripts,'camels/maps/plot_maps_camels.R',sep=''))  # for maps
 #source(paste(dir_r_scripts,'camels/time/time_tools.R',sep=''))  # for maps
 

@@ -153,9 +153,9 @@ get_catchment_data_dataframe<-function(huc,id,date_start='19801001',date_end='20
     sac_nse<-apply(q_sim_sac_ens[cal_period,],2,compute_nse,obs=q_obs_sac[cal_period])
     best_ps_rmse<-which.min(sac_rmse) # find index of best parameter set
 
-    et<-et_ens[best_ps_rmse,]
-    pet<-pet_ens[best_ps_rmse,]
-    q_sim_sac<-q_sim_sac_ens[best_ps_rmse,]
+    et<-et_ens[,best_ps_rmse]
+    pet<-pet_ens[,best_ps_rmse]
+    q_sim_sac<-q_sim_sac_ens[,best_ps_rmse]
 
   }else{
 
@@ -226,11 +226,7 @@ get_catchment_data_dataframe<-function(huc,id,date_start='19801001',date_end='20
 
   streamflow_input<-merge(data.frame(t_input),data.frame(streamflow,t_streamflow),by.x='t_input',by.y='t_streamflow',all.x=TRUE)
 
-  #plot(t_input[1:1000],streamflow_input$streamflow[1:1000],type='l')
-  #lines(t_streamflow[1:1000],streamflow[1:1000],col='orange')
-
   ### SAC HYDROLOGICAL SIMULATIONS: TRIM OR ADD NA USING MERGE - all.x adds NA when obs not available
-
   pet_input<-merge(data.frame(t_input),data.frame(pet,t_hydro_sim),by.x='t_input',by.y='t_hydro_sim',all.x=TRUE)
   et_input<-merge(data.frame(t_input),data.frame(et,t_hydro_sim),by.x='t_input',by.y='t_hydro_sim',all.x=TRUE)
   q_obs_sac_input<-merge(data.frame(t_input),data.frame(q_obs_sac,t_hydro_sim),by.x='t_input',by.y='t_hydro_sim',all.x=TRUE)

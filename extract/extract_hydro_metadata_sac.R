@@ -1,8 +1,4 @@
 
-# NOTE: THIS SCRIPT COMPUTES COMPUTES SAC ACCURACY FOR CALIB
-# AND EVAL OF PERIODS WHICH ARE BASIN-DEPENDENT, I.E. THIS
-# CAN INDUCE ARTIFICAL REGIONAL VARIATIONS
-
 source(paste(dir_r_scripts,'camels/read_camels_hydromet.R',sep=''))
 source(paste(dir_r_scripts,'camels/hydro/hydro_accuracy.R',sep=''))
 source(paste(dir_r_scripts,'camels/hydro/hydro_signatures.R',sep=''))
@@ -90,6 +86,9 @@ for(i in 1:dim(camels_name)[1]){ # loop through catchments
   dataset_full_hy<-dataset_days>=as.Date(start_hydro_sim,'%Y%m%d')&dataset_days<=as.Date(end_hydro_sim,'%Y%m%d') # portion used for evaluation and calib
 
   ### COMPUTE ACCURACY FOR WHOLE SIMULATION PERIOD AND CALIB AND EVAL SUB-PERIODS
+  # NOTE: THIS SCRIPT COMPUTES SAC ACCURACY FOR CALIB AND EVAL OF PERIODS
+  # WHICH ARE BASIN-DEPENDENT, I.E. THIS CAN INDUCE ARTIFICAL REGIONAL VARIATIONS
+
   camels_accuracy_sac[i,'nse_run']<-round(compute_nse(obs=q_obs,sim=q_sim_sac),2)
   camels_accuracy_sac[i,'nse_calib']<-round(compute_nse(obs=q_obs[dataset_calib],sim=q_sim_sac[dataset_calib]),2)
   camels_accuracy_sac[i,'nse_eval']<-round(compute_nse(obs=q_obs[dataset_eval],sim=q_sim_sac[dataset_eval]),2)

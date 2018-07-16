@@ -270,27 +270,26 @@ compute_q_mean<-function(q,d,tol=0.05){
 
   avail_data<-find_avail_data_array(q,tol)
 
+  q_mean_yea<-NA
+  q_mean_djf<-NA
+  q_mean_jja<-NA
+
   if(any(!is.na(avail_data))){
 
-      sea<-month2sea(format(d[avail_data],'%m')) # determine season
-      table_sea<-table(sea)
+    q_mean_yea<-mean(q[avail_data])
 
-      if(abs(table_sea[['djf']]-table_sea[['jja']])>0.05*table_sea[['djf']]){
-        stop('Seasonal discharge cannot be computed because number of days in DJF and JJA differ significantly')
-      }
+    sea<-month2sea(format(d[avail_data],'%m')) # determine season
+    table_sea<-table(sea)
+
+    # if the number of days in DJF and JJA do not differ significantly
+    if(abs(table_sea[['djf']]-table_sea[['jja']])<0.05*table_sea[['djf']]){
 
       q_sea<-rapply(split(q[avail_data],sea),mean)
 
-      q_mean_yea<-mean(q[avail_data])
       q_mean_djf<-q_sea['djf']
       q_mean_jja<-q_sea['jja']
 
-  } else {
-
-    q_mean_yea<-NA
-    q_mean_djf<-NA
-    q_mean_jja<-NA
-
+    }
   }
 
   q_mean<-data.frame(q_mean_yea,q_mean_djf,q_mean_jja,row.names='')
