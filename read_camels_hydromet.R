@@ -7,9 +7,13 @@ colnames(gauge_table)<-c('huc_02','gage_id','gage_name','gage_lat','gage_lon','a
 
 ### LOAD DATA FOR DESIRED CATCHMENT INTO INDIVIDUAL ARRAYS (prec, temp, etc)
 
-get_catchment_data_arrays<-function(huc,id,date_start,date_end,forcing_dataset='daymet'){
+get_catchment_data_arrays<-function(huc,id,date_start,date_end,
+                                    forcing_dataset='daymet',ens_method='best'){
 
-  catch_data<-get_catchment_data_dataframe(huc,id,date_start,date_end,forcing_dataset)
+  # ARGUMENTS
+  # ens_method: should the SAC runs be averages ('mean') or should only the best one be used ('best')?
+
+  catch_data<-get_catchment_data_dataframe(huc,id,date_start,date_end,forcing_dataset,ens_method)
 
   prec<<-catch_data$prec
   temp<<-(catch_data$temp_min+catch_data$temp_max)/2
@@ -22,14 +26,9 @@ get_catchment_data_arrays<-function(huc,id,date_start,date_end,forcing_dataset='
 
 ### RETURN DATA FOR DESIRED CATCHMENT INTO A SINGLE DATAFRAME (with columns prec, temp, etc)
 ### AND SAVE DAY AS GLOBAL ARRAY
-### ALSO SAVE missing_days_sim, prop_na_obs, prop_est_obs AS GLOBAL ARRAY (the last two correspond to the poportion of NA and estimate values in discharge measurments
-### between the beginning and the end of the streamflow reccord, i.e. NA values added at the beginning and end of the time series if it's too short are negelected)
 
 get_catchment_data_dataframe<-function(huc,id,date_start='19801001',date_end='20080930',
                                        forcing_dataset='daymet',ens_method='best'){
-
-  # ARGUMENTS
-  # ens_method: should the SAC runs be averages ('mean') or should only the best one be used ('best')?
 
   # IMPORT FORCING DATA
   if(forcing_dataset=='daymet'){
@@ -80,14 +79,13 @@ get_catchment_data_dataframe<-function(huc,id,date_start='19801001',date_end='20
   if(sum(streamflow_table$QC_FLAG=='M')!=sum(is.na(streamflow_table$Q))){stop('Inconsistency between number of M flags and number of -999 values')}
 
   # determine the actual start and end date of the streamflow observations - the first day and last day which are not NA
-  # q_obs_na<-is.na(streamflow_table$Q)
-  # i_qobs_start<-min(which(!q_obs_na))
-  # i_qobs_end<-max(which(!q_obs_na))
+  q_obs_na<-is.na(streamflow_table$Q)
+  i_qobs_start<-min(which(!q_obs_na))
+  i_qobs_end<-max(which(!q_obs_na))
+  start_discharge_record<<-t_streamflow[i_qobs_start]
+  end_discharge_record<<-t_streamflow[i_qobs_end]
 
-  # trim observed discharge time series
-  # streamflow_table<-streamflow_table[i_qobs_start:i_qobs_end,]
-  # t_streamflow<-t_streamflow[i_qobs_start:i_qobs_end]
-
+  # proportion of NA and estimated values
   prop_na_q_obs<<-round(sum(streamflow_table$QC_FLAG=='M')/length(t_streamflow),2)
   prop_est_q_obs<<-round(sum(streamflow_table$QC_FLAG=='A:e')/length(t_streamflow),2)
 
@@ -97,7 +95,7 @@ get_catchment_data_dataframe<-function(huc,id,date_start='19801001',date_end='20
   #  streamflow<-streamflow*3600*24*1000/(gauge_table$area_usgs_km2[gauge_table$gage_id==id]*1E6) # convert m^3/sec to mm/day
   #  streamflow<-streamflow*3600*24*1000/(camels_topo$area_gages2[camels_name$gauge_id==id]*1E6) # convert m^3/sec to mm/day
 
-  # IMPORT ET AND PET FROM SACRAMENTO OUTPUT - COMPUTE MEAN ACCROSS TEN MEMBERS
+  # IMPORT ET AND PET FROM SACRAMENTO OUTPUT
   output_hydro_files<-system(paste('ls ',dir_basin_dataset,'model_output/flow_timeseries/',forcing_dataset,'/',huc,'/',id,'_??_model_output.txt',sep=''),intern = TRUE)
 
   if(length(output_hydro_files)!=10){stop('Unexpected number of hydrological output files')}
@@ -131,6 +129,9 @@ get_catchment_data_dataframe<-function(huc,id,date_start='19801001',date_end='20
     }
   }
 
+  start_hydro_sim<<-t_hydro_sim[1]
+  end_hydro_sim<<-t_hydro_sim[length(t_hydro_sim)]
+
   if(ens_method=='mean'){
 
       et<-rowMeans(et_ens)
@@ -150,7 +151,7 @@ get_catchment_data_dataframe<-function(huc,id,date_start='19801001',date_end='20
 
     sac_rmse<-apply(q_sim_sac_ens[cal_period,],2,compute_rmse,obs=q_obs_sac[cal_period])
     sac_nse<-apply(q_sim_sac_ens[cal_period,],2,compute_nse,obs=q_obs_sac[cal_period])
-    best_ps_rmse<-which.min(sac_rmse) # find best parameter set
+    best_ps_rmse<-which.min(sac_rmse) # find index of best parameter set
 
     et<-et_ens[best_ps_rmse,]
     pet<-pet_ens[best_ps_rmse,]
@@ -188,7 +189,6 @@ get_catchment_data_dataframe<-function(huc,id,date_start='19801001',date_end='20
       q_obs_sac<-q_obs_sac[-i_20081231[2]]
 
     }
-
   }
 
   if(any(diff(t_hydro_sim)!=1)){
@@ -198,10 +198,9 @@ get_catchment_data_dataframe<-function(huc,id,date_start='19801001',date_end='20
   }
 
   ### EXTRACT DESIRED PERIOD FROM EACH TIME SERIES AND SAVE DAY AS GLOBAL ARRAY
-
   t_input<<-seq(as.Date(date_start,'%Y%m%d'),as.Date(date_end,'%Y%m%d'),by='day')
 
-  ### TRIM FORCING DATA
+  ### FORCING: TRIM DATA IF NECESSARY
 
   if(min(t_forcing)<=min(t_input)&max(t_forcing)>=max(t_input)){
 
@@ -239,12 +238,6 @@ get_catchment_data_dataframe<-function(huc,id,date_start='19801001',date_end='20
 
   # check consistence of q_obs and sac_q_obs
   # if(any(abs(q_obs_sac-streamflow)>1,na.rm=TRUE)){stop('q_obs_sac and streamflow do not match')}
-
-  # i_max_error<-which.max(q_obs_sac-streamflow)
-  # half_window<-50
-  # plot(streamflow[i_max_error+(-half_window:half_window)],type='l')
-  # lines(q_obs_sac[i_max_error+(-half_window:half_window)],type='l',col='orange')
-  # lines(q_sim_sac[i_max_error+(-half_window:half_window)],type='l',col='blue')
 
   # create table with all data
   output_table<-data.frame(date=format(t_input,'%Y%m%d'),
