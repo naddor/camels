@@ -142,14 +142,11 @@ camels_clim$lp_timing<-as.factor(camels_clim$lp_timing)
 camels_clim$gauge_id<-as.factor(camels_clim$gauge_id)
 
 # SAVE
-save(camels_clim,file=paste(dir_camels_attr,'camels_clim.Rdata',sep=''))
 write.table(camels_clim,file=paste(dir_camels_attr,'camels_clim.txt',sep=''),
             row.names=FALSE,quote=FALSE,sep=';')
 
-save(camels_hydro_obs,file=paste(dir_camels_attr,'camels_hydro_obs.Rdata',sep=''))
-write.table(camels_hydro_obs,file=paste(dir_camels_attr,'camels_hydro_obs.txt',sep=''),
+write.table(camels_hydro_obs,file=paste(dir_camels_attr,'camels_hydro.txt',sep=''),
             row.names=FALSE,quote=FALSE,sep=';')
 
-save(camels_hydro_sac,file=paste(dir_camels_attr,'camels_hydro_sac.Rdata',sep=''))
 write.table(camels_hydro_sac,file=paste(dir_camels_attr,'camels_hydro_sac.txt',sep=''),
             row.names=FALSE,quote=FALSE,sep=';')
