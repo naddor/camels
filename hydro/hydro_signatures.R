@@ -373,9 +373,9 @@ compute_hfd_mean_sd<-function(q,d,tol=0.05){
         }
     })
 
-  if(any(hfd<0|hfd>365,na.rm=TRUE)){
+  if(any(hfd<0|hfd>366,na.rm=TRUE)){
 
-    stop(paste('Unexpected value half flow date value:',hfd))
+    stop(paste('Unexpected value half flow date value:',hfd[hfd<0|hfd>366]))
 
   }
 
