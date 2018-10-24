@@ -127,13 +127,12 @@ for(i in 1:dim(camels_name)[1]){
   hydro_signatures_misc_obs<-compute_hydro_signatures_misc(q=q_obs,d=day,thres=0,tol=tol_na)
   hydro_signatures_misc_sac<-compute_hydro_signatures_misc(q=q_sim_sac,d=day,thres=0,tol=tol_na)
 
-  camels_hydro_obs[i,'no_flow']<-hydro_signatures_misc_obs$no_flow
-  camels_hydro_obs[i,'hfd_mean']<-hydro_signatures_misc_obs$hfd_mean
-  camels_hydro_obs[i,'hfd_sd']<-hydro_signatures_misc_obs$hfd_sd
+  for (n in names(hydro_signatures_misc_obs)){
 
-  camels_hydro_sac[i,'no_flow']<-hydro_signatures_misc_sac$no_flow
-  camels_hydro_sac[i,'hfd_mean']<-hydro_signatures_misc_sac$hfd_mean
-  camels_hydro_sac[i,'hfd_sd']<-hydro_signatures_misc_sac$hfd_sd
+    camels_hydro_obs[i,n]<-hydro_signatures_misc_obs[n]
+    camels_hydro_sac[i,n]<-hydro_signatures_misc_sac[n]
+
+  }
 
 }
 
