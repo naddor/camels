@@ -316,11 +316,11 @@ compute_rece_constant<-function(q,d,hyearstart=10,peak_level=0.9,
   # Estimation and Prediction. Operational Hydrology Report No. 50,
   # WMO-No. 1029, 136p.
 
-  q_dat<-data.frame(flow=q,day=as.numeric(format(d,'%d')),month=as.numeric(format(d,'%m')),year=format(d,'%Y'))
-  lf_dat<-createlfobj(q_dat,hyearstart=hyearstart)
+  # q_dat<-data.frame(flow=q,day=as.numeric(format(d,'%d')),month=as.numeric(format(d,'%m')),year=format(d,'%Y'))
+  # lf_dat<-createlfobj(q_dat,hyearstart=hyearstart)
 
   # lfnacheck(lf_dat) # check for missing values
-  avail_dat<-rowSums(is.na(lf_dat[,c('baseflow','flow')]))==0
+  # avail_dat<-rowSums(is.na(lf_dat[,c('baseflow','flow')]))==0
 
   # choose peaklevel
   # recessionplot(lf_dat,peaklevel=peak_level,start=plot_start,end=plot_end)
@@ -330,11 +330,11 @@ compute_rece_constant<-function(q,d,hyearstart=10,peak_level=0.9,
   #            plotMRC=FALSE,seglen = 7,threshold = 70,
   #            na.rm=TRUE)
 
-  C<-recession(lf_dat[avail_dat],method = "MRC",peaklevel=peak_level,
-               plotMRC=FALSE,seglen = 7,threshold = 70,
-               na.rm=TRUE)
+  # C<-recession(lf_dat[avail_dat],method = "MRC",peaklevel=peak_level,
+  #             plotMRC=FALSE,seglen = 7,threshold = 70,
+  #              na.rm=TRUE)
 
-  k[1,'kbf_wmo']<-1/C
+  # k[1,'kbf_wmo']<-1/C
 
   # legend('bottomright',paste('K=',round(k[1,'wmo'],2)))
 
@@ -436,10 +436,9 @@ compute_rece_constant<-function(q,d,hyearstart=10,peak_level=0.9,
   }
 
   # Extract BFI
-  summary(lf_dat)
-  bfi_wmo<-sum(lf_dat$baseflow[avail_dat])/sum(lf_dat$flow[avail_dat])
-
-  k[1,'bfi_wmo']<-bfi_wmo
+  # summary(lf_dat)
+  # bfi_wmo<-sum(lf_dat$baseflow[avail_dat])/sum(lf_dat$flow[avail_dat])
+  #  k[1,'bfi_wmo']<-bfi_wmo
 
   return(k)
 
