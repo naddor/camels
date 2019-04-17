@@ -8,10 +8,10 @@ colnames(gauge_table)<-c('huc_02','gage_id','gage_name','gage_lat','gage_lon','a
 ### LOAD DATA FOR DESIRED CATCHMENT INTO INDIVIDUAL ARRAYS (prec, temp, etc)
 
 get_catchment_data_arrays<-function(huc,id,date_start,date_end,
-                                    forcing_dataset='daymet',ens_method='best'){
+                                    forcing_dataset='daymet',ens_method='mean'){
 
   # ARGUMENTS
-  # ens_method: should the SAC runs be averages ('mean') or should only the best one be used ('best')?
+  # ens_method: should the SAC runs be averaged ('mean') or should only the best one be used ('best')?
 
   catch_data<-get_catchment_data_dataframe(huc,id,date_start,date_end,forcing_dataset,ens_method)
 
@@ -28,7 +28,7 @@ get_catchment_data_arrays<-function(huc,id,date_start,date_end,
 ### AND SAVE DAY AS GLOBAL ARRAY
 
 get_catchment_data_dataframe<-function(huc,id,date_start='19801001',date_end='20080930',
-                                       forcing_dataset='daymet',ens_method='best'){
+                                       forcing_dataset='daymet',ens_method='mean'){
 
   # IMPORT FORCING DATA
   if(forcing_dataset=='daymet'){
