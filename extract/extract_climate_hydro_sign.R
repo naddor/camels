@@ -38,7 +38,7 @@ for(i in 1:dim(camels_name)[1]){
 
   ### IMPORT FORCING DATA, OBS AND SIM DISCHARGE AND COLLECT METADATA
   get_catchment_data_arrays(huc=camels_name$huc_02[i],id=camels_name$gauge_id[i],
-                            date_start=format(dataset_start,'%Y%m%d'),date_end=format(dataset_end,'%Y%m%d'),
+                            date_start=start_date_indices,date_end=end_date_indices,
                             forcing_dataset='daymet',ens_method='best')
 
   ### COMPUTE CLIMATE SIGNATURES

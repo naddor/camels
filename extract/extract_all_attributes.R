@@ -27,10 +27,6 @@ if(!dir.exists(dir_camels_attr)){
   dir.create(dir_camels_attr_temp)
 }
 
-# LOAD FUNCTIONS
-#source(paste(dir_r_scripts,'camels/maps/plot_maps_camels.R',sep=''))  # for maps
-#source(paste(dir_r_scripts,'camels/time/time_tools.R',sep=''))  # for maps
-
 # DEFINE DATA SET ATTRBIUTES
 # V1.2 of the time series: Updated Daymet and NLDAS basin mean forcing through 12/31/2014 for all basins.
 # V1.2 of the time series: Updated Daymet and NLDAS Snow-17/SAC model output through 12/31/2014 (or end of observed record) for all basins.
