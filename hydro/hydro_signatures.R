@@ -11,14 +11,13 @@ compute_hydro_signatures_sawicz<-function(q,p,t,d,tol=0.05){
 
   r_qp<-comp_r_qp(q,p,tol)
   s_fdc<-comp_s_fdc(q,tol)
-  s_fdc_log<-comp_s_fdc_log(q,tol)
   i_bf<-comp_i_bf_landson(q)
   e_qp<-comp_e_qp(q,p,d,tol)
   r_sd<-comp_r_sd(t,p,tol)
 
   # r_ld<-comp_r_ld(q,tol) # commented out because takes a while to run
 
-  return(data.frame(r_qp=r_qp,s_fdc=s_fdc,s_fdc_log=s_fdc_log,i_bf=i_bf,e_qp,r_sd))
+  return(data.frame(r_qp=r_qp,s_fdc,i_bf=i_bf,e_qp,r_sd))
 
 }
 
@@ -47,57 +46,67 @@ comp_r_qp<-function(q,p,tol=0.05){
 
 # II. Slope of FDC in log space between 33rd and 66th percentile
 
-comp_s_fdc_log<-function(q,tol=0.05){
-
-  # input variables
-  # q: discharge time series
-  # tol: tolerated proportion of NA values in time series
-
-  avail_data<-find_avail_data_array(q,tol) # time steps for which obs and sim are available
-
-  q33<-as.numeric(quantile(q[avail_data],0.33,na.rm=TRUE)) # use empirical quantiles
-  q66<-as.numeric(quantile(q[avail_data],0.66,na.rm=TRUE))
-
-  # plot FDC
-  quant<-seq(0,1,0.001)
-  fdc<-rev(as.numeric(quantile(q[avail_data],quant,na.rm=TRUE))) # rev because probability of exceedance
-  #plot(quant,fdc,log='y',ylab='Discharge [mm/day]',xlab='Probability of exceedance',type='l')
-
-  i33<-which(quant==0.33)
-  i66<-which(quant==0.66)
-
-  #points(quant[c(i33,i66)],fdc[c(i33,i66)],col='orange',pch=1)
-
-  if(q33==0|is.na(q33)){ # if more than a thrid of data are 0, log(q33) can't be computed
-
-    return(NA)
-
-  }else{
-
-    s_fdc<-(log(q66)-log(q33))/(0.66-0.33)
-
-    return(s_fdc)
-
-  }
-
-}
-
 comp_s_fdc<-function(q,tol=0.05){
 
   # input variables
   # q: discharge time series
   # tol: tolerated proportion of NA values in time series
 
-  avail_data<-find_avail_data_array(q,tol) # time steps for which obs and sim are available
+  # time for which obs are available this also set the whole timeseries
+  # as unavailable is the proportion of NA values is greater than tol
+  avail_data<-find_avail_data_array(q,tol)
 
-  q33<-as.numeric(quantile(q[avail_data],0.33,na.rm=TRUE)) # use empirical quantiles
-  q66<-as.numeric(quantile(q[avail_data],0.66,na.rm=TRUE))
-  qmean<-mean(q[avail_data],na.rm=TRUE)
+  if(any(!is.na(avail_data))){
 
-  s_fdc<-(q66-q33)/(qmean*(0.66-0.33)) # slope of normalized
+    # define quantiles for the FDC
+    quant<-seq(0,1,0.001)
+    fdc<-as.numeric(rev(quantile(q[avail_data],quant))) # rev because probability of exceedance
 
-  return(s_fdc)
+    # retrieve Q33 and Q66
+    q33<-fdc[quant==0.33] # flow exceeded 33% of the time
+    q66<-fdc[quant==0.66] # flow exceeded 66% of the time
+    q_med<-fdc[quant==0.50] # median flow
+    q_mean<-mean(q[avail_data])
 
+    # plot FDC
+    # plot(quant,fdc,log='y',ylab='Discharge [mm/day]',xlab='Percentage time flow is exceeded',type='l')
+    # points(c(0.33,0.66),c(q33,q66),col='red',pch=16)
+
+    if(q66!=0&!is.na(q66)){ # if more than a third of values are 0, log(q66) can't be computed
+
+      # Sawicz et al 2011, Eq. 3: 10.5194/hess-15-2895-2011
+      # "the slope of the FDC is calculated between the 33rd and 66th streamflow percentiles,
+      # since at semi-log scale this represents a relatively linear part of the FDC"
+      sfdc_sawicz_2011<-(log(q33)-log(q66))/(0.66-0.33)
+
+      # Yadav et al 2007, Table 3: 10.1016/j.advwatres.2007.01.005
+      # "Slope of part of curve between the 33% and 66% flow exceedance values of streamflow normalized by their means"
+      # Also used by Westerberg and McMillan 2015, Table 2: 10.5194/hess-19-3951-2015
+      # "Slope of the FDC between the 33 and 66% exceedance values of streamflow normalised by its mean (Yadav et al., 2007)"
+      sfdc_yadav_2007<-(q33/q_mean-q66/q_mean)/(0.66-0.33)
+
+      # McMillan et al 2017, see text and Figure 1b: 10.1002/hyp.11300
+      # "slope in the interval 0.33 to 0.66, in log space, normalised by median flow"
+      sfdc_mcmillan_2017<-(log(q33/q_med)-log(q66/q_med))/(0.66-0.33)
+
+      # Addor et al 2017: in this paper, standard quantiles (i.e. corresponding to probability of non-exceedence)
+      # were used, leading to estimates slightly different from those obtained following Sawzic et al. 2011
+      q33_quant<-as.numeric(quantile(q[avail_data],0.33)) # corresponds to flow exceeded 67% (100-33%) of the time
+      q66_quant<-as.numeric(quantile(q[avail_data],0.66)) # corresponds to flow exceeded 34% (100-66%) of the time
+      sfdc_addor_2017<-(log(q66_quant)-log(q33_quant))/(0.66-0.33)
+
+    }
+
+  } else { 
+
+    sfdc_sawicz_2011<-NA
+    sfdc_yadav_2007<-NA # could be computed, but the Q33-Q66 section is quite curved, so computing a slope is inadequate
+    sfdc_mcmillan_2017<-NA
+    sfdc_addor_2017<-NA
+
+  }
+
+  return(data.frame(sfdc_yadav_2007,sfdc_sawicz_2011,sfdc_mcmillan_2017,sfdc_addor_2017))
 
 }
 
@@ -247,32 +256,177 @@ compute_q_mean<-function(q,d,tol=0.05){
 
   avail_data<-find_avail_data_array(q,tol)
 
+  q_mean_yea<-NA
+  q_mean_djf<-NA
+  q_mean_jja<-NA
+
   if(any(!is.na(avail_data))){
 
-      sea<-month2sea(format(d[avail_data],'%m')) # determine season
-      table_sea<-table(sea)
+    q_mean_yea<-mean(q[avail_data])
 
-      if(abs(table_sea[['djf']]-table_sea[['jja']])>0.05*table_sea[['djf']]){
-        stop('Seasonal discharge cannot be computed because number of days in DJF and JJA differ significantly')
-      }
+    sea<-month2sea(format(d[avail_data],'%m')) # determine season
+    table_sea<-table(sea)
+
+    # if the number of days in DJF and JJA do not differ significantly
+    if(abs(table_sea[['djf']]-table_sea[['jja']])<0.05*table_sea[['djf']]){
 
       q_sea<-rapply(split(q[avail_data],sea),mean)
 
-      q_mean_yea<-mean(q[avail_data])
       q_mean_djf<-q_sea['djf']
       q_mean_jja<-q_sea['jja']
 
-  } else {
-
-    q_mean_yea<-NA
-    q_mean_djf<-NA
-    q_mean_jja<-NA
-
+    }
   }
 
   q_mean<-data.frame(q_mean_yea,q_mean_djf,q_mean_jja,row.names='')
 
   return(q_mean)
+
+}
+
+
+# Baseflow recession constant (k), defined as the rate of base flow decay
+
+require(lfstat)
+
+compute_rece_constant<-function(q,d,hyearstart=10,peak_level=0.9,
+                                plot_start=2000,plot_end=2002,tol=0.05){
+
+  # hyearstart: start of the hydrological year, 10 for October
+
+  k<-data.frame() # to store the seveal k estimates
+  #par(mfcol=c(2,3))
+
+  # WMO method
+  # Gustard, A. & Demuth, S. (2009) (Eds) Manual on Low-flow
+  # Estimation and Prediction. Operational Hydrology Report No. 50,
+  # WMO-No. 1029, 136p.
+
+  # q_dat<-data.frame(flow=q,day=as.numeric(format(d,'%d')),month=as.numeric(format(d,'%m')),year=format(d,'%Y'))
+  # lf_dat<-createlfobj(q_dat,hyearstart=hyearstart)
+
+  # lfnacheck(lf_dat) # check for missing values
+  # avail_dat<-rowSums(is.na(lf_dat[,c('baseflow','flow')]))==0
+
+  # choose peaklevel
+  # recessionplot(lf_dat,peaklevel=peak_level,start=plot_start,end=plot_end)
+
+  # returns an error even if na.rm=TRUE
+  # C<-recession(lf_dat,method = "MRC",peaklevel=peak_level,
+  #            plotMRC=FALSE,seglen = 7,threshold = 70,
+  #            na.rm=TRUE)
+
+  # C<-recession(lf_dat[avail_dat],method = "MRC",peaklevel=peak_level,
+  #             plotMRC=FALSE,seglen = 7,threshold = 70,
+  #              na.rm=TRUE)
+
+  # k[1,'kbf_wmo']<-1/C
+
+  # legend('bottomright',paste('K=',round(k[1,'wmo'],2)))
+
+  # Van Dick
+  # Van Dijk, A. I. J. M.: Climate and terrain factors explaining streamflow response and
+  # recession in Australian catchments, Hydrol. Earth Syst. Sci., 14(1), 159–169,
+  # doi:10.5194/hess-14-159-2010, 2010.
+
+  # "all days showing an increase in Q from the previous day were considered
+  # to mark the start of a quick flow event"
+  i_quickflow<-which(c(0,diff(q))>=0)
+
+  for(tqf in c(5,10)){ # number of days to exclude after each peak flow event
+
+    # "all these days as well as the TQF days afterwards each of these events
+    # were excluded from the analysis"
+
+    q_sel<-q # discharge on days considered to be part of the recession
+
+    for(i in i_quickflow){
+
+      q_sel[i+(0:tqf)]<-NA # remove peak day from analysis and following tqf days
+
+    }
+
+    q_sel<-q_sel[1:length(q)] # remove extra days potentialy added by for loop
+    q_sel[q_sel==0]<-NA       # remove days with no discharge
+
+    # check recession
+    # i_start<-min(which(lf_dat$hyear==plot_start))
+    # i_end<-max(which(lf_dat$hyear==plot_end))
+
+    # plot(d[i_start:i_end],q[i_start:i_end],type='l',xlab='')
+    # lines(d,q_sel,type='l',col='orange',lwd=2)
+
+    q_t0<-q_sel[-length(q_sel)]
+    q_t1<-q_sel[-1]
+
+    if(any(q_t1>q_t0,na.rm=TRUE)){
+
+      stop('Increase in the recession')
+
+    }
+
+    n_pairs<-sum(rowSums(is.na(cbind(q_t0,q_t1)))==0) # number of complete pairs
+
+    if(n_pairs<50){
+
+      k[1,paste0('kbf_van_dick_',tqf,'_opt')]<-NA
+      k[1,paste0('kbf_van_dick_',tqf,'_lm')]<-NA
+
+    } else {
+
+      # Use two methods to estimate k
+
+      # Meth. 1: minimize Eq. 6 in Van Dick et al, 10.5194/hess-14-159-2010
+      find_k<-function(k,q_t0,q_t1){
+
+        q_t1_est<-q_t0*exp(-k)
+
+        e<-sum(abs(q_t1_est/q_t1-1),na.rm=TRUE)/n_pairs
+
+        return(e)
+
+      }
+
+      k_opt<-optimize(find_k,q_t0=q_t0,q_t1=q_t1,interval=c(0,1),maximum=FALSE)
+
+      k[1,paste0('kbf_van_dick_',tqf,'_opt')]<-k_opt$minimum
+
+      # Meth. 2: use a linear regression
+      lm_coeff<-lm(q_t1~q_t0)$coefficients
+      if(abs(lm_coeff[1])>0.1){
+        warning(paste('abs(Intercept) > 0.1:',lm_coeff[1]))
+      }
+
+      k[1,paste0('kbf_van_dick_',tqf,'_lm')]<-(-log(as.numeric(lm_coeff[2])))
+
+      #plot(q_t0,q_t1)
+      #legend('bottomright',paste('N=',n_pairs,'K=',round(k[1,paste0('van_dick_',tqf)],2)))
+
+      # Extract alpha and beta
+      y_ln<-log(q_t0-q_t1)
+      x_ln<-log((q_t0+q_t1)/2)
+
+      if(any(y_ln==-Inf,na.rm=TRUE)){
+
+        stop('No decrease in recession')
+
+      } else{
+
+        lm_alpha_beta<-lm(y_ln~x_ln)$coefficients
+
+        k[1,paste0('kbf_alpha_',tqf)]<-exp(lm_alpha_beta['(Intercept)'])
+        k[1,paste0('kbf_beta_',tqf)]<-lm_alpha_beta['x_ln']
+
+      }
+    }
+  }
+
+  # Extract BFI
+  # summary(lf_dat)
+  # bfi_wmo<-sum(lf_dat$baseflow[avail_dat])/sum(lf_dat$flow[avail_dat])
+  #  k[1,'bfi_wmo']<-bfi_wmo
+
+  return(k)
 
 }
 
@@ -309,8 +463,9 @@ compute_hydro_signatures_misc<-function(q,d,thres=0,tol=0.05){
 
   no_flow<-compute_no_flow(q,thres,tol)
   hfd<-compute_hfd_mean_sd(q,d,tol)
+  k<-compute_rece_constant(q,d,tol=tol)
 
-  return(data.frame(no_flow,hfd))
+  return(data.frame(no_flow,hfd,k))
 
 }
 
@@ -351,9 +506,9 @@ compute_hfd_mean_sd<-function(q,d,tol=0.05){
         }
     })
 
-  if(any(hfd<0|hfd>365,na.rm=TRUE)){
+  if(any(hfd<0|hfd>366,na.rm=TRUE)){
 
-    stop(paste('Unexpected value half flow date value:',hfd))
+    stop(paste('Unexpected value half flow date value:',hfd[hfd<0|hfd>366]))
 
   }
 
