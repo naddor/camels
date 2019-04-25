@@ -68,59 +68,45 @@ comp_s_fdc<-function(q,tol=0.05){
     q_med<-fdc[quant==0.50] # median flow
     q_mean<-mean(q[avail_data])
 
-    # use empirical quantiles
-    q33_quant<-as.numeric(quantile(q[avail_data],0.33)) # flow exceeded 67% (100-33%) of the time
-    q66_quant<-as.numeric(quantile(q[avail_data],0.66)) # flow exceeded 34% (100-66%)) of the time
-
     # plot FDC
     # plot(quant,fdc,log='y',ylab='Discharge [mm/day]',xlab='Percentage time flow is exceeded',type='l')
     # points(c(0.33,0.66),c(q33,q66),col='red',pch=16)
 
-    if(q66!=0&!is.na(q66)){ # if more than a thrid of data are 0, log(q66) can't be computed
+    if(q66!=0&!is.na(q66)){ # if more than a third of values are 0, log(q66) can't be computed
 
-      # Sawicz et al 2010:, Eq. 3: 10.5194/hess-15-2895-2011
+      # Sawicz et al 2011, Eq. 3: 10.5194/hess-15-2895-2011
       # "the slope of the FDC is calculated between the 33rd and 66th streamflow percentiles,
       # since at semi-log scale this represents a relatively linear part of the FDC"
-      sfdc_sawicz_2010<-(log(q33)-log(q66))/(0.66-0.33)
+      sfdc_sawicz_2011<-(log(q33)-log(q66))/(0.66-0.33)
 
       # Yadav et al 2007, Table 3: 10.1016/j.advwatres.2007.01.005
-      # Westerberg and McMillan 2015, Table 2: 10.5194/hess-19-3951-2015
-      # "Slope of the FDC between the 33 and 66% exceedance values of streamflow normalised by its mean"
+      # "Slope of part of curve between the 33% and 66% flow exceedance values of streamflow normalized by their means"
+      # Also used by Westerberg and McMillan 2015, Table 2: 10.5194/hess-19-3951-2015
+      # "Slope of the FDC between the 33 and 66% exceedance values of streamflow normalised by its mean (Yadav et al., 2007)"
       sfdc_yadav_2007<-(q33/q_mean-q66/q_mean)/(0.66-0.33)
 
-      # McMillan et al 2017: see text and Figure 1b: 10.1002/hyp.11300
+      # McMillan et al 2017, see text and Figure 1b: 10.1002/hyp.11300
       # "slope in the interval 0.33 to 0.66, in log space, normalised by median flow"
       sfdc_mcmillan_2017<-(log(q33/q_med)-log(q66/q_med))/(0.66-0.33)
 
-    } else {
-
-      sfdc_sawicz_2010<-NA
-      sfdc_yadav_2007<-NA # could be computed, but the Q33-Q66 section is not very curved, so computing a slope is inadequate
-      sfdc_mcmillan_2017<-NA
-
-    }
-
-    if(q66!=0&!is.na(q66)){
-
-      # Addor et al 2017
+      # Addor et al 2017: in this paper, standard quantiles (i.e. corresponding to probability of non-exceedence)
+      # were used, leading to estimates slightly different from those obtained following Sawzic et al. 2011
+      q33_quant<-as.numeric(quantile(q[avail_data],0.33)) # corresponds to flow exceeded 67% (100-33%) of the time
+      q66_quant<-as.numeric(quantile(q[avail_data],0.66)) # corresponds to flow exceeded 34% (100-66%) of the time
       sfdc_addor_2017<-(log(q66_quant)-log(q33_quant))/(0.66-0.33)
 
-    }else{
-
-      sfdc_addor_2017<-NA
-
     }
 
-  } else { # the whole time series is considered as unavailable
+  } else { 
 
-    sfdc_sawicz_2010<-NA
-    sfdc_yadav_2007<-NA # could be computed, but the Q33-Q66 section is not very curved, so computing a slope is inadequate
+    sfdc_sawicz_2011<-NA
+    sfdc_yadav_2007<-NA # could be computed, but the Q33-Q66 section is quite curved, so computing a slope is inadequate
     sfdc_mcmillan_2017<-NA
     sfdc_addor_2017<-NA
 
   }
 
-  return(data.frame(sfdc_yadav_2007,sfdc_sawicz_2010,sfdc_mcmillan_2017,sfdc_addor_2017))
+  return(data.frame(sfdc_yadav_2007,sfdc_sawicz_2011,sfdc_mcmillan_2017,sfdc_addor_2017))
 
 }
 
