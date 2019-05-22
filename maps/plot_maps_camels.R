@@ -7,7 +7,7 @@ plot_map_catch_attr<-function(dat,c2p,n_classes=6,col_scheme='RdYlBu',col_rev=FA
   # dat: data as data.frame
   # c2p: columns to use for plotting
 
-  if(colnames(dat)[1]!='gage_id'){stop('First column of dat must be gage_id')}
+  if(colnames(dat)[1]!='gauge_id'){stop('First column of dat must be gauge_id')}
   if(!length(col_scheme)%in%c(1,length(c2p))){stop('col_scheme must have either 1 or length(c2p) elements')}
   if(!length(b_round)%in%c(1,length(c2p))){stop('b_round must have either 1 or length(c2p) elements')}
   if(!length(col_rev)%in%c(1,length(c2p))){stop('col_rev must have either 1 or length(c2p) elements')}
@@ -53,7 +53,7 @@ plot_points_us_basins<-function(dat,n_classes=6,col_scheme='RdYlBu',col_rev=FALS
                                 set_breaks=FALSE,breaks=NA){
 
   # input variables:
-  # dat: matrix with two columns: catchment id (must be named 'gage_id') and variable to plot
+  # dat: matrix with two columns: catchment id (must be named 'gauge_id') and variable to plot
   # n_classes: number of color classes (even number suggested)
   # col_scheme: http://colorbrewer2.org/ color scheme - RdYlBu: red to blue - BrBG: green to brown - PRGn: purple to green
   # col_rev: reverse the color scheme?
@@ -62,17 +62,17 @@ plot_points_us_basins<-function(dat,n_classes=6,col_scheme='RdYlBu',col_rev=FALS
   # text_legend: text to add above the color bar
   # qual: is the information qualitative (e.g. vegetation classes)
 
-  if(!exists('catch_topo')){
+  if(!exists('camels_topo')){
 
-    load(paste(dir_catch_attr,'catch_topo.Rdata',sep=''))
+    load(paste(dir_catch_attr,'camels_topo.Rdata',sep=''))
 
   }
 
-  dat2plot<-merge(dat,catch_topo,by='gage_id')
+  dat2plot<-merge(dat,camels_topo,by='gauge_id')
 
-  if(dim(dat2plot)[1]==0){stop('Merge with topo failed, check gage_id')}
+  if(dim(dat2plot)[1]==0){stop('Merge with topo failed, check gauge_id')}
 
-  plot_points_us(x=dat2plot$gage_lon,y=dat2plot$gage_lat,z=dat2plot[,2],n_classes,col_scheme,col_rev,color_bar,subplot_hist,
+  plot_points_us(x=dat2plot$gauge_lon,y=dat2plot$gauge_lat,z=dat2plot[,2],n_classes,col_scheme,col_rev,color_bar,subplot_hist,
                  col_trans,b_round,text_legend,cex,pch,qual,force_zero_center,force_n_classes,set_breaks,breaks)
 
 }
@@ -297,11 +297,11 @@ plot_points_us<-function(x,y,z,n_classes=6,col_scheme='RdYlBu',col_rev=FALSE,col
    }
 
   # reset layout
-  layout(1,heights=1,widths=1)
+  # layout(1,heights=1,widths=1) # commented to use layout in another part of the script
 
 }
 
-# plot horizontal or verstical color bar 
+# plot horizontal or verstical color bar
 
 plot.legend.na<-function (col, breaks, vert=TRUE, density = NULL, angle = 45, slwd = par("lwd"), cex.leg = 1) {
 
