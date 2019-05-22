@@ -263,7 +263,6 @@ compute_q_mean<-function(q,d,tol=0.05){
   if(any(!is.na(avail_data))){
 
     q_mean_yea<-mean(q[avail_data])
-
     sea<-month2sea(format(d[avail_data],'%m')) # determine season
     table_sea<-table(sea)
 

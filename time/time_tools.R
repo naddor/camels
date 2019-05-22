@@ -2,7 +2,7 @@
 get_hydro_year<-function(d){
 
   # input variable:
-  # d:  array of dates of class Date
+  # d: array of dates of class Date
 
   if(class(d)!='Date'){stop('d should be of class Date - use as.Date')}
 
