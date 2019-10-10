@@ -1,5 +1,18 @@
+# This document contains R functions to compute streamflow indices (also referred to as hydrological signatures).
+# These functions have been used and are still used to produce the CAMELS datasets. The wrapper
+# compute_hydro_signatures_camels enables the computation of the signatures selected for the original CAMELS paper
+# (Addor et al., 2017, HESS).
 
-# DEFAULT HYDROLOGICAL SIGNATURES FOR CAMELS
+# For some signatures, several formulations have been implemented and the resulting estimates are returned as a # data.frame. Alternative formulations can be added. The objective is to assess the sensitvity of the results to
+# the formulation of the hydrological signatures.
+
+# Load functions or packages
+source(paste(dir_r_scripts,'camels/time/time_tools.R',sep='')) # for month2sea
+source('https://raw.github.com/TonyLadson/BaseflowSeparation_LyneHollick/master/BFI.R') # for baseflow index
+require(lfstat) # for baseflow index
+
+# Wrapper to compute the Addor et al. (2017) hydrological signatures at once
+
 # q_mean         - Mean daily discharge
 # runoff_ratio   - Runoff ratio (ratio of mean daily discharge to mean daily precipitation)
 # stream_elas    - Streamflow precipitation elasticity (sensitivity of streamflow to changes in precipitation at the annual time scale)
@@ -14,36 +27,32 @@
 # low_q_dur      - Average duration of low-flow events (number of consecutive days <0.2 times the mean daily flow)
 # zero_q_freq    - Frequency of days with Q = 0 mm/day
 
-# Load functions or packages
-source(paste(dir_r_scripts,'camels/time/time_tools.R',sep='')) # for month2sea
-
-# Wrapper to compute all CAMELS hydrological signatures at once
-
-compute_hydro_signatures_camels<-function(q,p,t,d,tol){
+compute_hydro_signatures_camels<-function(q,p,d,tol){
 
   qxx<-compute_qXX(q,thres=c(0.05,0.95),tol)
   hf_stats<-compute_hf_freq_dur(q,d,tol)
   lf_stats<-compute_lf_freq_dur(q,d,tol)
-  
-  return(data.frame(q_mean         = compute_q_mean(q,d,tol)$yea,
+  bfi<-comp_i_bf(q,d,alpha=0.925,passes=3,tol)
+
+  return(data.frame(q_mean         = compute_q_mean(q,d,tol)$q_mean_yea,
                     runoff_ratio   = comp_r_qp(q,p,tol),
-                    stream_elas    = comp_e_qp(q,p,d,tol),
-                    slope_fdc      = comp_s_fdc(q,tol),
-                    baseflow_index = comp_i_bf(q)$,
-                    hfd_mean       = compute_hfd_mean_sd(q,d,tol)$mean,
-                    Q5             = qxx,
-                    Q95            = qxx,
-                    high_q_freq    = hf_stats$,
-                    high_q_dur     = hf_stats$,
-                    low_q_freq     = lf_stats$,
-                    low_q_dur      = lf_stats$,
-                    zero_q_freq    = compute_no_flow))
+                    stream_elas    = comp_e_qp(q,p,d,tol)$e_qp_sanka,
+                    slope_fdc      = comp_s_fdc(q,tol)$sfdc_sawicz_2011,
+                    baseflow_index_landson = bfi$i_bf_landson,
+                    baseflow_index_lfstat = bfi$i_bf_lfstat,
+                    hfd_mean       = compute_hfd_mean_sd(q,d,tol)$hfd_mean,
+                    Q5             = qxx$q95,
+                    Q95            = qxx$q5,
+                    high_q_freq    = hf_stats$hf_freq,
+                    high_q_dur     = hf_stats$hf_dur,
+                    low_q_freq     = lf_stats$lf_freq,
+                    low_q_dur      = lf_stats$lf_dur,
+                    zero_q_freq    = compute_no_flow(q,thres=0,tol)))
 
 }
 
 compute_hydro_signatures_sawicz<-function(q,p,t,d,tol=0.05){
 
-  
   r_qp<-comp_r_qp(q,p,tol)
   s_fdc<-comp_s_fdc(q,tol)
   i_bf<-comp_i_bf_landson(q)
@@ -167,6 +176,12 @@ comp_s_fdc<-function(q,tol=0.05){
   # as unavailable is the proportion of NA values is greater than tol
   avail_data<-find_avail_data_array(q,tol)
 
+  # initilise estimates, which will be overwritten if conditions to compute SFDC are met
+  sfdc_sawicz_2011<-NA
+  sfdc_yadav_2007<-NA
+  sfdc_mcmillan_2017<-NA
+  sfdc_addor_2017<-NA
+
   if(any(!is.na(avail_data))){
 
     # define quantiles for the FDC
@@ -207,14 +222,6 @@ comp_s_fdc<-function(q,tol=0.05){
       sfdc_addor_2017<-(log(q66_quant)-log(q33_quant))/(0.66-0.33)
 
     }
-
-  } else {
-
-    sfdc_sawicz_2011<-NA
-    sfdc_yadav_2007<-NA # could be computed, but the Q33-Q66 section is quite curved, so computing a slope is inadequate
-    sfdc_mcmillan_2017<-NA
-    sfdc_addor_2017<-NA
-
   }
 
   return(data.frame(sfdc_yadav_2007,sfdc_sawicz_2011,sfdc_mcmillan_2017,sfdc_addor_2017))
@@ -223,44 +230,31 @@ comp_s_fdc<-function(q,tol=0.05){
 
 # baseflow_index - Baseflow index (ratio of mean daily baseflow to mean daily discharge)
 
-comp_i_bf<-function(q,d,alpha=0.925,passes=3){
+comp_i_bf<-function(q,d,alpha,passes,tol){
 
-  # Arnold et al. (1995): Automated Base Flow Separation and Recession Analysis Techniques, Ground Water, 
-  # 33, 1010–1018, doi:10.1111/j.1745-6584.1995.tb00046.x, 1995.
-  # Estimate direct flow using a one-parameter single pass digital filter method
-  c_const=0.925
-  q_d<-q*NA       # direct flow
-  q_d[1]<-0       # to initialize the method, assuming there is no direct flow (only baseflow) at the fist time step
-  
-  for (i in 2:length(q)){
-    
-    q_d[i]<-c_const*q_d[i-1]+(1+c_const)*(q[i]-q[i-1])/2 # Eq. 1 in Arnold et al. (1995)
-    if(q_d[i]<=0){q_d[i]<-0} # replace negative direct flow values by 0
-    
-  }
-  
-  q_b<-q-q_d       # compute baseflow
-  i_bf_arnold<-sum(q_b)/sum(q)
-  
-  # Ladson et al. (2013). “A standard approach to baseflow separation using 
-  # the Lyne and Hollick filter.” Australian Journal of Water Resources 17(1): 173-180. 
+  # Ladson et al. (2013). “A standard approach to baseflow separation using the Lyne and Hollick filter.”
+  # Australian Journal of Water Resources 17(1): 173-180.
   # https://tonyladson.wordpress.com/2013/10/01/a-standard-approach-to-baseflow-separation-using-the-lyne-and-hollick-filter/#comments
+  dat_landson<-BFI(q,alpha,passes,ReturnQbase=TRUE)
+  bf_landson<-dat_landson$Qbase
 
-  source('https://raw.github.com/TonyLadson/BaseflowSeparation_LyneHollick/master/BFI.R')
-
-  i_bf_landson<-BFI(q,alpha,passes,ReturnQbase=TRUE)$BFI
-  q_base_landson<-BFI(q,alpha,passes,ReturnQbase=TRUE)$Qbase
-
-  # lfstat package based on Tallaksen, L. M. and Van Lanen, H. A. J. 2004 Hydrological Drought: Processes and Estimation Methods 
+  # lfstat package based on Tallaksen, L. M. and Van Lanen, H. A. J. 2004 Hydrological Drought: Processes and Estimation Methods
   # for Streamflow and Groundwater. Developments in Water Science 48, Amsterdam: Elsevier.
-  require(lfstat)
   q_dat<-data.frame(flow=q,day=as.numeric(format(d,'%d')),month=as.numeric(format(d,'%m')),year=format(d,'%Y'))
   lf_dat<-createlfobj(q_dat,hyearstart=10) # hyearstart, integer between 1 and 12, indicating the start of the hydrological year, 10 for october
-  
-  bf_wmo<-lf_dat$baseflow
-  i_bf_wmo<-sum(bf_wmo)/sum(q)
+  bf_lfstat<-lf_dat$baseflow
 
-  return(data.frame(i_bf_landson,i_bf_arnold,i_bf_wmo))
+  # compute IBF
+  if(length(bf_landson)!=length(q)){stop('Baseflow time series derived using Landson does not match length of Q_OBS')}
+  if(length(bf_lfstat)!=length(q)){stop('Baseflow time series derived using lfstat does not match length of Q_OBS')}
+
+  # find avaiable data
+  avail_data<-find_avail_data_matrix(cbind(q,bf_landson,bf_lfstat),tol) # time steps for which obs and sim are available
+
+  i_bf_landson<-sum(bf_landson[avail_data])/sum(q[avail_data])
+  i_bf_lfstat<-sum(bf_lfstat[avail_data])/sum(q[avail_data])
+
+  return(data.frame(i_bf_landson,i_bf_lfstat))
 
 }
 
@@ -413,9 +407,9 @@ compute_lf_freq_dur<-function(q,d,tol=0.05){
 }
 
 
-# Proportion of time series with dischare below or at a given threshold (0 by default)
+# Proportion of time series with discharge below or at a given threshold (0 by default)
 
-compute_no_flow<-function(q,thres=0,tol=0.05){
+compute_no_flow<-function(q,thres,tol){
 
   avail_data<-find_avail_data_array(q,tol)
 
@@ -620,7 +614,6 @@ compute_hydro_signatures_misc<-function(q,d,thres=0,tol=0.05){
   return(data.frame(no_flow,hfd,k))
 
 }
-
 
 ### Based on Westerger and McMillan (2015), HESS, "Uncertainty in hydrological signatures"
 

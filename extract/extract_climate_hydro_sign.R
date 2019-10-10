@@ -26,6 +26,9 @@ camels_clim<-data.frame('gauge_id' = character(),
                        stringsAsFactors=FALSE)
 
 camels_hydro_obs<-data.frame(gauge_id=camels_name$gauge_id)
+
+camels_hydro_obs<-data.frame()
+
 camels_hydro_sac<-data.frame(gauge_id=camels_name$gauge_id)
 
 ### SIGNATURES AND CLIMATE INDICES
@@ -64,6 +67,12 @@ for(i in 1:dim(camels_name)[1]){
   camels_clim[i,'lp_timing_sign']<-climate_signatures_dry_wet$lp_timing_sign
 
   ### COMPUTE SEASONAL HYDROLOGICAL SIGNATURES FOR OBSERVED AND SIMULATED Q
+
+  camels_hydro_obs[i,'gauge_id']<-as.character(camels_name$gauge_id[i])
+  dat<-compute_hydro_signatures_camels(q=q_obs,p=prec,d=day,tol=tol_na)
+  camels_hydro_obs[i,names(dat)]<-compute_hydro_signatures_camels(q=q_obs,p=prec,d=day,tol=tol_na)
+
+
   hydro_signatures_seas_obs<-compute_hydro_signatures_seas(q=q_obs,d=day,tol=tol_na)
   hydro_signatures_seas_sac<-compute_hydro_signatures_seas(q=q_sim_sac,d=day,tol=tol_na)
 
@@ -79,13 +88,15 @@ for(i in 1:dim(camels_name)[1]){
   camels_hydro_sac[i,'q_seas']<-hydro_signatures_seas_sac$q_seas
   camels_hydro_sac[i,'q_peak']<-hydro_signatures_seas_sac$q_peak
 
+  ### COMPUTE HYDROLOGICAL SIGNATURES
+
   ### COMPUTE HYDROLOGICAL SIGNATURES FROM SAWICZ
   hydro_signatures_sawicz_obs<-compute_hydro_signatures_sawicz(q=q_obs,p=prec,t=temp,d=day,tol=tol_na)
   hydro_signatures_sawicz_sac<-compute_hydro_signatures_sawicz(q=q_sim_sac,p=prec,t=temp,d=day,tol=tol_na)
 
   camels_hydro_obs[i,'r_qp']<-hydro_signatures_sawicz_obs$r_qp
   camels_hydro_obs[i,'sfdc_yadav_2007']<-hydro_signatures_sawicz_obs$sfdc_yadav_2007
-  camels_hydro_obs[i,'sfdc_sawicz_2010']<-hydro_signatures_sawicz_obs$sfdc_sawicz_2010
+  camels_hydro_obs[i,'sfdc_sawicz_2010']<-hydro_signatures_sawicz_obs$sfdc_sawicz_2011
   camels_hydro_obs[i,'sfdc_mcmillan_2017']<-hydro_signatures_sawicz_obs$sfdc_mcmillan_2017
   camels_hydro_obs[i,'sfdc_addor_2017']<-hydro_signatures_sawicz_obs$sfdc_addor_2017
   camels_hydro_obs[i,'i_bf']<-hydro_signatures_sawicz_obs$i_bf
@@ -96,7 +107,7 @@ for(i in 1:dim(camels_name)[1]){
 
   camels_hydro_sac[i,'r_qp']<-hydro_signatures_sawicz_sac$r_qp
   camels_hydro_sac[i,'sfdc_yadav_2007']<-hydro_signatures_sawicz_sac$sfdc_yadav_2007
-  camels_hydro_sac[i,'sfdc_sawicz_2010']<-hydro_signatures_sawicz_sac$sfdc_sawicz_2010
+  camels_hydro_sac[i,'sfdc_sawicz_2010']<-hydro_signatures_sawicz_sac$sfdc_sawicz_2011
   camels_hydro_sac[i,'sfdc_mcmillan_2017']<-hydro_signatures_sawicz_sac$sfdc_mcmillan_2017
   camels_hydro_sac[i,'sfdc_addor_2017']<-hydro_signatures_sawicz_sac$sfdc_addor_2017
   camels_hydro_sac[i,'i_bf']<-hydro_signatures_sawicz_sac$i_bf

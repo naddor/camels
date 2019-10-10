@@ -33,7 +33,7 @@ compute_climate_indices_berghuijs<-function(temp,prec,pet,day){
 
   # fraction of precipitation falling as snow
   # Woods, 2009, "Analytical model of seasonal climate impacts on snow hydrology: Continuous snowpacks"
-  t_0<-1 # tempthershold [°C]
+  t_0<-1 # temp thershold [°C]
   t_star_bar<-(mean(temp)-t_0)/abs(delta_t)
 
   if (t_star_bar>1){ # above freezing all year round
@@ -51,8 +51,7 @@ compute_climate_indices_berghuijs<-function(temp,prec,pet,day){
   }
 
   # fraction of precipitation falling as snow using daily time series
-
-  f_s_daily<-sum(prec[temp<t_0])/sum(prec)
+  f_s_daily<-sum(prec[temp<=0])/sum(prec)
 
   return(data.frame(aridity=aridity,seasonality=delta_p_star,frac_snow_sine=f_s,frac_snow_daily=f_s_daily,p_mean=p_mean,pet_mean=pet_mean))
 
