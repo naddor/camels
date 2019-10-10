@@ -9,7 +9,6 @@
 # Load functions or packages
 source(paste(dir_r_scripts,'camels/time/time_tools.R',sep='')) # for month2sea
 source('https://raw.github.com/TonyLadson/BaseflowSeparation_LyneHollick/master/BFI.R') # for baseflow index
-require(lfstat) # for baseflow index
 
 # Wrapper to compute the Addor et al. (2017) hydrological signatures at once
 
@@ -48,20 +47,6 @@ compute_hydro_signatures_camels<-function(q,p,d,tol){
                     low_q_freq     = lf_stats$lf_freq,
                     low_q_dur      = lf_stats$lf_dur,
                     zero_q_freq    = compute_no_flow(q,thres=0,tol)))
-
-}
-
-compute_hydro_signatures_sawicz<-function(q,p,t,d,tol=0.05){
-
-  r_qp<-comp_r_qp(q,p,tol)
-  s_fdc<-comp_s_fdc(q,tol)
-  i_bf<-comp_i_bf_landson(q)
-  e_qp<-comp_e_qp(q,p,d,tol)
-  r_sd<-comp_r_sd(t,p,tol)
-
-  # r_ld<-comp_r_ld(q,tol) # commented out because takes a while to run
-
-  return(data.frame(r_qp=r_qp,s_fdc,i_bf=i_bf,e_qp,r_sd))
 
 }
 
@@ -238,8 +223,9 @@ comp_i_bf<-function(q,d,alpha,passes,tol){
   dat_landson<-BFI(q,alpha,passes,ReturnQbase=TRUE)
   bf_landson<-dat_landson$Qbase
 
-  # lfstat package based on Tallaksen, L. M. and Van Lanen, H. A. J. 2004 Hydrological Drought: Processes and Estimation Methods
-  # for Streamflow and Groundwater. Developments in Water Science 48, Amsterdam: Elsevier.
+  # lfstat package based on Tallaksen, L. M. and Van Lanen, H. A. J. 2004 Hydrological Drought: Processes and
+  # Estimation Methods for Streamflow and Groundwater. Developments in Water Science 48, Amsterdam: Elsevier.
+  require(lfstat)
   q_dat<-data.frame(flow=q,day=as.numeric(format(d,'%d')),month=as.numeric(format(d,'%m')),year=format(d,'%Y'))
   lf_dat<-createlfobj(q_dat,hyearstart=10) # hyearstart, integer between 1 and 12, indicating the start of the hydrological year, 10 for october
   bf_lfstat<-lf_dat$baseflow
@@ -417,20 +403,6 @@ compute_no_flow<-function(q,thres,tol){
 
 }
 
-### OTHER SIGNATURES AND WRAPPERS
-
-### Mix of signatures and indicators
-
-compute_hydro_signatures_seas<-function(q,d,tol=0.05){
-
-  q_mean<-compute_q_mean(q,d,tol)
-  q_seas<-compute_q_seas(q,d,tol)
-  q_peak<-compute_q_peak(q,d,tol)
-
-  return(data.frame(q_mean,q_seas,q_peak))
-
-}
-
 # Baseflow recession constant (k), defined as the rate of base flow decay
 
 require(lfstat)
@@ -600,31 +572,4 @@ compute_q_peak<-function(q,d,tol=0.05){
     which.max(rapply(split(q[avail_data],format(d[avail_data],'%m')),mean))
 
   }
-
-}
-
-# Wrapper to compute all misc signatures at once
-
-compute_hydro_signatures_misc<-function(q,d,thres=0,tol=0.05){
-
-  no_flow<-compute_no_flow(q,thres,tol)
-  hfd<-compute_hfd_mean_sd(q,d,tol)
-  k<-compute_rece_constant(q,d,tol=tol)
-
-  return(data.frame(no_flow,hfd,k))
-
-}
-
-### Based on Westerger and McMillan (2015), HESS, "Uncertainty in hydrological signatures"
-
-# Wrapper to compute all signatures at once
-
-compute_hydro_signatures_westerberg<-function(q,d,tol=0.05){
-
-  qXX<-compute_qXX(q,thres=c(0.95,0.05),tol)
-  hf_freq_dur<-compute_hf_freq_dur(q,d,tol)
-  lf_freq_dur<-compute_lf_freq_dur(q,d,tol)
-
-  return(data.frame(qXX,hf_freq_dur,lf_freq_dur))
-
 }
