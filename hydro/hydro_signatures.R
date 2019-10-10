@@ -1,3 +1,5 @@
+### PURPOSE
+
 # This document contains R functions to compute streamflow indices (also referred to as hydrological signatures).
 # These functions have been used and are still used to produce the CAMELS datasets. The wrapper
 # compute_hydro_signatures_camels enables the computation of the signatures selected for the original CAMELS paper
@@ -6,10 +8,11 @@
 # For some signatures, several formulations have been implemented and the resulting estimates are returned as a # data.frame. Alternative formulations can be added. The objective is to assess the sensitvity of the results to
 # the formulation of the hydrological signatures.
 
-# Load functions or packages
+### LOAD FUNCTIONS
+
 source(paste(dir_r_scripts,'camels/time/time_tools.R',sep='')) # for month2sea
 
-# Wrapper to compute the Addor et al. (2017) hydrological signatures at once
+### WRAPPER TO COMPUTE STANDARD CAMELS HYDROLOGICAL SIGNATURES
 
 # q_mean         - Mean daily discharge
 # runoff_ratio   - Runoff ratio (ratio of mean daily discharge to mean daily precipitation)
@@ -49,9 +52,17 @@ compute_hydro_signatures_camels<-function(q,p,d,tol){
 
 }
 
+### FUNCTIONS FOR INDIVIDUAL SIGNATURES
+
+# input variables:
+# q: discharge time series
+# p: precipitation time series
+# d: date array of class "Date"
+# tol: tolerated proportion of NA values in time series
+
 # q_mean         - Mean daily discharge
 
-compute_q_mean<-function(q,d,tol=0.05){
+compute_q_mean<-function(q,d,tol){
 
   avail_data<-find_avail_data_array(q,tol)
 
@@ -84,12 +95,7 @@ compute_q_mean<-function(q,d,tol=0.05){
 
 # runoff_ratio   - Runoff ratio (ratio of mean daily discharge to mean daily precipitation)
 
-comp_r_qp<-function(q,p,tol=0.05){
-
-  # input variables
-  # q: discharge time series
-  # p: precipitation time series
-  # tol: tolerated proportion of NA values in time series
+comp_r_qp<-function(q,p,tol){
 
   avail_data<-find_avail_data_matrix(cbind(q,p),tol) # time steps for which obs and sim are available
 
@@ -107,13 +113,7 @@ comp_r_qp<-function(q,p,tol=0.05){
 
 # stream_elas    - Streamflow precipitation elasticity (sensitivity of streamflow to changes in precipitation at the annual time scale)
 
-comp_e_qp<-function(q,p,d,tol=0.05){
-
-  # input variables
-  # q: discharge time series
-  # p: precipitation time series
-  # d: date array of class "Date"
-  # tol: tolerated proportion of NA values in time series
+comp_e_qp<-function(q,p,d,tol){
 
   avail_data<-find_avail_data_matrix(cbind(q,p),tol) # time steps for which obs and sim are available
 
@@ -150,11 +150,7 @@ comp_e_qp<-function(q,p,d,tol=0.05){
 
 # slope_fdc      - Slope of the flow duration curve (between the log-transformed 33rd and 66th streamflow percentiles)
 
-comp_s_fdc<-function(q,tol=0.05){
-
-  # input variables
-  # q: discharge time series
-  # tol: tolerated proportion of NA values in time series
+comp_s_fdc<-function(q,tol){
 
   # time for which obs are available this also set the whole timeseries
   # as unavailable is the proportion of NA values is greater than tol
@@ -246,7 +242,7 @@ comp_i_bf<-function(q,d,alpha,passes,tol){
 
 # Half flow date (Court, 1962): the date on which the cumulative discharge since the beginning of the hydrological year (starting on 1 October) reaches half of the annual discharge
 
-compute_hfd_mean_sd<-function(q,d,tol=0.05){
+compute_hfd_mean_sd<-function(q,d,tol){
 
   avail_data<-find_avail_data_array(q,tol)
 
@@ -281,9 +277,9 @@ compute_hfd_mean_sd<-function(q,d,tol=0.05){
 
 }
 
-# Flow precentiles, i.e. Q95 is exceeded 95% of the time
+# Flow precentiles
 
-compute_qXX<-function(q,thres,tol=0.05){
+compute_qXX<-function(q,thres,tol){
 
   if(any(thres<0|thres>1)){stop('Threshold must be between 0 and 1')}
 
@@ -307,7 +303,7 @@ compute_qXX<-function(q,thres,tol=0.05){
 
 # Frequency and duration of high flows
 
-compute_hf_freq_dur<-function(q,d,tol=0.05){
+compute_hf_freq_dur<-function(q,d,tol){
 
   avail_data<-find_avail_data_array(q,tol)   # time steps for which obs and sim are available
 
@@ -355,7 +351,7 @@ compute_hf_freq_dur<-function(q,d,tol=0.05){
 
 # Frequency and duration of low flows
 
-compute_lf_freq_dur<-function(q,d,tol=0.05){
+compute_lf_freq_dur<-function(q,d,tol){
 
   avail_data<-find_avail_data_array(q,tol)    # time steps for which obs and sim are available
 
@@ -392,8 +388,7 @@ compute_lf_freq_dur<-function(q,d,tol=0.05){
   }
 }
 
-
-# Proportion of time series with discharge below or at a given threshold (0 by default)
+# Proportion of time series with discharge below or at a given threshold
 
 compute_no_flow<-function(q,thres,tol){
 
@@ -403,7 +398,7 @@ compute_no_flow<-function(q,thres,tol){
 
 }
 
-compute_q_seas<-function(q,d,tol=0.05){
+compute_q_seas<-function(q,d,tol){
 
   avail_data<-find_avail_data_array(q,tol)
 
@@ -414,7 +409,7 @@ compute_q_seas<-function(q,d,tol=0.05){
 
 }
 
-compute_q_peak<-function(q,d,tol=0.05){
+compute_q_peak<-function(q,d,tol){
 
   avail_data<-find_avail_data_array(q,tol)
 
