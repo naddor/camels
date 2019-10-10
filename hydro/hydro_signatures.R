@@ -8,7 +8,6 @@
 
 # Load functions or packages
 source(paste(dir_r_scripts,'camels/time/time_tools.R',sep='')) # for month2sea
-source('https://raw.github.com/TonyLadson/BaseflowSeparation_LyneHollick/master/BFI.R') # for baseflow index
 
 # Wrapper to compute the Addor et al. (2017) hydrological signatures at once
 
@@ -220,6 +219,7 @@ comp_i_bf<-function(q,d,alpha,passes,tol){
   # Ladson et al. (2013). “A standard approach to baseflow separation using the Lyne and Hollick filter.”
   # Australian Journal of Water Resources 17(1): 173-180.
   # https://tonyladson.wordpress.com/2013/10/01/a-standard-approach-to-baseflow-separation-using-the-lyne-and-hollick-filter/#comments
+  source('https://raw.github.com/TonyLadson/BaseflowSeparation_LyneHollick/master/BFI.R') # source code
   dat_landson<-BFI(q,alpha,passes,ReturnQbase=TRUE)
   bf_landson<-dat_landson$Qbase
 
@@ -400,151 +400,6 @@ compute_no_flow<-function(q,thres,tol){
   avail_data<-find_avail_data_array(q,tol)
 
   return(sum(q[avail_data]<=thres)/length(q[avail_data]))
-
-}
-
-# Baseflow recession constant (k), defined as the rate of base flow decay
-
-require(lfstat)
-
-compute_rece_constant<-function(q,d,hyearstart=10,peak_level=0.9,
-                                plot_start=2000,plot_end=2002,tol=0.05){
-
-  # hyearstart: start of the hydrological year, 10 for October
-
-  k<-data.frame() # to store the seveal k estimates
-  #par(mfcol=c(2,3))
-
-  # WMO method
-  # Gustard, A. & Demuth, S. (2009) (Eds) Manual on Low-flow
-  # Estimation and Prediction. Operational Hydrology Report No. 50,
-  # WMO-No. 1029, 136p.
-
-  # q_dat<-data.frame(flow=q,day=as.numeric(format(d,'%d')),month=as.numeric(format(d,'%m')),year=format(d,'%Y'))
-  # lf_dat<-createlfobj(q_dat,hyearstart=hyearstart)
-
-  # lfnacheck(lf_dat) # check for missing values
-  # avail_dat<-rowSums(is.na(lf_dat[,c('baseflow','flow')]))==0
-
-  # choose peaklevel
-  # recessionplot(lf_dat,peaklevel=peak_level,start=plot_start,end=plot_end)
-
-  # returns an error even if na.rm=TRUE
-  # C<-recession(lf_dat,method = "MRC",peaklevel=peak_level,
-  #            plotMRC=FALSE,seglen = 7,threshold = 70,
-  #            na.rm=TRUE)
-
-  # C<-recession(lf_dat[avail_dat],method = "MRC",peaklevel=peak_level,
-  #             plotMRC=FALSE,seglen = 7,threshold = 70,
-  #              na.rm=TRUE)
-
-  # k[1,'kbf_wmo']<-1/C
-
-  # legend('bottomright',paste('K=',round(k[1,'wmo'],2)))
-
-  # Van Dick
-  # Van Dijk, A. I. J. M.: Climate and terrain factors explaining streamflow response and
-  # recession in Australian catchments, Hydrol. Earth Syst. Sci., 14(1), 159–169,
-  # doi:10.5194/hess-14-159-2010, 2010.
-
-  # "all days showing an increase in Q from the previous day were considered
-  # to mark the start of a quick flow event"
-  i_quickflow<-which(c(0,diff(q))>=0)
-
-  for(tqf in c(5,10)){ # number of days to exclude after each peak flow event
-
-    # "all these days as well as the TQF days afterwards each of these events
-    # were excluded from the analysis"
-
-    q_sel<-q # discharge on days considered to be part of the recession
-
-    for(i in i_quickflow){
-
-      q_sel[i+(0:tqf)]<-NA # remove peak day from analysis and following tqf days
-
-    }
-
-    q_sel<-q_sel[1:length(q)] # remove extra days potentialy added by for loop
-    q_sel[q_sel==0]<-NA       # remove days with no discharge
-
-    # check recession
-    # i_start<-min(which(lf_dat$hyear==plot_start))
-    # i_end<-max(which(lf_dat$hyear==plot_end))
-
-    # plot(d[i_start:i_end],q[i_start:i_end],type='l',xlab='')
-    # lines(d,q_sel,type='l',col='orange',lwd=2)
-
-    q_t0<-q_sel[-length(q_sel)]
-    q_t1<-q_sel[-1]
-
-    if(any(q_t1>q_t0,na.rm=TRUE)){
-
-      stop('Increase in the recession')
-
-    }
-
-    n_pairs<-sum(rowSums(is.na(cbind(q_t0,q_t1)))==0) # number of complete pairs
-
-    if(n_pairs<50){
-
-      k[1,paste0('kbf_van_dick_',tqf,'_opt')]<-NA
-      k[1,paste0('kbf_van_dick_',tqf,'_lm')]<-NA
-
-    } else {
-
-      # Use two methods to estimate k
-
-      # Meth. 1: minimize Eq. 6 in Van Dick et al, 10.5194/hess-14-159-2010
-      find_k<-function(k,q_t0,q_t1){
-
-        q_t1_est<-q_t0*exp(-k)
-
-        e<-sum(abs(q_t1_est/q_t1-1),na.rm=TRUE)/n_pairs
-
-        return(e)
-
-      }
-
-      k_opt<-optimize(find_k,q_t0=q_t0,q_t1=q_t1,interval=c(0,1),maximum=FALSE)
-
-      k[1,paste0('kbf_van_dick_',tqf,'_opt')]<-k_opt$minimum
-
-      # Meth. 2: use a linear regression
-      lm_coeff<-lm(q_t1~q_t0)$coefficients
-      if(abs(lm_coeff[1])>0.1){
-        warning(paste('abs(Intercept) > 0.1:',lm_coeff[1]))
-      }
-
-      k[1,paste0('kbf_van_dick_',tqf,'_lm')]<-(-log(as.numeric(lm_coeff[2])))
-
-      #plot(q_t0,q_t1)
-      #legend('bottomright',paste('N=',n_pairs,'K=',round(k[1,paste0('van_dick_',tqf)],2)))
-
-      # Extract alpha and beta
-      y_ln<-log(q_t0-q_t1)
-      x_ln<-log((q_t0+q_t1)/2)
-
-      if(any(y_ln==-Inf,na.rm=TRUE)){
-
-        stop('No decrease in recession')
-
-      } else{
-
-        lm_alpha_beta<-lm(y_ln~x_ln)$coefficients
-
-        k[1,paste0('kbf_alpha_',tqf)]<-exp(lm_alpha_beta['(Intercept)'])
-        k[1,paste0('kbf_beta_',tqf)]<-lm_alpha_beta['x_ln']
-
-      }
-    }
-  }
-
-  # Extract BFI
-  # summary(lf_dat)
-  # bfi_wmo<-sum(lf_dat$baseflow[avail_dat])/sum(lf_dat$flow[avail_dat])
-  #  k[1,'bfi_wmo']<-bfi_wmo
-
-  return(k)
 
 }
 
