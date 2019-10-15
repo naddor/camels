@@ -14,7 +14,7 @@ camels_hydro_sac<-data.frame()
 
 ### SIGNATURES AND CLIMATE INDICES
 
-tol_na=0.0502 # two catchments have ~5.01% of missing values, this threshold includes them
+tol_na=0.0502 # two CAMELS catchments have ~5.01% of missing values, this threshold includes them
 
 for(i in 1:dim(camels_name)[1]){
 
