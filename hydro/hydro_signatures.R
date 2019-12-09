@@ -12,7 +12,7 @@
 
 source(paste(dir_r_scripts,'camels/time/time_tools.R',sep='')) # for month2sea
 
-### WRAPPER TO COMPUTE STANDARD CAMELS HYDROLOGICAL SIGNATURES
+### WRAPPER AND PARAMETER VALUES TO COMPUTE STANDARD CAMELS HYDROLOGICAL SIGNATURES
 
 # q_mean         - Mean daily discharge
 # runoff_ratio   - Runoff ratio (ratio of mean daily discharge to mean daily precipitation)
@@ -28,7 +28,14 @@ source(paste(dir_r_scripts,'camels/time/time_tools.R',sep='')) # for month2sea
 # low_q_dur      - Average duration of low-flow events (number of consecutive days <0.2 times the mean daily flow)
 # zero_q_freq    - Frequency of days with Q = 0 mm/day
 
-compute_hydro_signatures_camels<-function(q,p,d,tol){
+compute_hydro_signatures_camels<-function(q,p,d,tol,hy_cal){
+
+  # input variables:
+  # q: discharge time series
+  # p: precipitation time series
+  # d: date array of class "Date"
+  # tol: tolerated fraction of NA values in time series
+  # hy_cal: hydrological year calendar: oct_us_gb OR sep_br OR apr_cl
 
   qxx<-compute_qXX(q,thres=c(0.05,0.95),tol)
   hf_stats<-compute_hf_freq_dur(q,d,tol)
@@ -37,11 +44,11 @@ compute_hydro_signatures_camels<-function(q,p,d,tol){
 
   return(data.frame(q_mean         = compute_q_mean(q,d,tol)$q_mean_yea,
                     runoff_ratio   = comp_r_qp(q,p,tol),
-                    stream_elas    = comp_e_qp(q,p,d,tol)$e_qp_sanka,
+                    stream_elas    = comp_e_qp(q,p,d,tol,hy_cal)$e_qp_sanka,
                     slope_fdc      = comp_s_fdc(q,tol)$sfdc_sawicz_2011,
                     baseflow_index_landson = bfi$i_bf_landson,
                     baseflow_index_lfstat = bfi$i_bf_lfstat,
-                    hfd_mean       = compute_hfd_mean_sd(q,d,tol)$hfd_mean,
+                    hfd_mean       = compute_hfd_mean_sd(q,d,tol,hy_cal)$hfd_mean,
                     Q5             = qxx$q95,
                     Q95            = qxx$q5,
                     high_q_freq    = hf_stats$hf_freq,
@@ -53,12 +60,6 @@ compute_hydro_signatures_camels<-function(q,p,d,tol){
 }
 
 ### FUNCTIONS FOR INDIVIDUAL SIGNATURES
-
-# input variables:
-# q: discharge time series
-# p: precipitation time series
-# d: date array of class "Date"
-# tol: tolerated proportion of NA values in time series
 
 # q_mean         - Mean daily discharge
 
@@ -113,15 +114,15 @@ comp_r_qp<-function(q,p,tol){
 
 # stream_elas    - Streamflow precipitation elasticity (sensitivity of streamflow to changes in precipitation at the annual time scale)
 
-comp_e_qp<-function(q,p,d,tol){
-
-  avail_data<-find_avail_data_matrix(cbind(q,p),tol) # time steps for which obs and sim are available
+comp_e_qp<-function(q,p,d,tol,hy_cal){
 
   if(length(q)!=length(d)|length(p)!=length(d)){stop('P, Q and D must have the same length')}
 
-  hy<-get_hydro_year(d)
+  avail_data<-find_avail_data_matrix(cbind(q,p),tol) # time steps for which precipitation and streamflow data are available
 
-  if(any(table(hy)<365)){stop('Not all the hydrological years are complete')}
+  hy<-get_hydro_year(d,hy_cal)
+
+  if(any(table(hy)<365)){warning('Not all the hydrological years are complete')}
 
   mp_tot<-mean(p[avail_data],na.rm=TRUE) # mean long-term precip
   mq_tot<-mean(q[avail_data],na.rm=TRUE) # mean long-term discharge
@@ -212,69 +213,84 @@ comp_s_fdc<-function(q,tol){
 
 comp_i_bf<-function(q,d,alpha,passes,tol){
 
-  # Ladson et al. (2013). “A standard approach to baseflow separation using the Lyne and Hollick filter.”
-  # Australian Journal of Water Resources 17(1): 173-180.
-  # https://tonyladson.wordpress.com/2013/10/01/a-standard-approach-to-baseflow-separation-using-the-lyne-and-hollick-filter/#comments
-  source('https://raw.github.com/TonyLadson/BaseflowSeparation_LyneHollick/master/BFI.R') # source code
-  dat_landson<-BFI(q,alpha,passes,ReturnQbase=TRUE)
-  bf_landson<-dat_landson$Qbase
+  if(sum(is.na(q))/length(q)>=tol){ # not using avail_data here, since it would remove time steps with NA, and thereby alter the consistency of the time series and bias the baseflow separation
 
-  # lfstat package based on Tallaksen, L. M. and Van Lanen, H. A. J. 2004 Hydrological Drought: Processes and
-  # Estimation Methods for Streamflow and Groundwater. Developments in Water Science 48, Amsterdam: Elsevier.
-  require(lfstat)
-  q_dat<-data.frame(flow=q,day=as.numeric(format(d,'%d')),month=as.numeric(format(d,'%m')),year=format(d,'%Y'))
-  lf_dat<-createlfobj(q_dat,hyearstart=10) # hyearstart, integer between 1 and 12, indicating the start of the hydrological year, 10 for october
-  bf_lfstat<-lf_dat$baseflow
+    i_bf_landson<-NA
+    i_bf_lfstat<-NA
 
-  # compute IBF
-  if(length(bf_landson)!=length(q)){stop('Baseflow time series derived using Landson does not match length of Q_OBS')}
-  if(length(bf_lfstat)!=length(q)){stop('Baseflow time series derived using lfstat does not match length of Q_OBS')}
+  } else {
 
-  # find avaiable data
-  avail_data<-find_avail_data_matrix(cbind(q,bf_landson,bf_lfstat),tol) # time steps for which obs and sim are available
+    # Ladson et al. (2013). “A standard approach to baseflow separation using the Lyne and Hollick filter.”
+    # Australian Journal of Water Resources 17(1): 173-180.
+    # https://tonyladson.wordpress.com/2013/10/01/a-standard-approach-to-baseflow-separation-using-the-lyne-and-hollick-filter/#comments
+    source('https://raw.github.com/TonyLadson/BaseflowSeparation_LyneHollick/master/BFI.R') # source code
+    dat_landson<-BFI(q,alpha,passes,ReturnQbase=TRUE)
+    bf_landson<-dat_landson$Qbase
 
-  i_bf_landson<-sum(bf_landson[avail_data])/sum(q[avail_data])
-  i_bf_lfstat<-sum(bf_lfstat[avail_data])/sum(q[avail_data])
+    # lfstat package based on Tallaksen, L. M. and Van Lanen, H. A. J. 2004 Hydrological Drought: Processes and
+    # Estimation Methods for Streamflow and Groundwater. Developments in Water Science 48, Amsterdam: Elsevier.
+    require(lfstat)
+    q_dat<-data.frame(flow=q,day=as.numeric(format(d,'%d')),month=as.numeric(format(d,'%m')),year=format(d,'%Y'))
+    lf_dat<-createlfobj(q_dat,hyearstart=10) # hyearstart, integer between 1 and 12, indicating the start of the hydrological year, 10 for october
+    bf_lfstat<-lf_dat$baseflow
+
+    # compute IBF
+    if(length(bf_landson)!=length(q)){stop('Baseflow time series derived using Landson does not match length of Q_OBS')}
+    if(length(bf_lfstat)!=length(q)){stop('Baseflow time series derived using lfstat does not match length of Q_OBS')}
+
+    # find avaiable data
+    avail_data<-find_avail_data_matrix(cbind(q,bf_landson,bf_lfstat),tol) # time steps for which q,bf_landson,bf_lfstat are available
+
+    i_bf_landson<-sum(bf_landson[avail_data])/sum(q[avail_data])
+    i_bf_lfstat<-sum(bf_lfstat[avail_data])/sum(q[avail_data])
+
+  }
 
   return(data.frame(i_bf_landson,i_bf_lfstat))
 
 }
 
-# Half flow date (Court, 1962): the date on which the cumulative discharge since the beginning of the hydrological year (starting on 1 October) reaches half of the annual discharge
+# Half flow date (Court, 1962): the date on which the cumulative discharge since the beginning of the hydrological year reaches half of the annual discharge
 
-compute_hfd_mean_sd<-function(q,d,tol){
+compute_hfd_mean_sd<-function(q,d,tol,hy_cal){
 
   avail_data<-find_avail_data_array(q,tol)
 
-  hy<-get_hydro_year(d)
+  hy<-get_hydro_year(d,hy_cal)
 
   hy_q<-split(q[avail_data],hy[avail_data]) # discharge for each hydrological year
 
-  q_yearly_sum<-rapply(hy_q,sum)
+  if(length(hy_q)==0){ # fraction of missing values over the whole period is above tol
 
-  hfd<-rapply(hy_q,function(x)
+    return(data.frame(hfd_mean=NA,hfd_sd=NA))
 
-    if(sum(x)==0){
+  } else {
 
-      return(NA) # hfd can't be computed if annual discharge is 0
+    hfd<-rapply(hy_q,function(x) # compute hfd for each individual year
 
-    } else {
+      if(sum(x)==0){
 
-        if(length(x)>(1-tol)*365){ # at 1-tol% of data needed for each year
-          return(min(which(cumsum(x)>0.5*sum(x))))
-        }else{
-          return(NA)
-        }
-    })
+        return(NA) # hfd can't be computed if annual discharge is 0
 
-  if(any(hfd<0|hfd>366,na.rm=TRUE)){
+      } else {
 
-    stop(paste('Unexpected value half flow date value:',hfd[hfd<0|hfd>366]))
+          if(length(x)/365.25>(1-tol)){ # only compute HFD for years with a fraction of missing values below tol
+            return(min(which(cumsum(x)>0.5*sum(x)))) # number of days since beginning of hydrological year
+          }else{
+            return(NA)
+          }
+      }
+    )
+
+    if(any(hfd<0|hfd>366,na.rm=TRUE)){
+
+      stop(paste('Unexpected value half flow date:',hfd[hfd<0|hfd>366]))
+
+    }
+
+    return(data.frame(hfd_mean=mean(hfd,na.rm=TRUE),hfd_sd=sd(hfd,na.rm=TRUE)))
 
   }
-
-  return(data.frame(hfd_mean=mean(hfd,na.rm=TRUE),hfd_sd=sd(hfd,na.rm=TRUE)))
-
 }
 
 # Flow precentiles
