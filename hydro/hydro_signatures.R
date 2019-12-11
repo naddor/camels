@@ -254,41 +254,43 @@ comp_i_bf<-function(q,d,alpha,passes,tol){
 
 compute_hfd_mean_sd<-function(q,d,tol,hy_cal){
 
+  # check data availibility
   avail_data<-find_avail_data_array(q,tol)
 
-  hy<-get_hydro_year(d,hy_cal)
+  if(all(is.na(avail_data))){ # fraction of missing values over the whole period is above tol
 
-  hy_q<-split(q[avail_data],hy[avail_data]) # discharge for each hydrological year
-
-  if(length(hy_q)==0){ # fraction of missing values over the whole period is above tol
-
-    return(data.frame(hfd_mean=NA,hfd_sd=NA))
+    return(data.frame(hfd_mean=NA,hfd_sd=NA)) # return NA
 
   } else {
 
-    hfd<-rapply(hy_q,function(x) # compute hfd for each individual year
-
-      if(sum(x)==0){
-
-        return(NA) # hfd can't be computed if annual discharge is 0
-
+    hy<-get_hydro_year(d,hy_cal) # determine hydrological year for given calendar
+    
+    hy_q<-split(q[avail_data],hy[avail_data]) # discharge for each hydrological year
+    hy_doy<-split(format(d[avail_data],'%j'),hy[avail_data]) # associated day of year
+    
+    doy_hfd<-c() # hfd day of year for each hydrological year
+    
+    for(y in names(hy_q)){ # loop through hydrological years
+      
+      if(sum(hy_q[[y]])==0){# hfd can't be computed if annual discharge is 0
+        
+        doy_hfd[y]<-NA
+        
       } else {
-
-          if(length(x)/365.25>(1-tol)){ # only compute HFD for years with a fraction of missing values below tol
-            return(min(which(cumsum(x)>0.5*sum(x)))) # number of days since beginning of hydrological year
-          }else{
-            return(NA)
-          }
+        
+        i<-which(cumsum(hy_q[[y]])>0.5*sum(hy_q[[y]]))[1] # index of the first day above half of annual total 
+        doy_hfd[y]<-as.numeric(hy_doy[[y]][i])            # day of year for this day
+        
       }
-    )
+    }
+    
+    if(any(doy_hfd<0|doy_hfd>366,na.rm=TRUE)){
 
-    if(any(hfd<0|hfd>366,na.rm=TRUE)){
-
-      stop(paste('Unexpected value half flow date:',hfd[hfd<0|hfd>366]))
+      stop(paste('Unexpected value half flow date:',doy_hfd[doy_hfd<0|doy_hfd>366]))
 
     }
 
-    return(data.frame(hfd_mean=mean(hfd,na.rm=TRUE),hfd_sd=sd(hfd,na.rm=TRUE)))
+    return(data.frame(hfd_mean=mean(doy_hfd,na.rm=TRUE),hfd_sd=sd(doy_hfd,na.rm=TRUE)))
 
   }
 }
