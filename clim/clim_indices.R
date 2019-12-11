@@ -164,7 +164,7 @@ compute_extreme_precip_indices<-function(prec,day,rel_hp_thres,abs_lp_thres,tol)
 
     return(data.frame(high_prec_freq=hp_freq,high_prec_dur=hp_dur,high_prec_timing=hp_timing,
                       low_prec_freq=lp_freq,low_prec_dur=lp_dur,low_prec_timing=lp_timing))
-                      
+
   } else { #return NA if data availibility is too low
 
     return(data.frame(high_prec_freq=NA,high_prec_dur=NA,high_prec_timing=NA,
