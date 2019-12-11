@@ -10,7 +10,7 @@
 
 ### LOAD FUNCTIONS
 
-source(paste(dir_r_scripts,'camels/time/time_tools.R',sep='')) # for month2sea
+source(paste(dir_r_scripts,'camels/time/time_tools.R',sep='')) # for month2sea and get_hydro_year
 
 ### WRAPPER AND PARAMETER VALUES TO COMPUTE STANDARD CAMELS HYDROLOGICAL SIGNATURES
 
@@ -98,7 +98,7 @@ compute_q_mean<-function(q,d,tol){
 
 comp_r_qp<-function(q,p,tol){
 
-  avail_data<-find_avail_data_matrix(cbind(q,p),tol) # time steps for which obs and sim are available
+  avail_data<-find_avail_data_df(data.frame(q,p),tol) # time steps for which obs and sim are available
 
   r_qp<-mean(q[avail_data])/mean(p[avail_data])
 
@@ -118,7 +118,7 @@ comp_e_qp<-function(q,p,d,tol,hy_cal){
 
   if(length(q)!=length(d)|length(p)!=length(d)){stop('P, Q and D must have the same length')}
 
-  avail_data<-find_avail_data_matrix(cbind(q,p),tol) # time steps for which precipitation and streamflow data are available
+  avail_data<-find_avail_data_df(data.frame(q,p),tol) # time steps for which precipitation and streamflow data are available
 
   hy<-get_hydro_year(d,hy_cal)
 
@@ -239,7 +239,7 @@ comp_i_bf<-function(q,d,alpha,passes,tol){
     if(length(bf_lfstat)!=length(q)){stop('Baseflow time series derived using lfstat does not match length of Q_OBS')}
 
     # find avaiable data
-    avail_data<-find_avail_data_matrix(cbind(q,bf_landson,bf_lfstat),tol) # time steps for which q,bf_landson,bf_lfstat are available
+    avail_data<-find_avail_data_df(data.frame(q,bf_landson,bf_lfstat),tol) # time steps for which q,bf_landson,bf_lfstat are available
 
     i_bf_landson<-sum(bf_landson[avail_data])/sum(q[avail_data])
     i_bf_lfstat<-sum(bf_lfstat[avail_data])/sum(q[avail_data])
