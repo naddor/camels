@@ -252,6 +252,10 @@ comp_i_bf<-function(q,d,alpha,passes,tol){
 
 # Half flow date (Court, 1962): the date on which the cumulative discharge since the beginning of the hydrological year reaches half of the annual discharge
 
+# Note: the date considered here is the number of days since the beginning of the hydrological year. 
+# Using days since 1st Jan instead is problematic in catchments with a half flow date occuring close to the end of the calendar year,
+# as it leads to both large (e.g. 360) and small (e.g. 10) HFDs depending on the year, which biases the mean HFD.
+
 compute_hfd_mean_sd<-function(q,d,tol,hy_cal){
 
   # check data availibility
@@ -263,34 +267,34 @@ compute_hfd_mean_sd<-function(q,d,tol,hy_cal){
 
   } else {
 
-    hy<-get_hydro_year(d,hy_cal) # determine hydrological year for given calendar
+    hy_stats<-get_hydro_year_stats(d,hy_cal) # determine hydrological year for given calendar
     
-    hy_q<-split(q[avail_data],hy[avail_data]) # discharge for each hydrological year
-    hy_doy<-split(format(d[avail_data],'%j'),hy[avail_data]) # associated day of year
+    hy_q<-split(q[avail_data],hy_stats$hy[avail_data]) # discharge for each hydrological year
+    hy_d<-split(hy_stats$day_of_hy[avail_data],hy_stats$hy[avail_data]) # number of days since beginning of hydrological year
     
-    doy_hfd<-c() # hfd day of year for each hydrological year
+    date_hfd<-c() # date of half flow for each hydrological year in days since the beginning of hydrological year
     
     for(y in names(hy_q)){ # loop through hydrological years
       
       if(sum(hy_q[[y]])==0){# hfd can't be computed if annual discharge is 0
         
-        doy_hfd[y]<-NA
+        date_hfd[y]<-NA
         
       } else {
         
         i<-which(cumsum(hy_q[[y]])>0.5*sum(hy_q[[y]]))[1] # index of the first day above half of annual total 
-        doy_hfd[y]<-as.numeric(hy_doy[[y]][i])            # day of year for this day
+        date_hfd[y]<-as.numeric(hy_d[[y]][i])             # number of days since beginning of hydro year
         
       }
     }
     
-    if(any(doy_hfd<0|doy_hfd>366,na.rm=TRUE)){
+    if(any(date_hfd<0|date_hfd>366,na.rm=TRUE)){
 
-      stop(paste('Unexpected value half flow date:',doy_hfd[doy_hfd<0|doy_hfd>366]))
+      stop(paste('Unexpected value half flow date:',date_hfd[date_hfd<0|date_hfd>366]))
 
     }
 
-    return(data.frame(hfd_mean=mean(doy_hfd,na.rm=TRUE),hfd_sd=sd(doy_hfd,na.rm=TRUE)))
+    return(data.frame(hfd_mean=mean(date_hfd,na.rm=TRUE),hfd_sd=sd(date_hfd,na.rm=TRUE)))
 
   }
 }
