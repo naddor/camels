@@ -18,19 +18,19 @@ if(country=='us'){
 
   # set dir and preferences
   hy_cal='oct_us_gb'
-  tol=0.5 # Gem asked for no restriction at first (see email from 10 Dec 2019) but the code crashes (streamflow elasticity) 
+  tol=0.5 # Gem asked for no restriction at first (see email from 10 Dec 2019) but the code crashes (streamflow elasticity)
           # when there is only a year of available data, which happens for catchments not in CAMELS-GB
   dir_dat<-'/Volumes/d1/data/camels_gb/'
   list_files<-system(paste0('ls ',dir_dat,'timeseries_2dp/'),intern=TRUE)
   list_catch<-rapply(strsplit(list_files,'_'),function(x) x[5])
-  
+
   # define period over which indices and signatures will be computed
   # 1st Oct 1970 to 30th Sept 2015
   per_str<-'hy1971-2015' # string used to name output files
   per_start<-as.Date('1970-10-01')
   per_end<-as.Date('2015-09-30')
   per_all<-seq(per_start,per_end,by='day')
-  
+
 }else if(country=='br'){
 
   # set dir and preferences
@@ -69,10 +69,10 @@ for(i in 1:length(list_catch)){
   if(country=='us'){
 
   }else if(country=='gb'){
-    
+
     dat<-read.csv(paste0(dir_dat,'timeseries_2dp/CAMELS_GB_hydromet_timeseries_',catch_id,'_19701001-20150930.txt'),header=TRUE,na.strings='NaN')
     day<-as.Date(dat$date)
-     
+
     prec<-dat$precipitation
     temp<-dat$temperature
     pet<-dat$pet
@@ -96,7 +96,7 @@ for(i in 1:length(list_catch)){
   if(min(day)>per_start|max(day)<per_end){
     stop('The period over which the indices should be computed is not fully covered by the data')
   }
-  
+
   in_period<-day>=per_start&day<=per_end
 
   prec<-prec[in_period]
