@@ -1,4 +1,3 @@
-
 plot_map_catch_attr<-function(dat,c2p,n_classes=6,col_scheme='RdYlBu',col_rev=FALSE,color_bar=TRUE,subplot_hist=TRUE,
                               col_trans=0,b_round=2,text_legend='',cex=1,pch=16,qual=FALSE,
                               force_zero_center=FALSE,force_n_classes=FALSE,set_breaks=FALSE,breaks=NA){
@@ -44,7 +43,6 @@ plot_map_catch_attr<-function(dat,c2p,n_classes=6,col_scheme='RdYlBu',col_rev=FA
                           set_breaks=my_set_breaks,breaks=my_breaks)
 
   }
-
 }
 
 plot_points_us_basins<-function(dat,n_classes=6,col_scheme='RdYlBu',col_rev=FALSE,color_bar=TRUE,
@@ -72,16 +70,17 @@ plot_points_us_basins<-function(dat,n_classes=6,col_scheme='RdYlBu',col_rev=FALS
 
   if(dim(dat2plot)[1]==0){stop('Merge with topo failed, check gauge_id')}
 
-  plot_points_us(x=dat2plot$gauge_lon,y=dat2plot$gauge_lat,z=dat2plot[,2],n_classes,col_scheme,col_rev,color_bar,subplot_hist,
+  plot_points(x=dat2plot$gauge_lon,y=dat2plot$gauge_lat,z=dat2plot[,2],n_classes,col_scheme,col_rev,color_bar,subplot_hist,
                  col_trans,b_round,text_legend,cex,pch,qual,force_zero_center,force_n_classes,set_breaks,breaks)
 
 }
 
 ### PLOT POINTS ON US MAP
 
-plot_points_us<-function(x,y,z,n_classes=6,col_scheme='RdYlBu',col_rev=FALSE,color_bar=TRUE,subplot_hist=TRUE,
+plot_points<-function(x,y,z,n_classes=6,col_scheme='RdYlBu',col_rev=FALSE,color_bar=TRUE,subplot_hist=TRUE,
                          col_trans=0,b_round=2,text_legend='',cex=1,pch=16,qual=FALSE,
-                         force_zero_center=FALSE,force_n_classes=FALSE,set_breaks=FALSE,breaks=NA){
+                         force_zero_center=FALSE,force_n_classes=FALSE,set_breaks=FALSE,breaks=NA,
+                         country='us'){
 
   # works well for pdf width=10,height=7
 
@@ -97,14 +96,43 @@ plot_points_us<-function(x,y,z,n_classes=6,col_scheme='RdYlBu',col_rev=FALSE,col
 
   require(RColorBrewer)
   require(maps)
-  library(TeachingDemos) # for subplot
+  require(TeachingDemos) # for subplot
 
   if(length(x)!=length(y)|length(x)!=length(z)){stop('x,y and z must have the same length')}
 
   if(force_zero_center&n_classes%%2!=0){stop('n_classes must be an even number if force_zero_center is TRUE')}
 
-  # define colors and breaks
+  # plot background map
+  if(color_bar){
+    layout(matrix(1:2,2,1),heights=c(4,0.7),widths=1)
+  }
 
+  par(mar=c(0,0,0,0))
+
+  if(country=='us'){
+
+    map("state",col='gray60',fill=TRUE,border=NA)
+    map("state",col='gray89',add=TRUE,lwd=1,resolution=0)
+    map("state",col='black',add=TRUE,lwd=0.8,resolution=0,interior = FALSE)
+
+    coor_legend<-c(-122,25.5)
+    coor_hist<-c(69,28.5)
+
+  } else if(country=='br'){
+
+    map('world',xlim=c(-75,-35),ylim=c(-35,10))
+    map('world',col='gray89',fill=TRUE,add=TRUE)
+
+    coor_legend<-c(-45,-35)
+    coor_hist<-c(-37,7)
+
+  } else {
+
+    stop(paste0('Unknown country:',country))
+
+  }
+
+  # define colors and breaks
   if(!qual){
 
     if(set_breaks){
@@ -131,6 +159,7 @@ plot_points_us<-function(x,y,z,n_classes=6,col_scheme='RdYlBu',col_rev=FALSE,col
 
     }
 
+    # show breaks
     print(b)
 
     if(length(b)<2){ # the mimimum number of color delivered by colorbrewer is 3
@@ -145,18 +174,19 @@ plot_points_us<-function(x,y,z,n_classes=6,col_scheme='RdYlBu',col_rev=FALSE,col
 
   } else { # qualitative classes
 
-    # create a array containing the name of all classes used, i.e. to be plotted
+    # create an array containing the name of all classes to be plotted
     qc<-table(z)
     qc_nonzero<-qc[as.numeric(qc)!=0]
     qc_label<-names(qc_nonzero)
 
-    # create a table associating expected classes to hard-coded colors
+    print(qc_label)
 
+    # create a table associating expected classes to hard-coded colors
     if(col_scheme=='seas'){
 
-      if(any(qc_label!=c('djf','jja','mam','son'))){
+      if(any(!qc_label%in%c('djf','jja','mam','son'))){
 
-        stop('When color scheme is seas, the variable to plot must have 4 levels: djf, jja, mam, son')
+        stop('When color scheme is seas, the variable to plot can only use these 4 levels: djf, jja, mam, son')
 
       }
 
@@ -187,9 +217,7 @@ plot_points_us<-function(x,y,z,n_classes=6,col_scheme='RdYlBu',col_rev=FALSE,col
                             R_color=table_glim_classes$R_color)
 
       if(!any(qc_label%in%col_table$categ)){
-
         stop(paste('One or more quanlitative class does not appear in:',file_glim_colors))
-
       }
 
     } else {
@@ -231,18 +259,7 @@ plot_points_us<-function(x,y,z,n_classes=6,col_scheme='RdYlBu',col_rev=FALSE,col
   if(col_rev){col<-rev(col)} # reverse color scheme if necessary
   if(col_trans>0){col<-paste(col,col_trans,sep='')} # use semi-transparent colors if necessary
 
-  if(color_bar){
-
-    layout(matrix(1:2,2,1),heights=c(4,0.85),widths=1)
-
-  }
-
-  # plot map
-  par(mar=c(0,0,0,0))
-  map("state",col='gray60',fill=TRUE,border=NA)
-  map("state",col='gray89',add=TRUE,lwd=1,resolution=0)
-  map("state",col='black',add=TRUE,lwd=0.8,resolution=0,interior = FALSE)
-
+  # plots points on the map
   if(qual){
 
     if(pch>=21){
@@ -251,18 +268,20 @@ plot_points_us<-function(x,y,z,n_classes=6,col_scheme='RdYlBu',col_rev=FALSE,col
       points(x, y, col=col_each_basin,cex=cex,pch=pch)
     }
 
-  }else{
+  } else {
 
     if(pch>=21){
       points(x, y, bg=col[findInterval(z,b)+1],cex=cex,pch=pch)
-    } else{
+    } else {
       points(x, y, col=col[findInterval(z,b)+1],cex=cex,pch=pch)
     }
 
   }
 
-  text(-122,25.5,text_legend,pos=4)
+  # add text (usually for variable name)
+  text(coor_legend[1],coor_legend[2],text_legend,pos=4)
 
+  # add historgram if required
   if(subplot_hist){
 
     if(qual){
@@ -270,39 +289,41 @@ plot_points_us<-function(x,y,z,n_classes=6,col_scheme='RdYlBu',col_rev=FALSE,col
       par(las=3,cex=0.8)
       table_seas<-table(z)
       table_seas<-table_seas[c('djf','mam','jja','son')]
-      subplot(barplot(table_seas,main='',ylab='',xlab='',col=col,names.arg=FALSE),-69,28.5,size=c(0.75,0.75))
+      names(table_seas)<-c('djf','mam','jja','son')
 
-    }else{
+      subplot(barplot(table_seas,main='',ylab='',xlab='',col=as.character(col_table$R_color),names.arg=FALSE),coor_hist[1],coor_hist[2],size=c(0.75,0.75))
+
+    } else {
 
       par(las=0,cex=0.8)
-      subplot(hist(z,main='',ylab='',xlab='',breaks=10),-69,28.5,size=c(0.75,0.75))
+      subplot(hist(z,main='',ylab='',xlab='',breaks=10),coor_hist[1],coor_hist[2],size=c(0.75,0.75))
 
     }
   }
 
   # plot legend
-   if(!qual){
+  if(!qual){
     if(color_bar){
       par(mar=c(3,5,0,5),cex=1)
       plot.legend.na(col, b, vert=FALSE)
     }
-   }else{
-     par(mar=c(0,0,0,0),cex=0.2) # extra small legend so that everything fits
-     plot.new()
-     if(pch>=21){
-       legend('top',pt.bg=as.character(col_table$R_color),legend=col_table$categ,pch=pch,ncol=2,bty='n')
-     }else{
-       legend('top',col=as.character(col_table$R_color),legend=col_table$categ,pch=pch,ncol=2,bty='n')
+  }else{
+    par(mar=c(0,0,0,0),cex=1) # if necessary, reduce cex to fit more information
+    plot.new()
+    if(pch>=21){
+     legend('top',pt.bg=as.character(col_table$R_color),legend=col_table$categ,pch=pch,ncol=2,bty='n')
+    }else{
+     legend('top',col=as.character(col_table$R_color),legend=col_table$categ,pch=pch,ncol=2,bty='n')
      }
    }
 
-  # reset layout
-  # layout(1,heights=1,widths=1) # commented to use layout in another part of the script
+  # reset par and layout
+  par(mar=c(0,0,0,0),cex=1)
+  layout(1,heights=1,widths=1) # comment to use layout in another part of the script
 
 }
 
-# plot horizontal or verstical color bar
-
+# function to plot horizontal or vertical color bar
 plot.legend.na<-function (col, breaks, vert=TRUE, density = NULL, angle = 45, slwd = par("lwd"), cex.leg = 1) {
 
   nbrk <- length(breaks)

@@ -1,19 +1,92 @@
+### PURPOSE
 
-get_hydro_year<-function(d){
+# This document contains R functions to perform simple date-related operations which
+# are used in CAMELS scripts.
 
-  # input variable:
+# Determine the hydrological year for different countries
+
+get_hydro_year<-function(d,hy_cal){
+
+  # input variables:
   # d: array of dates of class Date
+  # hy_cal: hydrological year calendar, current options are 'oct_us_gb', 'sep_br' and 'apr_cl'
 
   if(class(d)!='Date'){stop('d should be of class Date - use as.Date')}
 
   m<-as.numeric(format(d,'%m')) # extract month
   y<-as.numeric(format(d,'%Y')) # extract year
   hy<-y                         # create array for hydrological year
-  hy[m>=10]<-(hy[m>=10]+1)      # hydrological year starts on oct 1. st
+
+  if(hy_cal=='oct_us_gb'){      # USA and Great Britian
+
+    hy[m>=10]<-(hy[m>=10]+1)    # hydrological year 2010 starts on Oct 1st 2009 and finishes on Sep 30th 2010
+
+  } else if(hy_cal=='sep_br'){  # Brazil
+
+    hy[m>=9]<-(hy[m>=9]+1)      # hydrological year 2010 starts on Sep 1st 2009 and finishes on Aug 31st 2010
+
+  } else if(hy_cal=='apr_cl'){  # Chile
+
+    hy[m<=3]<-(hy[m<=3]-1)      # hydrological year 2010 starts on Apr 1st 2010 and finishes on Mar 31st 2011
+
+  } else {
+
+    stop(paste0('Unkown hydrological year calendar:',hy_cal))
+
+  }
 
   return(hy)
 
 }
+
+get_hydro_year_stats<-function(d,hy_cal){
+  
+  # note: this function includes get_hydro_year and should be used instead
+  
+  # input variables:
+  # d: array of dates of class Date
+  # hy_cal: hydrological year calendar, current options are 'oct_us_gb', 'sep_br' and 'apr_cl'
+  
+  if(class(d)!='Date'){stop('d should be of class Date - use as.Date')}
+  
+  m<-as.numeric(format(d,'%m')) # extract month
+  y<-as.numeric(format(d,'%Y')) # extract year
+  hy<-y                         # create array for hydrological year
+
+  if(hy_cal=='oct_us_gb'){      # USA and Great Britian
+    
+    hy[m>=10]<-(hy[m>=10]+1)    # hydrological year 2010 starts on Oct 1st 2009 and finishes on Sep 30th 2010
+    start_hy<-as.Date(paste0(hy-1,'-10-01'))
+    
+  } else if(hy_cal=='sep_br'){  # Brazil
+    
+    hy[m>=9]<-(hy[m>=9]+1)      # hydrological year 2010 starts on Sep 1st 2009 and finishes on Aug 31st 2010
+    start_hy<-as.Date(paste0(hy-1,'-09-01'))
+    
+  } else if(hy_cal=='apr_cl'){  # Chile
+    
+    hy[m<=3]<-(hy[m<=3]-1)      # hydrological year 2010 starts on Apr 1st 2010 and finishes on Mar 31st 2011
+    start_hy<-as.Date(paste0(hy,'-04-01'))
+    
+  } else {
+    
+    stop(paste0('Unkown hydrological year calendar:',hy_cal))
+    
+  }
+  
+  day_of_hy<-as.numeric(d-start_hy+1) # days since the beginning of the hydro year
+  
+  if(any(day_of_hy<1|day_of_hy>366)){
+    
+    stop('Error when computing day of hydro year')
+    
+  }
+  
+  return(data.frame(hy,day_of_hy))
+  
+}
+
+# Determine the season based on the month - returns full season name
 
 month2season<-function(m){
 
@@ -29,6 +102,8 @@ month2season<-function(m){
 
 }
 
+# Determine the season based on the month - returns season abbreviation
+
 month2sea<-function(m){
 
   if(!is.numeric(m)){m<-as.numeric(m)}
@@ -43,18 +118,28 @@ month2sea<-function(m){
 
 }
 
-### NA IN TIME SERIES
+# Deal with missing values in an array
 
-# Takes a time series as input, determine the time steps for which data not NA,
-# and check if the NA fraction is below a given tolerance threshold
+find_avail_data_array<-function(x,tol){
 
-find_avail_data_array<-function(x,tol=0.05){
+  # input variables:
+  # x: array (i.e. time series) to scrutinise
+  # tol: tolerated fraction of missing values (e.g. 0.05 for 5%)
+
+  # purpose:
+  # determine the time steps for which data are available (i.e. not NA) and check
+  # if the fraction of NA elements is greated than the tolerance threshold tol
+
+  # returns:
+  # - an array of TRUE/FALSE values indicating for which array elements data are available
+  # OR
+  # - an array of NAs if the fraction of NA elements exceeds the tolerance threshold
 
   avail_data<-!(is.na(x)) # time steps for which data are available
 
   if(sum(!avail_data)>=tol*length(x)){ # more than tol*100 % of the time series are missing
 
-    return(x*NA)
+    return(x*NA)       # return a vector of NA values
 
   } else {
 
@@ -64,22 +149,23 @@ find_avail_data_array<-function(x,tol=0.05){
 
 }
 
-# Take serveral time series covering the same period and orgranized in a matrix as input,
-# determine the time steps for which data are available for all the time series (joint availibility),
-# and check for this joint vector if the NA fraction is below a given tolerance threshold
+# Deal with missing values in several arrays organised as a data.frame
 
-find_avail_data_matrix<-function(x,tol=0.05){
+find_avail_data_df<-function(x,tol){
 
-  if(dim(x)[2]>dim(x)[1]){ # if time series organized as rows, transpose the matrix
+  # input variables:
+  # x: data.frame (i.e. several time series covering the same period) to scrutinise
+  # tol: tolerated fraction of missing values (e.g. 0.05 for 5%)
 
-    x<-t(x)
+  # purpose:
+  # determine the time steps for which data are available for all the time series
+  # (joint availibility) and check for this joint array if the NA fraction is below
+  # the given tolerance threshold - see find_avail_data_array
 
-  }
+  # determine time steps for which data are available (not NA) for all the time series
+  joint_avail<-apply(x,1,function(x) ifelse(all(!is.na(x)),TRUE,NA))
 
-  joint_avail<-rowSums(x) # check the joint availibility of the time series: for each day,
-                          # returns NA if at least one of the time serie has non-available data on that day
-                          # otherwise returns a non-interpretable number (e.g. sum of a temparture and a discharge measurment)
-
+  # compare fraction of missing values to prescribed thershold
   avail_data<-find_avail_data_array(joint_avail,tol)
 
   return(avail_data)
