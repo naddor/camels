@@ -132,16 +132,25 @@ compute_extreme_precip_indices<-function(prec,day,rel_hp_thres,abs_lp_thres,tol)
     # frequency and duration of high intensity precipitation events
     hp<-prec>=rel_hp_thres*mean(prec,na.rm=TRUE)
     hp[is.na(hp)]<-F # if no precip data available, consider it is not an event
-    hp_length<-nchar(strsplit(paste(ifelse(hp,'T','F'),collapse=''),'F')[[1]]) # compute number of consecutive high precip days
+    hp_length<-nchar(strsplit(paste(ifelse(hp,'H','-'),collapse=''),'-')[[1]]) # compute number of consecutive high precip days
     hp_length<-hp_length[hp_length>0]
-    #if(sum(hp_length)!=sum(hp)){stop('Unexpected total number of high precip days')}
+    if(sum(hp_length)!=sum(hp)){stop('Unexpected total number of high precip days')}
 
     if(length(hp_length)>0){ # at least one high precipitation event in the provided time series
 
       hp_freq<-sum(hp)/length(hp)*365.25
       hp_dur<-mean(hp_length)
       hp_sea<-rapply(split(hp[hp],s[hp],drop=TRUE),length)
-      hp_timing<-names(hp_sea)[which.max(hp_sea)]
+
+      if(max(rank(hp_sea)%%1!=0)){ # if tie between seasons with the most days with high precipitation, set timing to NA
+
+        hp_timing<-NA
+
+      } else{
+
+        hp_timing<-names(hp_sea)[which.max(hp_sea)]
+
+      }
 
     } else { # not a single high precipitation event in the provided time series
 
@@ -154,13 +163,22 @@ compute_extreme_precip_indices<-function(prec,day,rel_hp_thres,abs_lp_thres,tol)
     # frequency and duration of low intensity precipitation events
     lp<-prec<abs_lp_thres
     lp[is.na(lp)]<-F # if no precip data available, consider it is not an event
-    lp_length<-nchar(strsplit(paste(ifelse(lp,'T','F'),collapse=''),'F')[[1]]) # compute number of consecutive low precip days
+    lp_length<-nchar(strsplit(paste(ifelse(lp,'L','-'),collapse=''),'-')[[1]]) # compute number of consecutive low precip days
     lp_length<-lp_length[lp_length>0]
 
     lp_freq<-sum(lp)/length(lp)*365.25
     lp_dur<-mean(lp_length)
     lp_sea<-rapply(split(lp[lp],s[lp],drop=TRUE),length)
-    lp_timing<-names(lp_sea)[which.max(lp_sea)]
+
+    if(max(rank(lp_sea)%%1!=0)){ # if tie between seasons with the most days with low precipitation, set timing to NA 
+
+      lp_timing<-NA
+
+    } else{
+
+      lp_timing<-names(lp_sea)[which.max(lp_sea)]
+
+    }
 
     return(data.frame(high_prec_freq=hp_freq,high_prec_dur=hp_dur,high_prec_timing=hp_timing,
                       low_prec_freq=lp_freq,low_prec_dur=lp_dur,low_prec_timing=lp_timing))
