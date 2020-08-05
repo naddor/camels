@@ -1,11 +1,13 @@
 
-source(paste(dir_r_scripts,'camels/time/time_tools.R',sep='')) # for find_avail_data_matrix
+source(paste(dir_r_scripts,'camels/time/time_tools.R',sep='')) # for find_avail_data_df
 
 ### NSE
 
 compute_nse<-function(obs,sim,tol=0.05){
 
-  avail_data<-find_avail_data_matrix(cbind(obs,sim),tol) # time steps for which obs and sim are available
+  if(length(obs)!=length(sim)){stop('the length of OBS and SIM differ')}
+
+  avail_data<-find_avail_data_df(cbind(obs,sim),tol) # time steps for which obs and sim are available
 
   nse<-1-sum((sim[avail_data]-obs[avail_data])^2)/sum((obs[avail_data]-mean(obs[avail_data]))^2)
 
@@ -17,7 +19,7 @@ compute_nse<-function(obs,sim,tol=0.05){
 
 compute_rmse<-function(obs,sim,tol=0.05){
 
-  avail_data<-find_avail_data_matrix(cbind(obs,sim),tol) # time steps for which obs and sim are available
+  avail_data<-find_avail_data_df(cbind(obs,sim),tol) # time steps for which obs and sim are available
 
   sqrt(sum((sim[avail_data]-obs[avail_data])^2)/length(obs[avail_data]))
 
@@ -27,7 +29,7 @@ compute_rmse<-function(obs,sim,tol=0.05){
 
 compute_dv<-function(obs,sim,tol=0.05){
 
-  avail_data<-find_avail_data_matrix(cbind(obs,sim),tol) # time steps for which obs and sim are available
+  avail_data<-find_avail_data_df(cbind(obs,sim),tol) # time steps for which obs and sim are available
 
   (sum(sim[avail_data])-sum(obs[avail_data]))/sum(obs[avail_data])
 
@@ -37,7 +39,7 @@ compute_dv<-function(obs,sim,tol=0.05){
 
 compute_kge<-function(obs,sim,tol=0.05,return_decomp=FALSE){
 
-  avail_data<-find_avail_data_matrix(cbind(obs,sim),tol) # time steps for which obs and sim are available
+  avail_data<-find_avail_data_df(cbind(obs,sim),tol) # time steps for which obs and sim are available
 
   r     <- cor(obs[avail_data],sim[avail_data],use="everything")
   alpha <- sd(sim[avail_data])/sd(obs[avail_data])

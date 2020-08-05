@@ -55,10 +55,14 @@ compute_climate_indices_berghuijs<-function(temp,prec,pet,day,tol){
     pet_mean<-mean(pet,na.rm=TRUE)
     aridity<-pet_mean/p_mean
 
+    # extract day of year
+    t_julian<-strptime(format(day,'%Y%m%d'),'%Y%m%d')$yday
+
     # estimate annual temperature and precipitation cycles using sine curves
-    t_julian<-strptime(format(day,'%Y%m%d'),'%Y%m%d')$yday # extract day of year
+    # nls (nonlinear least squares function) is used for the non-linear regression
+    # a first guess is needed for the phase shift of precipiation (s_p)
     s_p_first_guess<-90-which.max(rapply(split(prec,format(day,'%m')),mean,na.rm=TRUE))*30
-    s_p_first_guess<-ifelse(s_p_first_guess<0,s_p_first_guess+360,s_p_first_guess)
+    s_p_first_guess<-s_p_first_guess%%360 # if necessary, convert to a value between 0 and 360
 
     fit_temp = nls(temp ~ mean(temp,na.rm=TRUE)+delta_t*sin(2*pi*(t_julian-s_t)/365.25),start=list(delta_t=5,s_t=-90))
     fit_prec = nls(prec ~ mean(prec,na.rm=TRUE)*(1+delta_p*sin(2*pi*(t_julian-s_p)/365.25)),start=list(delta_p=0.4,s_p=s_p_first_guess))
@@ -170,7 +174,7 @@ compute_extreme_precip_indices<-function(prec,day,rel_hp_thres,abs_lp_thres,tol)
     lp_dur<-mean(lp_length)
     lp_sea<-rapply(split(lp[lp],s[lp],drop=TRUE),length)
 
-    if(max(rank(lp_sea)%%1!=0)){ # if tie between seasons with the most days with low precipitation, set timing to NA 
+    if(max(rank(lp_sea)%%1!=0)){ # if tie between seasons with the most days with low precipitation, set timing to NA
 
       lp_timing<-NA
 
