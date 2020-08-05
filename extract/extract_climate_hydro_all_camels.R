@@ -1,14 +1,13 @@
 rm(list=ls())
 
-dir_r_scripts<-'/Volumes/d1/scripts/r_scripts/'
-
+# load functions
 source(paste(dir_r_scripts,'camels/clim/clim_indices.R',sep=''))
 source(paste(dir_r_scripts,'camels/hydro/hydro_signatures.R',sep=''))
 source(paste(dir_r_scripts,'camels/maps/plot_maps_camels.R',sep=''))
 
 # Define the country
-#country='us'
-country='gb'
+country='us'
+#country='gb'
 #country='br'
 
 # Define directory for files and list of catchment IDs
