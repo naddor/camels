@@ -18,8 +18,10 @@ if(country=='us'){
 
   # set dir and preferences
   hy_cal='oct_us_gb'
-  tol=0.5 # Gem asked for no restriction at first (see email from 10 Dec 2019) but the code crashes (streamflow elasticity)
-          # when there is only a year of available data, which happens for catchments not in CAMELS-GB
+  tol=0.85 # Gem asked for no restriction at first (see email from 10 Dec 2019) but the code crashes (streamflow elasticity)
+           # when there is only a year of available data, which happens for catchments not in CAMELS-GB, now tolerating 85%
+           # of missing values (see email from 16 Dec 2019)
+  
   dir_dat<-'/Volumes/d1/data/camels_gb/'
   list_files<-system(paste0('ls ',dir_dat,'timeseries_2dp/'),intern=TRUE)
   list_catch<-rapply(strsplit(list_files,'_'),function(x) x[5])
@@ -121,9 +123,9 @@ for(i in 1:length(list_catch)){
 }
 
 ### SAVE
-save(camels_clim,camels_hydro_obs,list_catch,file=paste0(dir_dat,'ci_hs_camels_',country,'_',per_str,'.Rdata'))
-write.table(camels_clim,file=paste0(dir_dat,'clim_indices_camels_',country,'_',per_str,'.txt'),row.names=FALSE,quote=FALSE,sep=';')
-write.table(camels_hydro_obs,file=paste0(dir_dat,'hydro_sign_camels_',country,'_',per_str,'.txt'),row.names=FALSE,quote=FALSE,sep=';')
+save(camels_clim,camels_hydro_obs,list_catch,file=paste0(dir_dat,'ci_hs_camels_',country,'_',per_str,'_NAtol',tol,'.Rdata'))
+write.table(camels_clim,file=paste0(dir_dat,'clim_indices_camels_',country,'_',per_str,'_NAtol',tol,'.txt'),row.names=FALSE,quote=FALSE,sep=';')
+write.table(camels_hydro_obs,file=paste0(dir_dat,'hydro_sign_camels_',country,'_',per_str,'_NAtol',tol,'.txt'),row.names=FALSE,quote=FALSE,sep=';')
 
 ### PLOT MAPS
 camels_clim<-merge(camels_topo,camels_clim)
