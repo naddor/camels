@@ -21,7 +21,7 @@ if (hostname == 'uncertainty.rap.ucar.edu' | substr(hostname, 1, 3) == 'vpn') {
 }
 
 # set country
-country = 'cl'
+country <- 'cl'
 
 # load GLiM data previously clipped for the country of interest
 # and saved in R format
@@ -56,7 +56,7 @@ if (country == 'us') {
 
   # rename to standard names
   limw_wgs84 <- limw_wgs84_cl
-  names(shp_catch@data)[1] <- c('gauge_id')
+  names(shp_catch@data)[1] <- 'gauge_id'
 
   # define PDF dimensions
   width_pdf <- 6
@@ -68,11 +68,11 @@ if (country == 'us') {
 table_glim_classes <- read.table(paste0(dir_data, 'GLiM/GLiM_classes_colors.txt'), sep = ';', header = TRUE)
 table_glim_classes$short_name <- as.factor(table_glim_classes$short_name)
 
-glim_classes = data.frame(short_name = limw_wgs84@data$xx, order = 1:length(limw_wgs84@data$xx))
-glim_classes_col = merge(glim_classes, table_glim_classes, sort = FALSE) # add column with color
+glim_classes <- data.frame(short_name = limw_wgs84@data$xx, order = seq_along(limw_wgs84@data$xx))
+glim_classes_col <- merge(glim_classes, table_glim_classes, sort = FALSE) # add column with color
 
 # merge does not maintain order, so data must be sorted using the column "order" created for this purpose
-glim_classes_col = glim_classes_col[order(glim_classes_col$order),]
+glim_classes_col <- glim_classes_col[order(glim_classes_col$order),]
 
 # plot a map with catchments
 pdf(paste0(dir_plots, 'camels/geol/glim_', country, '_overview.pdf', sep = ''), width = width_pdf, height = height_pdf)
@@ -113,7 +113,7 @@ legend('bottomleft', col = as.character(table_glim_classes$R_col), legend = tabl
 
 for (e in 1:nrow(catch_topo)) {
 
-  catch_id = catch_topo$gauge_id[e]
+  catch_id <- catch_topo$gauge_id[e]
   print(paste(e, catch_id))
 
   # determime area of polygons overlapping with each catchment
@@ -129,12 +129,12 @@ for (e in 1:nrow(catch_topo)) {
 
   if (country == 'us') {
 
-    area_gf = catch_topo[catch_topo$gage_id == catch_id, 'area_geospa_fabric']
-    rel_area_error = sum(inter_data$area) / 1E6 / area_gf - 1
+    area_gf <- catch_topo[catch_topo$gage_id == catch_id, 'area_geospa_fabric']
+    rel_area_error <- sum(inter_data$area) / 1E6 / area_gf - 1
 
   }else if (country == 'cl') {
 
-    rel_area_error = sum(inter_data$area) / 1E6 / catch_topo$area_km2[e] - 1
+    rel_area_error <- sum(inter_data$area) / 1E6 / catch_topo$area_km2[e] - 1
 
   }
 
@@ -194,7 +194,7 @@ glim_carbonate_rocks_frac <- round(glim_carbonate_rocks_frac, 3)
 catch_geol_glim <- data.frame(gauge_id = catch_topo$gauge_id, glim_1st_class, glim_1st_frac, glim_2nd_class, glim_2nd_frac, glim_carbonate_rocks_frac)
 
 # save data to temp directory
-save(catch_geol_glim, file = paste(dir_catch_attr_temp, 'catch_geol_glim_', country, '.Rdata', sep = ''))
+save(catch_geol_glim, file = paste0(dir_catch_attr_temp, 'catch_geol_glim_', country, '.Rdata'))
 
-write.table(catch_geol_glim, file = paste(dir_catch_attr, 'catch_geol_glim_', country, '.txt', sep = ''),
+write.table(catch_geol_glim, file = paste0(dir_catch_attr, 'catch_geol_glim_', country, '.txt'),
             row.names = FALSE, quote = FALSE, sep = ';')

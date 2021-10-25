@@ -8,7 +8,7 @@
 
 ### LOAD FUNCTIONS
 
-source(paste(dir_r_scripts, 'camels/time/time_tools.R', sep = '')) # for month2sea
+source(paste0(dir_r_scripts, 'camels/time/time_tools.R')) # for month2sea
 
 ### WRAPPER TO COMPUTE STANDARD CAMELS CLIMATIC INDICES
 

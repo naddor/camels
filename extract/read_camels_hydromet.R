@@ -1,6 +1,6 @@
 ### LOAD CATCHMENT METADATA TO RETRIVE CATCHMENT AREA AND COMPUTE SPECIFIC DISCHARGE
 
-gauge_table <- read.table(paste(dir_basin_dataset, 'basin_metadata/gauge_information.txt', sep = ''), sep = '\t', quote = '', header = FALSE, skip = 1, colClasses = c(rep("factor", 3), rep("numeric", 3)))
+gauge_table <- read.table(paste0(dir_basin_dataset, 'basin_metadata/gauge_information.txt'), sep = '\t', quote = '', header = FALSE, skip = 1, colClasses = c(rep("factor", 3), rep("numeric", 3)))
 colnames(gauge_table) <- c('huc_02', 'gage_id', 'gage_name', 'gage_lat', 'gage_lon', 'area_usgs_km2') # I didn't manage to import the header from the original file because of spaces in "DRAINAGE AREA (KM^2)"
 #gauge_table<<-gauge_table[order(gauge_table$gage_id),] # sort catchments by ID
 
@@ -32,18 +32,18 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
   # IMPORT FORCING DATA
   if (forcing_dataset == 'daymet') {
 
-    forcing_table <- read.table(paste(dir_basin_dataset, 'basin_mean_forcing/daymet/', huc, '/', id, '_lump_cida_forcing_leap.txt', sep = ''), skip = 3, header = TRUE)
+    forcing_table <- read.table(paste0(dir_basin_dataset, 'basin_mean_forcing/daymet/', huc, '/', id, '_lump_cida_forcing_leap.txt'), skip = 3, header = TRUE)
 
   } else if (forcing_dataset == 'maurer') {
 
     if (id %in% c('02108000', '05120500', '07067000', '09492400')) { # header is incomplete in original files
 
-      forcing_table <- read.table(paste(dir_basin_dataset, 'basin_mean_forcing/maurer/', huc, '/', id, '_lump_maurer_forcing_leap.txt', sep = ''), skip = 4, header = FALSE)
+      forcing_table <- read.table(paste0(dir_basin_dataset, 'basin_mean_forcing/maurer/', huc, '/', id, '_lump_maurer_forcing_leap.txt'), skip = 4, header = FALSE)
       colnames(forcing_table) <- c("year", "mnth", "day", "hr", "dayl.s.", "prcp.mm.day.", "srad.w.m2.", "swe.mm.", "tmax.c.", "tmin.c.", "vp.pa.")
 
     }else {
 
-      forcing_table <- read.table(paste(dir_basin_dataset, 'basin_mean_forcing/maurer/', huc, '/', id, '_lump_maurer_forcing_leap.txt', sep = ''), skip = 3, header = TRUE)
+      forcing_table <- read.table(paste0(dir_basin_dataset, 'basin_mean_forcing/maurer/', huc, '/', id, '_lump_maurer_forcing_leap.txt'), skip = 3, header = TRUE)
 
     }
 
@@ -66,13 +66,13 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
 
   }
 
-  t_forcing <- as.Date(paste(forcing_table$year, sprintf('%02d', as.numeric(forcing_table$month)), sprintf('%02d', as.numeric(forcing_table$day)), sep = ''), '%Y%m%d')
+  t_forcing <- as.Date(paste0(forcing_table$year, sprintf('%02d', as.numeric(forcing_table$month)), sprintf('%02d', as.numeric(forcing_table$day))), '%Y%m%d')
 
   # IMPORT STREAMFLOW DATA
   # A ->  streaflow value is certified by USGS as the actual daily mean flow
   # A:e -> streamflow value is certified by the USGS as the actual ESTIMATED daily mean flow
-  streamflow_table <- read.table(paste(dir_basin_dataset, 'usgs_streamflow/', huc, '/', id, '_streamflow_qc.txt', sep = ''), header = FALSE, col.names = c('ID', 'Y', 'M', 'D', 'Q', 'QC_FLAG'), fill = TRUE) # fill=TRUE handles cases QC_FLAG is missing
-  t_streamflow <- as.Date(paste(streamflow_table$Y, sprintf('%02d', as.numeric(streamflow_table$M)), sprintf('%02d', as.numeric(streamflow_table$D)), sep = ''), '%Y%m%d')
+  streamflow_table <- read.table(paste0(dir_basin_dataset, 'usgs_streamflow/', huc, '/', id, '_streamflow_qc.txt'), header = FALSE, col.names = c('ID', 'Y', 'M', 'D', 'Q', 'QC_FLAG'), fill = TRUE) # fill=TRUE handles cases QC_FLAG is missing
+  t_streamflow <- as.Date(paste0(streamflow_table$Y, sprintf('%02d', as.numeric(streamflow_table$M)), sprintf('%02d', as.numeric(streamflow_table$D))), '%Y%m%d')
 
   streamflow_table$Q[streamflow_table$Q == -999] <- NA # missing values: change -999 to NA
   if (sum(streamflow_table$QC_FLAG == 'M') != sum(is.na(streamflow_table$Q))) { stop('Inconsistency between number of M flags and number of -999 values') }
@@ -95,7 +95,7 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
   #  streamflow<-streamflow*3600*24*1000/(camels_topo$area_gages2[camels_name$gauge_id==id]*1E6) # convert m^3/sec to mm/day
 
   # IMPORT ET AND PET FROM SACRAMENTO OUTPUT
-  output_hydro_files <- system(paste('ls ', dir_basin_dataset, 'model_output/flow_timeseries/', forcing_dataset, '/', huc, '/', id, '_??_model_output.txt', sep = ''), intern = TRUE)
+  output_hydro_files <- system(paste0('ls ', dir_basin_dataset, 'model_output/flow_timeseries/', forcing_dataset, '/', huc, '/', id, '_??_model_output.txt'), intern = TRUE)
 
   if (length(output_hydro_files) != 10) { stop('Unexpected number of hydrological output files') }
 
@@ -111,7 +111,7 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
       pet_ens <- hydro_sim$PET
       q_sim_sac_ens <- hydro_sim$MOD_RUN
       q_obs_sac <- hydro_sim$OBS_RUN
-      t_hydro_sim <- as.Date(paste(hydro_sim$YR, sprintf('%02d', hydro_sim$MNTH), sprintf('%02d', hydro_sim$DY), sep = ''), format = '%Y%m%d')
+      t_hydro_sim <- as.Date(paste0(hydro_sim$YR, sprintf('%02d', hydro_sim$MNTH), sprintf('%02d', hydro_sim$DY)), format = '%Y%m%d')
 
       first_file <- FALSE
 
@@ -122,7 +122,7 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
       q_sim_sac_ens <- cbind(q_sim_sac_ens, hydro_sim$MOD_RUN)
 
       if (any(q_obs_sac != hydro_sim$OBS_RUN)) { stop('OBS discharge in different model output files do not match') }
-      if (any(t_hydro_sim != as.Date(paste(hydro_sim$YR, sprintf('%02d', hydro_sim$MNTH), sprintf('%02d', hydro_sim$DY), sep = ''), format = '%Y%m%d'))) {
+      if (any(t_hydro_sim != as.Date(paste0(hydro_sim$YR, sprintf('%02d', hydro_sim$MNTH), sprintf('%02d', hydro_sim$DY)), format = '%Y%m%d'))) {
         stop('The model runs cover different periods')
       }
     }
@@ -213,11 +213,11 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
 
   } else if (min(t_forcing) > min(t_input)) {
 
-    stop(paste('Forcing data start on ', min(t_forcing), ' so forcing for ', min(t_input), ' cannot be extracted.', sep = ''))
+    stop(paste0('Forcing data start on ', min(t_forcing), ' so forcing for ', min(t_input), ' cannot be extracted.'))
 
   } else if (max(t_forcing) < max(t_input)) {
 
-    stop(paste('Forcing data end on ', max(t_forcing), ' so forcing for ', max(t_input), ' cannot be extracted.', sep = ''))
+    stop(paste0('Forcing data end on ', max(t_forcing), ' so forcing for ', max(t_input), ' cannot be extracted.'))
 
   }
 

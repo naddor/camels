@@ -11,7 +11,7 @@
 
 ### LOAD FUNCTIONS
 
-source(paste(dir_r_scripts, 'camels/time/time_tools.R', sep = '')) # for month2sea and get_hydro_year
+source(paste0(dir_r_scripts, 'camels/time/time_tools.R')) # for month2sea and get_hydro_year
 
 ### WRAPPER AND PARAMETER VALUES TO COMPUTE STANDARD CAMELS HYDROLOGICAL SIGNATURES
 
@@ -221,6 +221,7 @@ comp_i_bf <- function(q, d, alpha, passes, tol) {
 
   } else {
 
+    require(lfstat)
     # Ladson et al. (2013). “A standard approach to baseflow separation using the Lyne and Hollick filter.”
     # Australian Journal of Water Resources 17(1): 173-180.
     # https://tonyladson.wordpress.com/2013/10/01/a-standard-approach-to-baseflow-separation-using-the-lyne-and-hollick-filter/#comments
@@ -230,7 +231,6 @@ comp_i_bf <- function(q, d, alpha, passes, tol) {
 
     # lfstat package based on Tallaksen, L. M. and Van Lanen, H. A. J. 2004 Hydrological Drought: Processes and
     # Estimation Methods for Streamflow and Groundwater. Developments in Water Science 48, Amsterdam: Elsevier.
-    require(lfstat)
     q_dat <- data.frame(flow = q, day = as.numeric(format(d, '%d')), month = as.numeric(format(d, '%m')), year = format(d, '%Y'))
     lf_dat <- createlfobj(q_dat, hyearstart = 10) # hyearstart, integer between 1 and 12, indicating the start of the hydrological year, 10 for october
     bf_lfstat <- lf_dat$baseflow
@@ -273,7 +273,7 @@ compute_hfd_mean_sd <- function(q, d, tol, hy_cal) {
     hy_q <- split(q[avail_data], hy_stats$hy[avail_data]) # discharge for each hydrological year
     hy_d <- split(hy_stats$day_of_hy[avail_data], hy_stats$hy[avail_data]) # number of days since beginning of hydrological year
 
-    date_hfd <- c() # date of half flow for each hydrological year in days since the beginning of hydrological year
+    date_hfd <- NULL # date of half flow for each hydrological year in days since the beginning of hydrological year
 
     for (y in names(hy_q)) { # loop through hydrological years
 
@@ -318,7 +318,7 @@ compute_qXX <- function(q, thres, tol) {
 
   }
 
-  names(qXX) = paste('q', thres * 100, sep = '')
+  names(qXX) <- paste0('q', thres * 100)
 
   return(qXX)
 
@@ -401,8 +401,8 @@ compute_lf_freq_dur <- function(q, d, tol) {
 
     } else {
 
-      lf_freq = 0
-      lf_dur = 0
+      lf_freq <- 0
+      lf_dur <- 0
 
     }
 

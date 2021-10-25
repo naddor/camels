@@ -31,7 +31,7 @@ plot_map_catch_attr <- function(dat, c2p, n_classes = 6, col_scheme = 'RdYlBu', 
       # layout.show(nf)
     }else {
       nf <- layout(matrix(1:n_panels, layout_nrow, layout_ncol), heights = 1, widths = 1)
-      #layout.show(nf)
+      # layout.show(nf)
     }
   }
 
@@ -94,7 +94,7 @@ plot_points_us_basins <- function(dat, n_classes = 6, col_scheme = 'RdYlBu', col
   # load coordinates
   if (!exists('camels_topo')) {
 
-    load(paste(dir_catch_attr, 'camels_topo.Rdata', sep = ''))
+    load(paste0(dir_catch_attr, 'camels_topo.Rdata'))
 
   }
 
@@ -286,7 +286,7 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
     }
 
     # determine color of each basin
-    z_temp <- data.frame(sort_column = 1:length(z), z = z) # add a sorting column
+    z_temp <- data.frame(sort_column = seq_along(z), z = z) # add a sorting column
     merged_table <- merge(z_temp, col_table, by.x = 'z', by.y = 'categ', all.x = TRUE) # all.x allows to keep NA values
     merged_table <- merged_table[order(merged_table$sort_column),] # sort
 
@@ -301,7 +301,7 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
   }
 
   if (col_rev) { col <- rev(col) } # reverse color scheme if necessary
-  if (col_trans > 0) { col <- paste(col, col_trans, sep = '') } # use semi-transparent colors if necessary
+  if (col_trans > 0) { col <- paste0(col, col_trans) } # use semi-transparent colors if necessary
 
   # plots points on the map
   if (qual) {
@@ -389,7 +389,7 @@ plot.legend.na <- function(col, breaks, vert = TRUE, density = NULL, angle = 45,
 
   if (vert) {
 
-    image(x = c(1), y = seq(1, (ncol + 1)) - 0.5, z = matrix(seq(1, (ncol + 1)) - 0.5, nrow = 1), col = col, breaks = seq(1, (ncol + 1)), ylim = c(1, (ncol + 1)), axes = FALSE, xlab = "", ylab = "")
+    image(x = 1, y = seq(1, (ncol + 1)) - 0.5, z = matrix(seq(1, (ncol + 1)) - 0.5, nrow = 1), col = col, breaks = seq(1, (ncol + 1)), ylim = c(1, (ncol + 1)), axes = FALSE, xlab = "", ylab = "")
 
     for (k in 1:ncol) {
       polygon(x = c(0, 2, 2, 0, 0), y = c(k, k, k + 1, k + 1, k), col = "white", border = NA, xpd = FALSE)
@@ -401,7 +401,7 @@ plot.legend.na <- function(col, breaks, vert = TRUE, density = NULL, angle = 45,
 
   }else {
 
-    image(y = c(1), x = seq(1, (ncol + 1)) - 0.5, z = matrix(seq(1, (ncol + 1)) - 0.5, ncol = 1), col = col, breaks = seq(1, (ncol + 1)), xlim = c(1, (ncol + 1)), axes = FALSE, xlab = "", ylab = "")
+    image(y = 1, x = seq(1, (ncol + 1)) - 0.5, z = matrix(seq(1, (ncol + 1)) - 0.5, ncol = 1), col = col, breaks = seq(1, (ncol + 1)), xlim = c(1, (ncol + 1)), axes = FALSE, xlab = "", ylab = "")
 
     for (k in 1:ncol) {
       polygon(y = c(0, 2, 2, 0, 0), x = c(k, k, k + 1, k + 1, k), col = "white", border = NA, xpd = FALSE)

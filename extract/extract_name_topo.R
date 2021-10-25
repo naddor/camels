@@ -2,12 +2,12 @@
 require(maps)
 require(stringr) # to remove leading blank spaces
 
-source(paste(dir_r_scripts, 'camels/extract/extract_elev_bands.R', sep = ''))
+source(paste0(dir_r_scripts, 'camels/extract/extract_elev_bands.R'))
 
 ### LOAD GAUGE INFORMATION AND BASIN CHARACTERISTICS FOR ALL BASINS
 
 # load gauge information - USGS data
-file_usgs_data <- paste(dir_basin_dataset, 'basin_metadata/gauge_information.txt', sep = '')
+file_usgs_data <- paste0(dir_basin_dataset, 'basin_metadata/gauge_information.txt')
 gauge_table <- read.table(file_usgs_data, sep = '\t', quote = '', skip = 1, header = FALSE, colClasses = c(rep("factor", 3), rep("numeric", 3)))
 
 if (readLines(file_usgs_data, 1) == 'HUC_02  GAGE_ID\t\t\tGAGE_NAME\t\t\t\t\tLAT\t\tLONG\t\tDRAINAGE AREA (KM^2)') {
@@ -23,7 +23,7 @@ gauge_table$gauge_name <- str_trim(gauge_table$gauge_name, 'left') # remove lead
 # catchment_state<-rapply(strsplit(as.character(gauge_table$gauge_name),','),function(x) x[2])
 
 # load basin physical characteristics - produced by Andy
-file_catchment_table <- paste(dir_basin_dataset, '/basin_metadata/basin_physical_characteristics.txt', sep = '')
+file_catchment_table <- paste0(dir_basin_dataset, '/basin_metadata/basin_physical_characteristics.txt')
 catchment_table <- read.table(file_catchment_table, header = TRUE, colClasses = c(rep("factor", 2), rep("numeric", 4)))
 
 if (readLines(file_catchment_table, 1) == 'BASIN_HUC BASIN_ID Size(km2) Elevation(m) Slope(m_km-1) Frac_Forest(percent)') {

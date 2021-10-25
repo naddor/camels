@@ -1,7 +1,7 @@
-source(paste(dir_r_scripts, 'camels/read_camels_hydromet.R', sep = ''))
-source(paste(dir_r_scripts, 'camels/clim/clim_indices.R', sep = ''))
-source(paste(dir_r_scripts, 'camels/hydro/hydro_signatures.R', sep = ''))
-source(paste(dir_r_scripts, 'camels/hydro/hydro_accuracy.R', sep = ''))
+source(paste0(dir_r_scripts, 'camels/read_camels_hydromet.R'))
+source(paste0(dir_r_scripts, 'camels/clim/clim_indices.R'))
+source(paste0(dir_r_scripts, 'camels/hydro/hydro_signatures.R'))
+source(paste0(dir_r_scripts, 'camels/hydro/hydro_accuracy.R'))
 
 ### CHOSE TIME PERIOD FOR COMPUTATION OF CLIMATE INDICES AND HYDROLOGICAL SIGNATURES
 start_date_indices <- '19891001'
@@ -14,7 +14,7 @@ camels_hydro_sac <- data.frame()
 
 ### SIGNATURES AND CLIMATE INDICES
 
-tol_na = 0.0502 # two CAMELS catchments have ~5.01% of missing values, this threshold includes them
+tol_na <- 0.0502 # two CAMELS catchments have ~5.01% of missing values, this threshold includes them
 
 for (i in 1:dim(camels_name)[1]) {
 
@@ -46,11 +46,11 @@ camels_hydro_obs$gauge_id <- as.factor(camels_hydro_obs$gauge_id)
 camels_hydro_sac$gauge_id <- as.factor(camels_hydro_sac$gauge_id)
 
 # SAVE
-write.table(camels_clim, file = paste(dir_camels_attr, 'camels_clim.txt', sep = ''),
+write.table(camels_clim, file = paste0(dir_camels_attr, 'camels_clim.txt'),
             row.names = FALSE, quote = FALSE, sep = ';')
 
-write.table(camels_hydro_obs, file = paste(dir_camels_attr, 'camels_hydro.txt', sep = ''),
+write.table(camels_hydro_obs, file = paste0(dir_camels_attr, 'camels_hydro.txt'),
             row.names = FALSE, quote = FALSE, sep = ';')
 
-write.table(camels_hydro_sac, file = paste(dir_camels_attr, 'camels_hydro_sac.txt', sep = ''),
+write.table(camels_hydro_sac, file = paste0(dir_camels_attr, 'camels_hydro_sac.txt'),
             row.names = FALSE, quote = FALSE, sep = ';')

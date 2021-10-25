@@ -1,23 +1,23 @@
 rm(list = ls())
 
 # load functions
-source(paste(dir_r_scripts, 'camels/clim/clim_indices.R', sep = ''))
-source(paste(dir_r_scripts, 'camels/hydro/hydro_signatures.R', sep = ''))
-source(paste(dir_r_scripts, 'camels/maps/plot_maps_camels.R', sep = ''))
+source(paste0(dir_r_scripts, 'camels/clim/clim_indices.R'))
+source(paste0(dir_r_scripts, 'camels/hydro/hydro_signatures.R'))
+source(paste0(dir_r_scripts, 'camels/maps/plot_maps_camels.R'))
 
 # Define the country
-country = 'us'
-#country='gb'
-#country='br'
+country <- 'us'
+#country <- 'gb'
+#country <- 'br'
 
 # Define directory for files and list of catchment IDs
 if (country == 'us') {
 
-}else if (country == 'gb') {
+} else if (country == 'gb') {
 
   # set dir and preferences
-  hy_cal = 'oct_us_gb'
-  tol = 0.85 # Gem asked for no restriction at first (see email from 10 Dec 2019) but the code crashes (streamflow elasticity)
+  hy_cal <- 'oct_us_gb'
+  tol <- 0.85 # Gem asked for no restriction at first (see email from 10 Dec 2019) but the code crashes (streamflow elasticity)
   # when there is only a year of available data, which happens for catchments not in CAMELS-GB, now tolerating 85%
   # of missing values (see email from 16 Dec 2019)
 
@@ -32,11 +32,11 @@ if (country == 'us') {
   per_end <- as.Date('2015-09-30')
   per_all <- seq(per_start, per_end, by = 'day')
 
-}else if (country == 'br') {
+} else if (country == 'br') {
 
   # set dir and preferences
-  hy_cal = 'sep_br'
-  tol = 0.05
+  hy_cal <- 'sep_br'
+  tol <- 0.05
   dir_dat <- '/Volumes/d1/data/camels_br/'
   dir_plots <- '/Volumes/d1/data/camels_br/plots/'
   list_files <- system(paste0('ls ', dir_dat, 'Brazil_complete_series/'), intern = TRUE)
@@ -51,7 +51,7 @@ if (country == 'us') {
   # load gauge coordinates
   camels_topo <- read.table(paste0(dir_dat, 'brazil_gauges_coordinates.txt'), header = TRUE)
 
-}else {
+} else {
   stop(paste('Country code unknown:', country))
 }
 
@@ -60,7 +60,7 @@ camels_clim <- data.frame(stringsAsFactors = FALSE)
 camels_hydro_obs <- data.frame(stringsAsFactors = FALSE)
 
 # loop through catchments, load data and compute CI and HS
-for (i in 1:length(list_catch)) {
+for (i in seq_along(list_catch)) {
 
   catch_id <- list_catch[i]
 
@@ -134,7 +134,7 @@ pdf(paste0(dir_plots, 'clim.pdf'), 6, 6, useDingbats = FALSE)
 
 for (my_var in names(camels_clim[c(-1, -2, -3)])) {
 
-  qual = is.factor(camels_clim[, my_var])
+  qual <- is.factor(camels_clim[, my_var])
 
   plot_points(x = camels_clim$gauge_lon, y = camels_clim$gauge_lat, z = camels_clim[, my_var], text_legend = my_var,
               country = 'br', qual = qual, col_scheme = ifelse(qual, 'seas', 'RdYlBu'), color_bar = TRUE)
@@ -147,7 +147,7 @@ pdf(paste0(dir_plots, 'hydro.pdf'), 6, 6, useDingbats = FALSE)
 
 for (my_var in names(camels_hydro_obs[c(-1, -2, -3)])) {
 
-  qual = is.factor(camels_hydro_obs[, my_var])
+  qual <- is.factor(camels_hydro_obs[, my_var])
 
   plot_points(x = camels_clim$gauge_lon, y = camels_clim$gauge_lat, z = camels_hydro_obs[, my_var], text_legend = my_var,
               country = 'br', qual = qual, col_scheme = ifelse(qual, 'seas', 'RdYlBu'), color_bar = !qual)

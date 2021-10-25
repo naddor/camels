@@ -1,7 +1,7 @@
 extract_elev_bands <- function(id, huc, keep_absolute_area = FALSE) {
 
   # locate file in which elevations bands are stored
-  file_elev <- paste(dir_basin_dataset, 'elev_bands_forcing/daymet/', huc, '/', id, '.list', sep = '')
+  file_elev <- paste0(dir_basin_dataset, 'elev_bands_forcing/daymet/', huc, '/', id, '.list')
   n_elevation_zones <- as.numeric(read.table(file_elev, header = FALSE, nrows = 1)) # get number of elevation zones from first line
   elev_tab <- read.table(file_elev, skip = 1, header = FALSE)
 
@@ -24,8 +24,8 @@ extract_elev_bands <- function(id, huc, keep_absolute_area = FALSE) {
   colnames(elev_tab_format) <- c('indice_elevation_zone', 'mid_point_elevation', 'area_fraction', 'area_m2')
 
   for (z in 1:n_elevation_zones) {
-    elev_tab_format$indice_elevation_zone[z] <- z       # first colum: indice of elevation zone
-    elev_code <- as.numeric(elev_num <- strsplit(as.character(elev_tab[z, 1]), '_')[[1]][4])
+    elev_tab_format$indice_elevation_zone[z] <- z # first colum: indice of elevation zone
+    elev_code <- as.numeric(strsplit(as.character(elev_tab[z, 1]), '_')[[1]][4])
     elev_tab_format$mid_point_elevation[z] <- elev_code * 100 + 50 # second colum: mid-point elevation
     elev_tab_format$area_fraction[z] <- elev_tab[z, 2] / total_area_elev_bands # third column: fraction of the area in this elevation band
     elev_tab_format$area_m2[z] <- elev_tab[z, 2]  # fourth column: area in this elevation band - not needed by FUSE, only for verification purposes
