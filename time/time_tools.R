@@ -15,17 +15,20 @@ get_hydro_year <- function(d, hy_cal) {
   y <- as.numeric(format(d, '%Y')) # extract year
   hy <- y                         # create array for hydrological year
 
-  if (hy_cal == 'oct_us_gb') {      # USA and Great Britian
+  if (hy_cal == 'oct_us_gb') { # USA and Great Britian
 
-    hy[m >= 10] <- (hy[m >= 10] + 1)    # hydrological year 2010 starts on Oct 1st 2009 and finishes on Sep 30th 2010
+    # hydrological year 2010 starts on Oct 1st 2009 and finishes on Sep 30th 2010
+    hy[m >= 10] <- (hy[m >= 10] + 1)
 
-  } else if (hy_cal == 'sep_br') {  # Brazil
+  } else if (hy_cal == 'sep_br') { # Brazil
 
-    hy[m >= 9] <- (hy[m >= 9] + 1)      # hydrological year 2010 starts on Sep 1st 2009 and finishes on Aug 31st 2010
+    # hydrological year 2010 starts on Sep 1st 2009 and finishes on Aug 31st 2010
+    hy[m >= 9] <- (hy[m >= 9] + 1)
 
-  } else if (hy_cal == 'apr_cl') {  # Chile
+  } else if (hy_cal == 'apr_cl') { # Chile
 
-    hy[m <= 3] <- (hy[m <= 3] - 1)      # hydrological year 2010 starts on Apr 1st 2010 and finishes on Mar 31st 2011
+    # hydrological year 2010 starts on Apr 1st 2010 and finishes on Mar 31st 2011
+    hy[m <= 3] <- (hy[m <= 3] - 1)
 
   } else {
 
@@ -53,17 +56,20 @@ get_hydro_year_stats <- function(d, hy_cal) {
 
   if (hy_cal == 'oct_us_gb') {      # USA and Great Britian
 
-    hy[m >= 10] <- (hy[m >= 10] + 1)    # hydrological year 2010 starts on Oct 1st 2009 and finishes on Sep 30th 2010
+    # hydrological year 2010 starts on Oct 1st 2009 and finishes on Sep 30th 2010
+    hy[m >= 10] <- (hy[m >= 10] + 1)
     start_hy <- as.Date(paste0(hy - 1, '-10-01'))
 
   } else if (hy_cal == 'sep_br') {  # Brazil
 
-    hy[m >= 9] <- (hy[m >= 9] + 1)      # hydrological year 2010 starts on Sep 1st 2009 and finishes on Aug 31st 2010
+    # hydrological year 2010 starts on Sep 1st 2009 and finishes on Aug 31st 2010
+    hy[m >= 9] <- (hy[m >= 9] + 1)
     start_hy <- as.Date(paste0(hy - 1, '-09-01'))
 
   } else if (hy_cal == 'apr_cl') {  # Chile
 
-    hy[m <= 3] <- (hy[m <= 3] - 1)      # hydrological year 2010 starts on Apr 1st 2010 and finishes on Mar 31st 2011
+    # hydrological year 2010 starts on Apr 1st 2010 and finishes on Mar 31st 2011
+    hy[m <= 3] <- (hy[m <= 3] - 1)
     start_hy <- as.Date(paste0(hy, '-04-01'))
 
   } else {

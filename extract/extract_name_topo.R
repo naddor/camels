@@ -8,10 +8,13 @@ source(paste0(dir_r_scripts, 'camels/extract/extract_elev_bands.R'))
 
 # load gauge information - USGS data
 file_usgs_data <- paste0(dir_basin_dataset, 'basin_metadata/gauge_information.txt')
-gauge_table <- read.table(file_usgs_data, sep = '\t', quote = '', skip = 1, header = FALSE, colClasses = c(rep("factor", 3), rep("numeric", 3)))
+gauge_table <- read.table(file_usgs_data, sep = '\t', quote = '', skip = 1, header = FALSE,
+                          colClasses = c(rep("factor", 3), rep("numeric", 3)))
 
-if (readLines(file_usgs_data, 1) == 'HUC_02  GAGE_ID\t\t\tGAGE_NAME\t\t\t\t\tLAT\t\tLONG\t\tDRAINAGE AREA (KM^2)') {
-  colnames(gauge_table) <- c('huc_02', 'gauge_id', 'gauge_name', 'gauge_lat', 'gauge_lon', 'area_usgs') # reformat (add) header
+if (readLines(file_usgs_data, 1) ==
+  'HUC_02  GAGE_ID\t\t\tGAGE_NAME\t\t\t\t\tLAT\t\tLONG\t\tDRAINAGE AREA (KM^2)') {
+  # reformat (add) header
+  colnames(gauge_table) <- c('huc_02', 'gauge_id', 'gauge_name', 'gauge_lat', 'gauge_lon', 'area_usgs')
 }else {
   stop(paste('Unexpected header in', file_usgs_data))
 }
@@ -24,10 +27,14 @@ gauge_table$gauge_name <- str_trim(gauge_table$gauge_name, 'left') # remove lead
 
 # load basin physical characteristics - produced by Andy
 file_catchment_table <- paste0(dir_basin_dataset, '/basin_metadata/basin_physical_characteristics.txt')
-catchment_table <- read.table(file_catchment_table, header = TRUE, colClasses = c(rep("factor", 2), rep("numeric", 4)))
+catchment_table <- read.table(file_catchment_table, header = TRUE,
+                              colClasses = c(rep("factor", 2), rep("numeric", 4)))
 
-if (readLines(file_catchment_table, 1) == 'BASIN_HUC BASIN_ID Size(km2) Elevation(m) Slope(m_km-1) Frac_Forest(percent)') {
-  colnames(catchment_table) <- c('huc_02', 'gauge_id', 'area_geospa_fabric', 'basin_mean_elev', 'mean_slope', 'frac_forest') # make names nicer and remove units
+if (readLines(file_catchment_table, 1) ==
+  'BASIN_HUC BASIN_ID Size(km2) Elevation(m) Slope(m_km-1) Frac_Forest(percent)') {
+  # make names nicer and remove units
+  colnames(catchment_table) <- c('huc_02', 'gauge_id', 'area_geospa_fabric', 'basin_mean_elev',
+                                 'mean_slope', 'frac_forest')
 }else {
   stop(paste('Unexpected header in', file_usgs_data))
 }
@@ -45,8 +52,10 @@ colnames(camels_name)[2] <- 'huc_02'
 #            row.names=FALSE,quote=FALSE,sep=';')
 
 ### CREATE CAMELS_TOPO
-camels_topo <- camels_merge[, c('gauge_id', 'gauge_lat', 'gauge_lon', 'basin_mean_elev', 'area_usgs', 'area_geospa_fabric', 'mean_slope')]
-camels_topo <- data.frame(camels_topo, abs_rel_error_area = abs((camels_topo$area_geospa_fabric - camels_topo$area_usgs) / camels_topo$area_usgs))
+camels_topo <- camels_merge[, c('gauge_id', 'gauge_lat', 'gauge_lon', 'basin_mean_elev', 'area_usgs',
+                                'area_geospa_fabric', 'mean_slope')]
+camels_topo <- data.frame(camels_topo, abs_rel_error_area = abs((camels_topo$area_geospa_fabric -
+  camels_topo$area_usgs) / camels_topo$area_usgs))
 #save(camels_topo,file=paste(dir_camels_attr,'camels_topo.Rdata',sep=''))
 #write.table(camels_topo,file=paste(dir_camels_attr,'camels_topo.txt',sep=''),
 #            row.names=FALSE,quote=FALSE,sep=';')
@@ -75,7 +84,8 @@ for (e in 1:dim(camels_name)[1]) {
   mean_elev <- sum(elev_tab_format$mid_point_elevation * elev_tab_format$area_fraction)
 
   # compute area and elevation errors
-  rerr_area[e] <- (camels_topo$area_geospa_fabric[camels_topo$gauge_id == id] - total_area_elev_bands / 1E6) / camels_topo$area_geospa_fabric[camels_topo$gauge_id == id]
+  rerr_area[e] <- (camels_topo$area_geospa_fabric[camels_topo$gauge_id == id] -
+    total_area_elev_bands / 1E6) / camels_topo$area_geospa_fabric[camels_topo$gauge_id == id]
   aerr_elev[e] <- camels_topo$basin_mean_elev[camels_topo$gauge_id == id] - mean_elev
 
 }
@@ -92,5 +102,8 @@ hist(aerr_elev)
 map('state')
 points(camels_topo$gauge_lon, camels_topo$gauge_lat, cex = aerr_elev / 75, pch = 16)
 
-#camels_metadata_elev_bands<-data.frame(gauge_id=camels_name$gauge_id,elev_bands_rerr_area=rerr_area,elev_bands_aerr_elev=aerr_elev)
-#save(camels_metadata_elev_bands,file=paste(dir_camels_attr_temp,'camels_metadata_elev_bands.Rdata',sep=''))
+#camels_metadata_elev_bands <- data.frame(gauge_id = camels_name$gauge_id,
+#                                         elev_bands_rerr_area = rerr_area,
+#                                         elev_bands_aerr_elev = aerr_elev)
+#save(camels_metadata_elev_bands,
+#     file = paste0(dir_camels_attr_temp, 'camels_metadata_elev_bands.Rdata'))

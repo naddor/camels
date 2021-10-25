@@ -5,7 +5,7 @@ require("rgdal") # for readOGR
 require(RColorBrewer)
 require(maps)
 require(maptools)
-require(mapdata)  # contains the hi-resolution points that mark out the countries - leaves this afer require(maps)
+require(mapdata)  # contains the hi-resolution points that mark out the countries
 
 # set paths
 hostname <- system('hostname', intern = TRUE)
@@ -65,7 +65,8 @@ if (country == 'us') {
 }
 
 # define colors for GLiM
-table_glim_classes <- read.table(paste0(dir_data, 'GLiM/GLiM_classes_colors.txt'), sep = ';', header = TRUE)
+table_glim_classes <- read.table(paste0(dir_data, 'GLiM/GLiM_classes_colors.txt'),
+                                 sep = ';', header = TRUE)
 table_glim_classes$short_name <- as.factor(table_glim_classes$short_name)
 
 glim_classes <- data.frame(short_name = limw_wgs84@data$xx, order = seq_along(limw_wgs84@data$xx))
@@ -75,7 +76,8 @@ glim_classes_col <- merge(glim_classes, table_glim_classes, sort = FALSE) # add 
 glim_classes_col <- glim_classes_col[order(glim_classes_col$order),]
 
 # plot a map with catchments
-pdf(paste0(dir_plots, 'camels/geol/glim_', country, '_overview.pdf', sep = ''), width = width_pdf, height = height_pdf)
+pdf(paste0(dir_plots, 'camels/geol/glim_', country, '_overview.pdf', sep = ''),
+    width = width_pdf, height = height_pdf)
 
 plot(limw_wgs84, col = as.character(glim_classes_col$R_col), border = NA)
 
@@ -87,7 +89,9 @@ if (country == 'us') {
   plot(shp_catch, add = TRUE, lwd = 0.5)
 }
 
-legend('bottomleft', col = as.character(table_glim_classes$R_col), legend = table_glim_classes$long_name, ncol = 2, pch = 15, bty = 'n', cex = 0.7)
+legend('bottomleft', col = as.character(table_glim_classes$R_col),
+       legend = table_glim_classes$long_name,
+       ncol = 2, pch = 15, bty = 'n', cex = 0.7)
 
 dev.off()
 
@@ -98,7 +102,8 @@ glim_2nd_class <- array()
 glim_2nd_frac <- array()
 glim_carbonate_rocks_frac <- array()
 
-pdf(paste0(dir_plots, 'camels/geol/glim_', country, '_extraction.pdf', sep = ''), width = width_pdf, height = height_pdf)
+pdf(paste0(dir_plots, 'camels/geol/glim_', country, '_extraction.pdf', sep = ''),
+    width = width_pdf, height = height_pdf)
 
 plot(limw_wgs84, col = as.character(glim_classes_col$R_col), border = NA)
 
@@ -109,7 +114,9 @@ if (country == 'us') {
   map('worldHires', 'Chile', add = TRUE)
 }
 
-legend('bottomleft', col = as.character(table_glim_classes$R_col), legend = table_glim_classes$long_name, ncol = 2, pch = 15, bty = 'n', cex = 0.7)
+legend('bottomleft', col = as.character(table_glim_classes$R_col),
+       legend = table_glim_classes$long_name,
+       ncol = 2, pch = 15, bty = 'n', cex = 0.7)
 
 for (e in 1:nrow(catch_topo)) {
 
@@ -119,7 +126,9 @@ for (e in 1:nrow(catch_topo)) {
   # determime area of polygons overlapping with each catchment
   inter <- intersect(limw_wgs84, shp_catch[shp_catch@data$gauge_id == catch_id,])
   inter_data <- inter@data
-  inter_data <- data.frame(inter_data, area = area(inter), area_frac = area(inter) / sum(area(inter)), sort = 1:nrow(inter_data))
+  inter_data <- data.frame(inter_data, area = area(inter),
+                           area_frac = area(inter) / sum(area(inter)),
+                           sort = 1:nrow(inter_data))
   inter_data <- merge(inter_data, table_glim_classes, by.x = 'xx', by.y = 'short_name') # does not preserve row order
   inter_data <- inter_data[order(inter_data$sort),] # re-sort data to match order in inter
 
@@ -163,8 +172,9 @@ for (e in 1:nrow(catch_topo)) {
   plot(shp_catch_to_plot, add = TRUE,
        col = NA, border = 'black', lty = 1, lwd = 0.5)
 
-  plot(shp_catch_to_plot, add = TRUE,
-       col = NA, border = as.character(table_glim_classes$R_color[table_glim_classes$long_name == names(dom_geol[1])]), lty = 1, lwd = 0.25)
+  plot(shp_catch_to_plot, add = TRUE, col = NA,
+       border = as.character(table_glim_classes$R_color[table_glim_classes$long_name == names(dom_geol[1])]),
+       lty = 1, lwd = 0.25)
 
   # save dominant geology class and fraction
   glim_1st_class[e] <- names(dom_geol[1])
@@ -191,7 +201,8 @@ glim_1st_frac <- round(glim_1st_frac, 3)
 glim_2nd_frac <- round(glim_2nd_frac, 3)
 glim_carbonate_rocks_frac <- round(glim_carbonate_rocks_frac, 3)
 
-catch_geol_glim <- data.frame(gauge_id = catch_topo$gauge_id, glim_1st_class, glim_1st_frac, glim_2nd_class, glim_2nd_frac, glim_carbonate_rocks_frac)
+catch_geol_glim <- data.frame(gauge_id = catch_topo$gauge_id, glim_1st_class, glim_1st_frac,
+                              glim_2nd_class, glim_2nd_frac, glim_carbonate_rocks_frac)
 
 # save data to temp directory
 save(catch_geol_glim, file = paste0(dir_catch_attr_temp, 'catch_geol_glim_', country, '.Rdata'))

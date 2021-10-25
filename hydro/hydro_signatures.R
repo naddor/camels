@@ -1,13 +1,13 @@
 ### PURPOSE
 
-# This document contains R functions to compute streamflow indices (also referred to as hydrological signatures).
+# This document contains R functions to compute streamflow indices (hydrological signatures).
 # These functions have been used and are still used to produce the CAMELS datasets. The wrapper
-# compute_hydro_signatures_camels enables the computation of the signatures selected for the original CAMELS paper
-# (Addor et al., 2017, HESS).
+# compute_hydro_signatures_camels enables the computation of the signatures selected for the
+# original CAMELS paper (Addor et al., 2017, HESS).
 
-# For some signatures, several formulations have been implemented and the resulting estimates are returned as a
-# data.frame. Alternative formulations can be added. The objective is to assess the sensitvity of the results to
-# the formulation of the hydrological signatures.
+# For some signatures, several formulations have been implemented and the resulting estimates are
+# returned as a data.frame. Alternative formulations can be added. The objective is to assess the
+# sensitvity of the results to the formulation of the hydrological signatures.
 
 ### LOAD FUNCTIONS
 
@@ -17,16 +17,19 @@ source(paste0(dir_r_scripts, 'camels/time/time_tools.R')) # for month2sea and ge
 
 # q_mean         - Mean daily discharge
 # runoff_ratio   - Runoff ratio (ratio of mean daily discharge to mean daily precipitation)
-# stream_elas    - Streamflow precipitation elasticity (sensitivity of streamflow to changes in precipitation at the annual time scale)
+# stream_elas    - Streamflow precipitation elasticity (sensitivity of streamflow to changes in
+#                  precipitation at the annual time scale)
 # slope_fdc      - Slope of the flow duration curve (between 33rd and 66th streamflow percentiles)
 # baseflow_index - Baseflow index (ratio of mean daily baseflow to mean daily discharge)
-# hfd_mean       - Mean half-flow date (date on which the cumulative discharge since October first reaches half of the annual discharge)
+# hfd_mean       - Mean half-flow date (date on which the cumulative discharge since October first
+#                  reaches half of the annual discharge)
 # Q5             -  5% Flow quantile (low flow)
 # Q95            - 95% Flow quantile (high flow)
 # high_q_freq    - Frequency of high-flow days (>9 times the median daily flow)
 # high_q_dur     - Frequency of high-flow days (>9 times the median daily flow)
 # low_q_freq     - Frequency of low-flow days (<0.2 times the mean daily flow)
-# low_q_dur      - Average duration of low-flow events (number of consecutive days <0.2 times the mean daily flow)
+# low_q_dur      - Average duration of low-flow events (number of consecutive days <0.2 times
+#                  the mean daily flow)
 # zero_q_freq    - Frequency of days with Q = 0 mm/day
 
 compute_hydro_signatures_camels <- function(q, p, d, tol, hy_cal) {
@@ -99,7 +102,8 @@ compute_q_mean <- function(q, d, tol) {
 
 comp_r_qp <- function(q, p, tol) {
 
-  avail_data <- find_avail_data_df(data.frame(q, p), tol) # time steps for which obs and sim are available
+  # time steps for which obs and sim are available
+  avail_data <- find_avail_data_df(data.frame(q, p), tol)
 
   r_qp <- mean(q[avail_data]) / mean(p[avail_data])
 
@@ -113,13 +117,15 @@ comp_r_qp <- function(q, p, tol) {
 
 }
 
-# stream_elas    - Streamflow precipitation elasticity (sensitivity of streamflow to changes in precipitation at the annual time scale)
+# stream_elas - Streamflow precipitation elasticity (sensitivity of streamflow to changes in
+# precipitation at the annual time scale)
 
 comp_e_qp <- function(q, p, d, tol, hy_cal) {
 
   if (length(q) != length(d) | length(p) != length(d)) { stop('P, Q and D must have the same length') }
 
-  avail_data <- find_avail_data_df(data.frame(q, p), tol) # time steps for which precipitation and streamflow data are available
+  # time steps for which precipitation and streamflow data are available
+  avail_data <- find_avail_data_df(data.frame(q, p), tol)
 
   hy <- get_hydro_year(d, hy_cal)
 
@@ -150,7 +156,8 @@ comp_e_qp <- function(q, p, d, tol, hy_cal) {
 
 }
 
-# slope_fdc      - Slope of the flow duration curve (between the log-transformed 33rd and 66th streamflow percentiles)
+# slope_fdc - Slope of the flow duration curve (between the log-transformed 33rd and 66th
+# streamflow percentiles)
 
 comp_s_fdc <- function(q, tol) {
 
@@ -188,19 +195,26 @@ comp_s_fdc <- function(q, tol) {
       sfdc_sawicz_2011 <- (log(q33) - log(q66)) / (0.66 - 0.33)
 
       # Yadav et al 2007, Table 3: 10.1016/j.advwatres.2007.01.005
-      # "Slope of part of curve between the 33% and 66% flow exceedance values of streamflow normalized by their means"
+      # "Slope of part of curve between the 33% and 66% flow exceedance values of streamflow
+      # normalized by their means"
       # Also used by Westerberg and McMillan 2015, Table 2: 10.5194/hess-19-3951-2015
-      # "Slope of the FDC between the 33 and 66% exceedance values of streamflow normalised by its mean (Yadav et al., 2007)"
+      # "Slope of the FDC between the 33 and 66% exceedance values of streamflow normalised by
+      # its mean (Yadav et al., 2007)"
       sfdc_yadav_2007 <- (q33 / q_mean - q66 / q_mean) / (0.66 - 0.33)
 
       # McMillan et al 2017, see text and Figure 1b: 10.1002/hyp.11300
       # "slope in the interval 0.33 to 0.66, in log space, normalised by median flow"
       sfdc_mcmillan_2017 <- (log(q33 / q_med) - log(q66 / q_med)) / (0.66 - 0.33)
 
-      # Addor et al 2017: in this paper, standard quantiles (i.e. corresponding to probability of non-exceedence)
-      # were used, leading to estimates slightly different from those obtained following Sawzic et al. 2011
-      q33_quant <- as.numeric(quantile(q[avail_data], 0.33)) # corresponds to flow exceeded 67% (100-33%) of the time
-      q66_quant <- as.numeric(quantile(q[avail_data], 0.66)) # corresponds to flow exceeded 34% (100-66%) of the time
+      # Addor et al 2017: in this paper, standard quantiles (i.e. corresponding to probability
+      # of non-exceedence) were used, leading to estimates slightly different from those obtained
+      # following Sawzic et al. 2011
+
+      # Flow exceeded 67% (100-33%) of the time
+      q33_quant <- as.numeric(quantile(q[avail_data], 0.33))
+
+      # Flow exceeded 34% (100-66%) of the time
+      q66_quant <- as.numeric(quantile(q[avail_data], 0.66))
       sfdc_addor_2017 <- (log(q66_quant) - log(q33_quant)) / (0.66 - 0.33)
 
     }
@@ -214,7 +228,9 @@ comp_s_fdc <- function(q, tol) {
 
 comp_i_bf <- function(q, d, alpha, passes, tol) {
 
-  if (sum(is.na(q)) / length(q) >= tol) { # not using avail_data here, since it would remove time steps with NA, and thereby alter the consistency of the time series and bias the baseflow separation
+  # not using avail_data here, since it would remove time steps with NA, and thereby alter the
+  # consistency of the time series and bias the baseflow separation
+  if (sum(is.na(q)) / length(q) >= tol) {
 
     i_bf_landson <- NA
     i_bf_lfstat <- NA
@@ -222,25 +238,34 @@ comp_i_bf <- function(q, d, alpha, passes, tol) {
   } else {
 
     require(lfstat)
-    # Ladson et al. (2013). “A standard approach to baseflow separation using the Lyne and Hollick filter.”
-    # Australian Journal of Water Resources 17(1): 173-180.
-    # https://tonyladson.wordpress.com/2013/10/01/a-standard-approach-to-baseflow-separation-using-the-lyne-and-hollick-filter/#comments
-    source('https://raw.github.com/TonyLadson/BaseflowSeparation_LyneHollick/master/BFI.R') # source code
+    # Ladson et al. (2013). “A standard approach to baseflow separation using the Lyne and
+    # Hollick filter.” Australian Journal of Water Resources 17(1): 173-180.
+    # https://shorturl.at/hixzA
+    source('https://raw.github.com/TonyLadson/BaseflowSeparation_LyneHollick/master/BFI.R')
     dat_landson <- BFI(q, alpha, passes, ReturnQbase = TRUE)
     bf_landson <- dat_landson$Qbase
 
-    # lfstat package based on Tallaksen, L. M. and Van Lanen, H. A. J. 2004 Hydrological Drought: Processes and
-    # Estimation Methods for Streamflow and Groundwater. Developments in Water Science 48, Amsterdam: Elsevier.
-    q_dat <- data.frame(flow = q, day = as.numeric(format(d, '%d')), month = as.numeric(format(d, '%m')), year = format(d, '%Y'))
-    lf_dat <- createlfobj(q_dat, hyearstart = 10) # hyearstart, integer between 1 and 12, indicating the start of the hydrological year, 10 for october
+    # lfstat package based on Tallaksen, L. M. and Van Lanen, H. A. J. 2004 Hydrological Drought:
+    # Processes and Estimation Methods for Streamflow and Groundwater. Developments in Water
+    # Science 48, Amsterdam: Elsevier.
+    q_dat <- data.frame(flow = q, day = as.numeric(format(d, '%d')),
+                        month = as.numeric(format(d, '%m')),
+                        year = format(d, '%Y'))
+    lf_dat <- createlfobj(q_dat, hyearstart = 10) # hyearstart, integer between 1 and 12, indicating
+                                                  # the start of the hydrological year, 10 for october
     bf_lfstat <- lf_dat$baseflow
 
     # compute IBF
-    if (length(bf_landson) != length(q)) { stop('Baseflow time series derived using Landson does not match length of Q_OBS') }
-    if (length(bf_lfstat) != length(q)) { stop('Baseflow time series derived using lfstat does not match length of Q_OBS') }
+    if (length(bf_landson) != length(q)) {
+      stop('Baseflow time series derived using Landson does not match length of Q_OBS')
+    }
+    if (length(bf_lfstat) != length(q)) {
+      stop('Baseflow time series derived using lfstat does not match length of Q_OBS')
+    }
 
     # find avaiable data
-    avail_data <- find_avail_data_df(data.frame(q, bf_landson, bf_lfstat), tol) # time steps for which q,bf_landson,bf_lfstat are available
+    # time steps for which q,bf_landson,bf_lfstat are available
+    avail_data <- find_avail_data_df(data.frame(q, bf_landson, bf_lfstat), tol)
 
     i_bf_landson <- sum(bf_landson[avail_data]) / sum(q[avail_data])
     i_bf_lfstat <- sum(bf_lfstat[avail_data]) / sum(q[avail_data])
@@ -251,29 +276,36 @@ comp_i_bf <- function(q, d, alpha, passes, tol) {
 
 }
 
-# Half flow date (Court, 1962): the date on which the cumulative discharge since the beginning of the hydrological year reaches half of the annual discharge
+# Half flow date (Court, 1962): the date on which the cumulative discharge since the beginning of
+# the hydrological year reaches half of the annual discharge
 
 # Note: the date considered here is the number of days since the beginning of the hydrological year.
-# Using days since 1st Jan instead is problematic in catchments with a half flow date occuring close to the end of the calendar year,
-# as it leads to both large (e.g. 360) and small (e.g. 10) HFDs depending on the year, which biases the mean HFD.
+# Using days since 1st Jan instead is problematic in catchments with a half flow date occuring close
+# to the end of the calendar year, as it leads to both large (e.g. 360) and small (e.g. 10) HFDs
+# depending on the year, which biases the mean HFD.
 
 compute_hfd_mean_sd <- function(q, d, tol, hy_cal) {
 
   # check data availibility
   avail_data <- find_avail_data_array(q, tol)
 
-  if (all(is.na(avail_data))) { # fraction of missing values over the whole period is above tol
+  if (all(is.na(avail_data))) {
+    # fraction of missing values over the whole period is above tol
 
     return(data.frame(hfd_mean = NA, hfd_sd = NA)) # return NA
 
   } else {
 
-    hy_stats <- get_hydro_year_stats(d, hy_cal) # determine hydrological year for given calendar
+    # determine hydrological year for given calendar
+    hy_stats <- get_hydro_year_stats(d, hy_cal)
 
-    hy_q <- split(q[avail_data], hy_stats$hy[avail_data]) # discharge for each hydrological year
-    hy_d <- split(hy_stats$day_of_hy[avail_data], hy_stats$hy[avail_data]) # number of days since beginning of hydrological year
+    # discharge for each hydrological year
+    hy_q <- split(q[avail_data], hy_stats$hy[avail_data])
+    # number of days since beginning of hydrological year
+    hy_d <- split(hy_stats$day_of_hy[avail_data], hy_stats$hy[avail_data])
 
-    date_hfd <- NULL # date of half flow for each hydrological year in days since the beginning of hydrological year
+    # date of half flow for each hydrological year in days since the beginning of hydrological year
+    date_hfd <- NULL
 
     for (y in names(hy_q)) { # loop through hydrological years
 
@@ -283,8 +315,10 @@ compute_hfd_mean_sd <- function(q, d, tol, hy_cal) {
 
       } else {
 
-        i <- which(cumsum(hy_q[[y]]) > 0.5 * sum(hy_q[[y]]))[1] # index of the first day above half of annual total
-        date_hfd[y] <- as.numeric(hy_d[[y]][i])             # number of days since beginning of hydro year
+        # index of the first day above half of annual total
+        i <- which(cumsum(hy_q[[y]]) > 0.5 * sum(hy_q[[y]]))[1]
+        # number of days since beginning of hydro year
+        date_hfd[y] <- as.numeric(hy_d[[y]][i])
 
       }
     }
@@ -328,7 +362,8 @@ compute_qXX <- function(q, thres, tol) {
 
 compute_hf_freq_dur <- function(q, d, tol) {
 
-  avail_data <- find_avail_data_array(q, tol)   # time steps for which obs and sim are available
+  # time steps for which obs and sim are available
+  avail_data <- find_avail_data_array(q, tol)
 
   if (all(is.na(avail_data))) {
 
@@ -336,7 +371,8 @@ compute_hf_freq_dur <- function(q, d, tol) {
 
   } else {
 
-    hf <- q[avail_data] > 9 * median(q[avail_data])  # time steps considered as high flows
+    # time steps considered as high flows
+    hf <- q[avail_data] > 9 * median(q[avail_data])
 
     if (any(hf)) {
 
@@ -344,9 +380,12 @@ compute_hf_freq_dur <- function(q, d, tol) {
       # when using > instead not >=, every day with some discharge is a high flow...
 
       # Mean duration of daily high flow events
-      hf_bin <- paste(as.numeric(hf), collapse = '')        # a string where one or more 1 indicate a high flow event
-      hf_dur_noise <- rapply(strsplit(hf_bin, 0), nchar)   # use strsplit to isolate successive time steps with high discharge
-      hf_dur <- mean(hf_dur_noise[hf_dur_noise > 0])       # mean duration
+      # a string where one or more 1 indicate a high flow event
+      hf_bin <- paste(as.numeric(hf), collapse = '')
+      # use strsplit to isolate successive time steps with high discharge
+      hf_dur_noise <- rapply(strsplit(hf_bin, 0), nchar)
+      # mean duration
+      hf_dur <- mean(hf_dur_noise[hf_dur_noise > 0])
 
       # Average number of daily high-flow events per year
       # Note: I used to split the time series into hydrological years but this has 2 drawbacks:
@@ -355,8 +394,10 @@ compute_hf_freq_dur <- function(q, d, tol) {
       # Hence, I compute the number of time steps considered as high flow for the whole period and then
       # divide it by the number of time steps with available data
 
-      # hf_hy<-split(hf,get_hydro_year(d[avail_data])) # old method: split time series into hydrological years
-      # hf_freq<-mean(rapply(hf_hy,sum))               # compute mean number of time steps considered as high flow per year
+      # old method: split time series into hydrological years
+      # hf_hy<-split(hf,get_hydro_year(d[avail_data]))
+      # compute mean number of time steps considered as high flow per year
+      # hf_freq<-mean(rapply(hf_hy,sum))
 
       hf_freq <- sum(hf) / sum(avail_data) * 365.25
 
@@ -376,7 +417,8 @@ compute_hf_freq_dur <- function(q, d, tol) {
 
 compute_lf_freq_dur <- function(q, d, tol) {
 
-  avail_data <- find_avail_data_array(q, tol)    # time steps for which obs and sim are available
+  # time steps for which obs and sim are available
+  avail_data <- find_avail_data_array(q, tol)
 
   if (all(is.na(avail_data))) {
 
@@ -384,18 +426,24 @@ compute_lf_freq_dur <- function(q, d, tol) {
 
   } else {
 
-    lf <- q[avail_data] <= 0.2 * mean(q[avail_data])  # time steps considered as low flows
+    # time steps considered as low flows
+    lf <- q[avail_data] <= 0.2 * mean(q[avail_data])
 
     if (any(lf)) {
 
       # Mean duration of daily high flow events
-      lf_bin <- paste(as.numeric(lf), collapse = '')        # a string where one or more 1 indicate a low flow event
-      lf_dur_noise <- rapply(strsplit(lf_bin, 0), nchar)   # use strsplit to isolate successive time steps with low discharge
-      lf_dur <- mean(lf_dur_noise[lf_dur_noise > 0])       # mean duration
+      # a string where one or more 1 indicate a low flow event
+      lf_bin <- paste(as.numeric(lf), collapse = '')
+      # use strsplit to isolate successive time steps with low discharge
+      lf_dur_noise <- rapply(strsplit(lf_bin, 0), nchar)
+      # mean duration
+      lf_dur <- mean(lf_dur_noise[lf_dur_noise > 0])
 
       # Average number of daily low flow events per year - see commment in compute_lf_freq_dur
-      # lf_hy<-split(lf,get_hydro_year(d[avail_data]))  # old method: split time series into hydrological years
-      # lf_freq<-mean(rapply(lf_hy,sum))                # compute mean number of time steps considered as high flow per year
+      # old method: split time series into hydrological years
+      # lf_hy<-split(lf,get_hydro_year(d[avail_data]))
+      # compute mean number of time steps considered as high flow per year
+      # lf_freq<-mean(rapply(lf_hy,sum))
 
       lf_freq <- sum(lf) / sum(avail_data) * 365.25
 

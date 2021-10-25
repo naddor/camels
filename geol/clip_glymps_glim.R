@@ -24,12 +24,16 @@ fc_wgs84 <- spTransform(fc, CRS("+proj=longlat +datum=WGS84"))
 save.image(paste0(dir_r_data, 'GLHYMPS.Rdata'))
 
 # Crop to regional domains
-glhymps_wgs84_us <- crop(fc_wgs84, extent(-125, -66, 23, 50)); save(glhymps_wgs84_us, file = paste0(dir_r_data, 'glhymps_wgs84_us.Rdata'))
-glhymps_wgs84_uk <- crop(fc_wgs84, extent(-11, 2.5, 49, 59)); save(glhymps_wgs84_uk, file = paste0(dir_r_data, 'glhymps_wgs84_uk.Rdata'))
-glhymps_wgs84_es <- crop(fc_wgs84, extent(-10, 3.5, 35.5, 44)); save(glhymps_wgs84_es, file = paste0(dir_r_data, 'glhymps_wgs84_es.Rdata'))
-glhymps_wgs84_cl <- crop(fc_wgs84, extent(-76, -64, -56, -16.5)); save(glhymps_wgs84_cl, file = paste0(dir_r_data, 'glhymps_wgs84_cl.Rdata'))
-
-glhymps_wgs84_us_pnw <- crop(fc_wgs84, extent(-125, -120, 45, 50)); save(glhymps_wgs84_us_pnw, file = paste0(dir_r_data, 'glhymps_wgs84_us_pnw.Rdata'))
+glhymps_wgs84_us <- crop(fc_wgs84, extent(-125, -66, 23, 50));
+save(glhymps_wgs84_us, file = paste0(dir_r_data, 'glhymps_wgs84_us.Rdata'))
+glhymps_wgs84_uk <- crop(fc_wgs84, extent(-11, 2.5, 49, 59));
+save(glhymps_wgs84_uk, file = paste0(dir_r_data, 'glhymps_wgs84_uk.Rdata'))
+glhymps_wgs84_es <- crop(fc_wgs84, extent(-10, 3.5, 35.5, 44));
+save(glhymps_wgs84_es, file = paste0(dir_r_data, 'glhymps_wgs84_es.Rdata'))
+glhymps_wgs84_cl <- crop(fc_wgs84, extent(-76, -64, -56, -16.5));
+save(glhymps_wgs84_cl, file = paste0(dir_r_data, 'glhymps_wgs84_cl.Rdata'))
+glhymps_wgs84_us_pnw <- crop(fc_wgs84, extent(-125, -120, 45, 50));
+save(glhymps_wgs84_us_pnw, file = paste0(dir_r_data, 'glhymps_wgs84_us_pnw.Rdata'))
 
 ### LiMW
 fgdb <- '/glade/scratch/naddor/data/LiMW_GIS_2015.gdb/'
@@ -40,9 +44,13 @@ fc_wgs84 <- spTransform(fc, CRS("+proj=longlat +datum=WGS84"))
 save.image(paste0(dir_r_data, 'LiMW.Rdata'))
 
 # Crop to regional domains
-limw_wgs84_us <- crop(fc_wgs84, extent(-125, -66, 23, 50)); save(limw_wgs84_us, file = paste0(dir_r_data, 'limw_wgs84_us.Rdata'))
-limw_wgs84_uk <- crop(fc_wgs84, extent(-11, 2.5, 49, 59)); save(limw_wgs84_uk, file = paste0(dir_r_data, 'limw_wgs84_uk.Rdata'))
-limw_wgs84_es <- crop(fc_wgs84, extent(-10, 3.5, 35.5, 44)); save(limw_wgs84_es, file = paste0(dir_r_data, 'limw_wgs84_es.Rdata'))
-limw_wgs84_cl <- crop(fc_wgs84, extent(-76, -64, -56, -16.5)); save(limw_wgs84_cl, file = paste0(dir_r_data, 'limw_wgs84_cl.Rdata'))
-
-limw_wgs84_us_pnw <- crop(fc_wgs84, extent(-125, -120, 45, 50)); save(limw_wgs84_us_pnw, file = paste0(dir_r_data, 'limw_wgs84_us_pnw.Rdata'))
+limw_wgs84_us <- crop(fc_wgs84, extent(-125, -66, 23, 50));
+save(limw_wgs84_us, file = paste0(dir_r_data, 'limw_wgs84_us.Rdata'))
+limw_wgs84_uk <- crop(fc_wgs84, extent(-11, 2.5, 49, 59));
+save(limw_wgs84_uk, file = paste0(dir_r_data, 'limw_wgs84_uk.Rdata'))
+limw_wgs84_es <- crop(fc_wgs84, extent(-10, 3.5, 35.5, 44));
+save(limw_wgs84_es, file = paste0(dir_r_data, 'limw_wgs84_es.Rdata'))
+limw_wgs84_cl <- crop(fc_wgs84, extent(-76, -64, -56, -16.5));
+save(limw_wgs84_cl, file = paste0(dir_r_data, 'limw_wgs84_cl.Rdata'))
+limw_wgs84_us_pnw <- crop(fc_wgs84, extent(-125, -120, 45, 50));
+save(limw_wgs84_us_pnw, file = paste0(dir_r_data, 'limw_wgs84_us_pnw.Rdata'))

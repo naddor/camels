@@ -1,7 +1,9 @@
-plot_map_catch_attr <- function(dat, c2p, n_classes = 6, col_scheme = 'RdYlBu', col_rev = FALSE, color_bar = TRUE, subplot_hist = TRUE,
-                                col_trans = 0, b_round = 2, text_legend = '', cex = 1, pch = 16, qual = FALSE,
-                                force_zero_center = FALSE, force_n_classes = FALSE, set_breaks = FALSE, breaks = NA,
-                                layout_on = FALSE, layout_ncol = 3, layout_nrow = 1) {
+plot_map_catch_attr <- function(dat, c2p, n_classes = 6, col_scheme = 'RdYlBu', col_rev = FALSE,
+                                color_bar = TRUE, subplot_hist = TRUE, col_trans = 0, b_round = 2,
+                                text_legend = '', cex = 1, pch = 16, qual = FALSE,
+                                force_zero_center = FALSE, force_n_classes = FALSE,
+                                set_breaks = FALSE, breaks = NA, layout_on = FALSE,
+                                layout_ncol = 3, layout_nrow = 1) {
 
   # arguments:
   # dat: data as data.frame
@@ -27,7 +29,8 @@ plot_map_catch_attr <- function(dat, c2p, n_classes = 6, col_scheme = 'RdYlBu', 
     n_panels <- layout_ncol * layout_nrow
 
     if (color_bar) {
-      nf <- layout(matrix(1:(n_panels * 2), layout_nrow * 2, layout_ncol), heights = rep(c(1, 0.22), times = layout_nrow), widths = 1)
+      nf <- layout(matrix(1:(n_panels * 2), layout_nrow * 2, layout_ncol),
+                    heights = rep(c(1, 0.22), times = layout_nrow), widths = 1)
       # layout.show(nf)
     }else {
       nf <- layout(matrix(1:n_panels, layout_nrow, layout_ncol), heights = 1, widths = 1)
@@ -63,10 +66,12 @@ plot_map_catch_attr <- function(dat, c2p, n_classes = 6, col_scheme = 'RdYlBu', 
 
     }
 
-    plot_points_us_basins(dat[, c(1, v)], n_classes, col_scheme = my_col_scheme, col_rev = my_col_rev, color_bar,
-                          subplot_hist = my_subplot_hist, col_trans, b_round = my_b_round, text_legend = colnames(dat)[v],
-                          cex, pch, qual = my_qual, force_zero_center = my_force_zero_center, force_n_classes = my_force_n_classes,
-                          set_breaks = my_set_breaks, breaks = my_breaks, layout_on = layout_on)
+    plot_points_us_basins(dat[, c(1, v)], n_classes, col_scheme = my_col_scheme,
+                          col_rev = my_col_rev, color_bar, subplot_hist = my_subplot_hist,
+                          col_trans, b_round = my_b_round, text_legend = colnames(dat)[v],
+                          cex, pch, qual = my_qual, force_zero_center = my_force_zero_center,
+                          force_n_classes = my_force_n_classes, set_breaks = my_set_breaks,
+                          breaks = my_breaks, layout_on = layout_on)
 
   }
 
@@ -74,8 +79,9 @@ plot_map_catch_attr <- function(dat, c2p, n_classes = 6, col_scheme = 'RdYlBu', 
 
 }
 
-plot_points_us_basins <- function(dat, n_classes = 6, col_scheme = 'RdYlBu', col_rev = FALSE, color_bar = TRUE,
-                                  subplot_hist = TRUE, col_trans = 0, b_round = 2, text_legend = '', cex = 1, pch = 16, qual = FALSE,
+plot_points_us_basins <- function(dat, n_classes = 6, col_scheme = 'RdYlBu', col_rev = FALSE,
+                                  color_bar = TRUE, subplot_hist = TRUE, col_trans = 0, b_round = 2,
+                                  text_legend = '', cex = 1, pch = 16, qual = FALSE,
                                   force_zero_center = FALSE, force_n_classes = FALSE,
                                   set_breaks = FALSE, breaks = NA, layout_on = FALSE) {
 
@@ -84,7 +90,8 @@ plot_points_us_basins <- function(dat, n_classes = 6, col_scheme = 'RdYlBu', col
   # input variables:
   # dat: matrix with two columns: catchment id (must be named 'gauge_id') and variable to plot
   # n_classes: number of color classes (even number suggested)
-  # col_scheme: http://colorbrewer2.org/ color scheme - RdYlBu: red to blue - BrBG: green to brown - PRGn: purple to green
+  # col_scheme: http://colorbrewer2.org/ color scheme - RdYlBu: red to blue - BrBG: green to brown -
+  #                                                     PRGn: purple to green
   # col_rev: reverse the color scheme?
   # col_trans: use transparent colors (0 is opaque 255 is transparent)
   # b_round: number of decimals to keep for the break values
@@ -102,17 +109,20 @@ plot_points_us_basins <- function(dat, n_classes = 6, col_scheme = 'RdYlBu', col
 
   if (dim(dat2plot)[1] == 0) { stop('Merge with topo failed, check gauge_id') }
 
-  plot_points(x = dat2plot$gauge_lon, y = dat2plot$gauge_lat, z = dat2plot[, 2], n_classes, col_scheme, col_rev, color_bar, subplot_hist,
-              col_trans, b_round, text_legend, cex, pch, qual, force_zero_center, force_n_classes, set_breaks, breaks, layout_on = layout_on)
+  plot_points(x = dat2plot$gauge_lon, y = dat2plot$gauge_lat, z = dat2plot[, 2], n_classes,
+              col_scheme, col_rev, color_bar, subplot_hist, col_trans, b_round, text_legend,
+              cex, pch, qual, force_zero_center, force_n_classes, set_breaks, breaks,
+              layout_on = layout_on)
 
 }
 
 ### PLOT POINTS ON US MAP
 
-plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev = FALSE, color_bar = TRUE, subplot_hist = TRUE,
-                        col_trans = 0, b_round = 2, text_legend = '', cex = 1, pch = 16, qual = FALSE,
-                        force_zero_center = FALSE, force_n_classes = FALSE, set_breaks = FALSE, breaks = NA,
-                        country = 'us', layout_on = FALSE) {
+plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev = FALSE,
+                        color_bar = TRUE, subplot_hist = TRUE, col_trans = 0, b_round = 2,
+                        text_legend = '', cex = 1, pch = 16, qual = FALSE,
+                        force_zero_center = FALSE, force_n_classes = FALSE,
+                        set_breaks = FALSE, breaks = NA, country = 'us', layout_on = FALSE) {
 
   # purpose: plot map for chosen country and add a dot per catchment
 
@@ -120,7 +130,8 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
   # x,y: coordinates
   # z: variable to plot
   # n_classes: number of color classes (even number suggested)
-  # col: http://colorbrewer2.org/ color scheme - RdYlBu: red to blue - BrBG: green to brown - PRGn: purple to green
+  # col: http://colorbrewer2.org/ color scheme - RdYlBu: red to blue - BrBG: green to brown -
+  #                                              PRGn: purple to green
   # col_rev: reverse the color scheme?
   # col_trans: use transparent colors (0 is opaque 255 is transparent)
   # b_round: number of decimals to keep for the break values
@@ -130,9 +141,13 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
   require(maps)
   require(TeachingDemos) # for subplot
 
-  if (length(x) != length(y) | length(x) != length(z)) { stop('x,y and z must have the same length') }
+  if (length(x) != length(y) | length(x) != length(z)) {
+    stop('x,y and z must have the same length')
+  }
 
-  if (force_zero_center & n_classes %% 2 != 0) { stop('n_classes must be an even number if force_zero_center is TRUE') }
+  if (force_zero_center & n_classes %% 2 != 0) {
+    stop('n_classes must be an even number if force_zero_center is TRUE')
+  }
 
   # setup layout - this might have to be changed for when layout_on=FALSE
   if (color_bar) {
@@ -182,14 +197,17 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
 
     }else {
 
-      b <- unique(round(quantile(z, seq(1 / n_classes, 1 - 1 / n_classes, length.out = n_classes - 1), na.rm = TRUE), b_round))
+      b <- unique(round(quantile(z, seq(1 / n_classes, 1 - 1 / n_classes, length.out = n_classes - 1),
+                                 na.rm = TRUE), b_round))
 
       if (b[1] == 0 & length(b) > 1) { b <- b[-1] }
 
       if (force_n_classes & length(b) < n_classes) {
 
-        z_temp <- z[z > b[1]] # only works if first class is the most populated one (e.g. no snow). TODO: use which.max(table(findInterval))
-        b_temp <- unique(round(quantile(z_temp, seq(1 / n_classes, 1 - 1 / n_classes, length.out = n_classes - 2), na.rm = TRUE), b_round))
+        z_temp <- z[z > b[1]] # only works if first class is the most populated one (e.g. no snow).
+        # TODO: use which.max(table(findInterval))
+        b_temp <- unique(round(quantile(z_temp, seq(1 / n_classes, 1 - 1 / n_classes, length.out = n_classes - 2),
+                                        na.rm = TRUE), b_round))
         b <- c(b[1], b_temp)
 
       }
@@ -272,7 +290,8 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
 
         # combining two color classes
         n_colors_paired <- ceiling(length(qc_nonzero) / 2)
-        col <- c(brewer.pal(n_colors_paired, 'Paired'), brewer.pal(length(qc_nonzero) - n_colors_paired, 'Set3'))
+        col <- c(brewer.pal(n_colors_paired, 'Paired'),
+                 brewer.pal(length(qc_nonzero) - n_colors_paired, 'Set3'))
 
       } else {
 
@@ -286,9 +305,12 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
     }
 
     # determine color of each basin
-    z_temp <- data.frame(sort_column = seq_along(z), z = z) # add a sorting column
-    merged_table <- merge(z_temp, col_table, by.x = 'z', by.y = 'categ', all.x = TRUE) # all.x allows to keep NA values
-    merged_table <- merged_table[order(merged_table$sort_column),] # sort
+    # add a sorting column
+    z_temp <- data.frame(sort_column = seq_along(z), z = z)
+    # all.x allows to keep NA values
+    merged_table <- merge(z_temp, col_table, by.x = 'z', by.y = 'categ', all.x = TRUE)
+    # sort
+    merged_table <- merged_table[order(merged_table$sort_column),]
 
     if (dim(merged_table)[1] != length(z)) {
 
@@ -300,8 +322,10 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
 
   }
 
-  if (col_rev) { col <- rev(col) } # reverse color scheme if necessary
-  if (col_trans > 0) { col <- paste0(col, col_trans) } # use semi-transparent colors if necessary
+  # reverse color scheme if necessary
+  if (col_rev) { col <- rev(col) }
+  # use semi-transparent colors if necessary
+  if (col_trans > 0) { col <- paste0(col, col_trans) }
 
   # plots points on the map
   if (qual) {
@@ -337,12 +361,15 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
       table_seas <- table_seas[c('djf', 'mam', 'jja', 'son')]
       names(table_seas) <- c('djf', 'mam', 'jja', 'son')
 
-      subplot(barplot(table_seas, main = '', ylab = '', xlab = '', col = as.character(col_table$R_color), names.arg = FALSE), coor_hist[1], coor_hist[2], size = c(0.75, 0.75))
+      subplot(barplot(table_seas, main = '', ylab = '', xlab = '',
+                      col = as.character(col_table$R_color), names.arg = FALSE),
+              coor_hist[1], coor_hist[2], size = c(0.75, 0.75))
 
     } else {
 
       par(las = 0, cex = 0.8)
-      subplot(hist(z, main = '', ylab = '', xlab = '', breaks = 10), coor_hist[1], coor_hist[2], size = c(0.75, 0.75))
+      subplot(hist(z, main = '', ylab = '', xlab = '', breaks = 10),
+              coor_hist[1], coor_hist[2], size = c(0.75, 0.75))
 
     }
   }
@@ -357,9 +384,11 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
     par(mar = c(3, 5, 0, 5), cex = 1)
     plot.new()
     if (pch >= 21) {
-      legend('top', pt.bg = as.character(col_table$R_color), legend = col_table$categ, pch = pch, ncol = 2, bty = 'n')
+      legend('top', pt.bg = as.character(col_table$R_color), legend = col_table$categ,
+             pch = pch, ncol = 2, bty = 'n')
     }else {
-      legend('top', col = as.character(col_table$R_color), legend = col_table$categ, pch = pch, ncol = 2, bty = 'n')
+      legend('top', col = as.character(col_table$R_color), legend = col_table$categ,
+             pch = pch, ncol = 2, bty = 'n')
     }
   }
 
@@ -389,24 +418,28 @@ plot.legend.na <- function(col, breaks, vert = TRUE, density = NULL, angle = 45,
 
   if (vert) {
 
-    image(x = 1, y = seq(1, (ncol + 1)) - 0.5, z = matrix(seq(1, (ncol + 1)) - 0.5, nrow = 1), col = col, breaks = seq(1, (ncol + 1)), ylim = c(1, (ncol + 1)), axes = FALSE, xlab = "", ylab = "")
+    image(x = 1, y = seq(1, (ncol + 1)) - 0.5, z = matrix(seq(1, (ncol + 1)) - 0.5, nrow = 1),
+          col = col, breaks = seq(1, (ncol + 1)), ylim = c(1, (ncol + 1)),
+          axes = FALSE, xlab = "", ylab = "")
 
     for (k in 1:ncol) {
       polygon(x = c(0, 2, 2, 0, 0), y = c(k, k, k + 1, k + 1, k), col = "white", border = NA, xpd = FALSE)
-      polygon(x = c(0, 2, 2, 0, 0), y = c(k, k, k + 1, k + 1, k), col = col[k], density = dens[k], lwd = lwds[k],
-              angle = angs[k], border = NA, xpd = FALSE)
+      polygon(x = c(0, 2, 2, 0, 0), y = c(k, k, k + 1, k + 1, k), col = col[k], density = dens[k],
+              lwd = lwds[k], angle = angs[k], border = NA, xpd = FALSE)
     }
 
     axis(4, lwd = 0, at = seq(2, ncol), labels = breaks, las = 1, tick = FALSE, cex.axis = cex.leg)
 
   }else {
 
-    image(y = 1, x = seq(1, (ncol + 1)) - 0.5, z = matrix(seq(1, (ncol + 1)) - 0.5, ncol = 1), col = col, breaks = seq(1, (ncol + 1)), xlim = c(1, (ncol + 1)), axes = FALSE, xlab = "", ylab = "")
+    image(y = 1, x = seq(1, (ncol + 1)) - 0.5, z = matrix(seq(1, (ncol + 1)) - 0.5, ncol = 1),
+          col = col, breaks = seq(1, (ncol + 1)), xlim = c(1, (ncol + 1)),
+          axes = FALSE, xlab = "", ylab = "")
 
     for (k in 1:ncol) {
       polygon(y = c(0, 2, 2, 0, 0), x = c(k, k, k + 1, k + 1, k), col = "white", border = NA, xpd = FALSE)
-      polygon(y = c(0, 2, 2, 0, 0), x = c(k, k, k + 1, k + 1, k), col = col[k], density = dens[k], lwd = lwds[k],
-              angle = angs[k], border = NA, xpd = FALSE)
+      polygon(y = c(0, 2, 2, 0, 0), x = c(k, k, k + 1, k + 1, k), col = col[k], density = dens[k],
+              lwd = lwds[k], angle = angs[k], border = NA, xpd = FALSE)
     }
 
     axis(1, lwd = 0, at = seq(2, ncol), labels = breaks, las = 1, tick = FALSE, cex.axis = cex.leg)
