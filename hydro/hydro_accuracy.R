@@ -1,60 +1,50 @@
-
-source(paste(dir_r_scripts,'camels/time/time_tools.R',sep='')) # for find_avail_data_df
+source(paste0(dir_r_scripts, 'camels/time/time_tools.R')) # For find_avail_data_df
 
 ### NSE
+compute_nse <- function(obs, sim, tol = 0.05) {
+  if (length(obs) != length(sim)) {
+    stop('the length of OBS and SIM differ')
+  }
 
-compute_nse<-function(obs,sim,tol=0.05){
+  # Time steps for which obs and sim are available
+  avail_data <- find_avail_data_df(cbind(obs, sim), tol)
 
-  if(length(obs)!=length(sim)){stop('the length of OBS and SIM differ')}
-
-  avail_data<-find_avail_data_df(cbind(obs,sim),tol) # time steps for which obs and sim are available
-
-  nse<-1-sum((sim[avail_data]-obs[avail_data])^2)/sum((obs[avail_data]-mean(obs[avail_data]))^2)
-
-  return(nse)
-
+  1 - sum((sim[avail_data] - obs[avail_data])^2) / sum((obs[avail_data] - mean(obs[avail_data]))^2)
 }
 
 ### RMSE
+compute_rmse <- function(obs, sim, tol = 0.05) {
+  # Time steps for which obs and sim are available
+  avail_data <- find_avail_data_df(cbind(obs, sim), tol)
 
-compute_rmse<-function(obs,sim,tol=0.05){
+  sqrt(sum((sim[avail_data] - obs[avail_data])^2) / length(obs[avail_data]))
+}
 
-  avail_data<-find_avail_data_df(cbind(obs,sim),tol) # time steps for which obs and sim are available
+### Error in water balance
+compute_dv <- function(obs, sim, tol = 0.05) {
 
-  sqrt(sum((sim[avail_data]-obs[avail_data])^2)/length(obs[avail_data]))
+  # Time steps for which obs and sim are available
+  avail_data <- find_avail_data_df(cbind(obs, sim), tol)
+
+  (sum(sim[avail_data]) - sum(obs[avail_data])) / sum(obs[avail_data])
 
 }
 
-### ERROR IN WATER BALANCE
+### Kling Gupta efficiency
+compute_kge <- function(obs, sim, tol = 0.05, return_decomp = FALSE) {
 
-compute_dv<-function(obs,sim,tol=0.05){
+  # Time steps for which obs and sim are available
+  avail_data <- find_avail_data_df(cbind(obs, sim), tol)
 
-  avail_data<-find_avail_data_df(cbind(obs,sim),tol) # time steps for which obs and sim are available
+  r <- cor(obs[avail_data], sim[avail_data], use = "everything")
+  alpha <- sd(sim[avail_data]) / sd(obs[avail_data])
+  beta <- mean(sim[avail_data]) / mean(obs[avail_data])
 
-  (sum(sim[avail_data])-sum(obs[avail_data]))/sum(obs[avail_data])
+  kge <- 1 - sqrt((r - 1)^2 + (alpha - 1)^2 + (beta - 1)^2)
 
-}
-
-### KLING GUPTA EFFICIENCY
-
-compute_kge<-function(obs,sim,tol=0.05,return_decomp=FALSE){
-
-  avail_data<-find_avail_data_df(cbind(obs,sim),tol) # time steps for which obs and sim are available
-
-  r     <- cor(obs[avail_data],sim[avail_data],use="everything")
-  alpha <- sd(sim[avail_data])/sd(obs[avail_data])
-  beta  <- mean(sim[avail_data])/mean(obs[avail_data])
-
-  kge   <- 1-sqrt((r-1)^2+(alpha-1)^2+(beta-1)^2)
-
-  if(return_decomp){
-
-    return(data.frame(kge=kge,r=r,alpha=alpha,beta=beta))
-
-  } else{
-
-    return(kge)
-
+  if (return_decomp) {
+    return(data.frame(kge = kge, r = r, alpha = alpha, beta = beta))
+  } else {
+    kge
   }
-
 }
