@@ -30,7 +30,8 @@ compute_clim_indices_camels <- function(temp, prec, pet, day, tol) {
                     high_prec_timing = ind_extreme_precip$high_prec_timing,
                     low_prec_freq = ind_extreme_precip$low_prec_freq,
                     low_prec_dur = ind_extreme_precip$low_prec_dur,
-                    low_prec_timing = ind_extreme_precip$low_prec_timing))
+                    low_prec_timing = ind_extreme_precip$low_prec_timing)
+  )
 
 }
 
@@ -111,15 +112,23 @@ compute_climate_indices_berghuijs <- function(temp, prec, pet, day, tol) {
 
     }
 
-    return(data.frame(aridity = aridity, p_mean = p_mean, pet_mean = pet_mean,
-                      p_seasonality = delta_p_star, frac_snow_sine = f_s,
-                      frac_snow_daily = f_s_daily))
+    return(data.frame(aridity = aridity,
+                      p_mean = p_mean,
+                      pet_mean = pet_mean,
+                      p_seasonality = delta_p_star,
+                      frac_snow_sine = f_s,
+                      frac_snow_daily = f_s_daily)
+    )
 
   } else { # return NA if data availibility is too low
 
-    return(data.frame(aridity = NA, p_mean = NA, pet_mean = NA,
-                      p_seasonality = NA, frac_snow_sine = NA,
-                      frac_snow_daily = NA))
+    return(data.frame(aridity = NA,
+                      p_mean = NA,
+                      pet_mean = NA,
+                      p_seasonality = NA,
+                      frac_snow_sine = NA,
+                      frac_snow_daily = NA)
+    )
 
   }
 }
@@ -135,7 +144,9 @@ compute_extreme_precip_indices <- function(prec, day, rel_hp_thres, abs_lp_thres
 
   if (any(!is.na(avail_data))) { # only compute indices if joint data availibility is high enough
 
-    if (any(diff(day) > 1)) { stop('The time series must be continious') }
+    if (any(diff(day) > 1)) {
+      stop('The time series must be continious')
+    }
 
     # extract season and hydrological year
     s <- as.factor(month2sea(format(day, '%m')))
@@ -147,7 +158,10 @@ compute_extreme_precip_indices <- function(prec, day, rel_hp_thres, abs_lp_thres
     # compute number of consecutive high precip days
     hp_length <- nchar(strsplit(paste(ifelse(hp, 'H', '-'), collapse = ''), '-')[[1]])
     hp_length <- hp_length[hp_length > 0]
-    if (sum(hp_length) != sum(hp)) { stop('Unexpected total number of high precip days') }
+
+    if (sum(hp_length) != sum(hp)) {
+      stop('Unexpected total number of high precip days')
+    }
 
     if (length(hp_length) > 0) { # at least one high precipitation event in the provided time series
 
@@ -188,14 +202,23 @@ compute_extreme_precip_indices <- function(prec, day, rel_hp_thres, abs_lp_thres
       lp_timing <- names(lp_sea)[which.max(lp_sea)]
     }
 
-    return(data.frame(high_prec_freq = hp_freq, high_prec_dur = hp_dur,
-                      high_prec_timing = hp_timing, low_prec_freq = lp_freq,
-                      low_prec_dur = lp_dur, low_prec_timing = lp_timing))
+    return(data.frame(high_prec_freq = hp_freq,
+                      high_prec_dur = hp_dur,
+                      high_prec_timing = hp_timing,
+                      low_prec_freq = lp_freq,
+                      low_prec_dur = lp_dur,
+                      low_prec_timing = lp_timing)
+    )
 
   } else { #return NA if data availibility is too low
 
-    return(data.frame(high_prec_freq = NA, high_prec_dur = NA, high_prec_timing = NA,
-                      low_prec_freq = NA, low_prec_dur = NA, low_prec_timing = NA))
+    return(data.frame(high_prec_freq = NA,
+                      high_prec_dur = NA,
+                      high_prec_timing = NA,
+                      low_prec_freq = NA,
+                      low_prec_dur = NA,
+                      low_prec_timing = NA)
+    )
 
   }
 }

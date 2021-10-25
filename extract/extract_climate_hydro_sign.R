@@ -21,9 +21,13 @@ for (i in 1:dim(camels_name)[1]) {
   print(paste(i, as.character(camels_name$gauge_name[i])))
 
   ### IMPORT FORCING DATA, OBS AND SIM DISCHARGE AND COLLECT METADATA
-  get_catchment_data_arrays(huc = camels_name$huc_02[i], id = camels_name$gauge_id[i],
-                            date_start = start_date_indices, date_end = end_date_indices,
-                            forcing_dataset = 'daymet', ens_method = 'best')
+  get_catchment_data_arrays(huc = camels_name$huc_02[i],
+                            id = camels_name$gauge_id[i],
+                            date_start = start_date_indices,
+                            date_end = end_date_indices,
+                            forcing_dataset = 'daymet',
+                            ens_method = 'best'
+  )
 
   ### COMPUTE CLIMATE INDICES
   camels_clim[i, 'gauge_id'] <- as.character(camels_name$gauge_id[i])
@@ -46,11 +50,23 @@ camels_hydro_obs$gauge_id <- as.factor(camels_hydro_obs$gauge_id)
 camels_hydro_sac$gauge_id <- as.factor(camels_hydro_sac$gauge_id)
 
 # SAVE
-write.table(camels_clim, file = paste0(dir_camels_attr, 'camels_clim.txt'),
-            row.names = FALSE, quote = FALSE, sep = ';')
+write.table(camels_clim,
+            file = paste0(dir_camels_attr, 'camels_clim.txt'),
+            row.names = FALSE,
+            quote = FALSE,
+            sep = ';'
+)
 
-write.table(camels_hydro_obs, file = paste0(dir_camels_attr, 'camels_hydro.txt'),
-            row.names = FALSE, quote = FALSE, sep = ';')
+write.table(camels_hydro_obs,
+            file = paste0(dir_camels_attr, 'camels_hydro.txt'),
+            row.names = FALSE,
+            quote = FALSE,
+            sep = ';'
+)
 
-write.table(camels_hydro_sac, file = paste0(dir_camels_attr, 'camels_hydro_sac.txt'),
-            row.names = FALSE, quote = FALSE, sep = ';')
+write.table(camels_hydro_sac,
+            file = paste0(dir_camels_attr, 'camels_hydro_sac.txt'),
+            row.names = FALSE,
+            quote = FALSE,
+            sep = ';'
+)

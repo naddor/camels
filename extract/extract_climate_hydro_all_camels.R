@@ -72,7 +72,10 @@ for (i in seq_along(list_catch)) {
   }else if (country == 'gb') {
 
     dat <- read.csv(paste0(dir_dat, 'timeseries_2dp/CAMELS_GB_hydromet_timeseries_', catch_id,
-                           '_19701001-20150930.txt'), header = TRUE, na.strings = 'NaN')
+                           '_19701001-20150930.txt'),
+                    header = TRUE,
+                    na.strings = 'NaN'
+    )
     day <- as.Date(dat$date)
 
     prec <- dat$precipitation
@@ -82,8 +85,10 @@ for (i in seq_along(list_catch)) {
 
   }else if (country == 'br') {
 
-    dat <- read.table(paste0(dir_dat, 'Brazil_complete_series/', catch_id,
-                             '_pet_p_t_q.txt'), header = TRUE, na.strings = 'NaN')
+    dat <- read.table(paste0(dir_dat, 'Brazil_complete_series/', catch_id, '_pet_p_t_q.txt'),
+                      header = TRUE,
+                      na.strings = 'NaN'
+    )
     dat$DD <- sprintf('%02d', dat$DD); dat$MM <- sprintf('%02d', dat$MM)
 
     day <- as.Date(apply(dat[, 1:3], 1, paste, collapse = '-'))
@@ -96,7 +101,7 @@ for (i in seq_along(list_catch)) {
   }
 
   ### SELECT SUB-PERIOD OVER WHICH INDICES WILL BE COMPUTED
-  if (min(day) > per_start | max(day) < per_end) {
+  if (min(day) > per_start || max(day) < per_end) {
     stop('The period over which the indices should be computed is not fully covered by the data')
   }
 
@@ -126,12 +131,20 @@ for (i in seq_along(list_catch)) {
 ### SAVE
 save(camels_clim, camels_hydro_obs, list_catch,
      file = paste0(dir_dat, 'ci_hs_camels_', country, '_', per_str, '_NAtol', tol, '.Rdata'))
+
 write.table(camels_clim,
             file = paste0(dir_dat, 'clim_indices_camels_', country, '_', per_str, '_NAtol', tol, '.txt'),
-            row.names = FALSE, quote = FALSE, sep = ';')
+            row.names = FALSE,
+            quote = FALSE,
+            sep = ';'
+)
+
 write.table(camels_hydro_obs,
             file = paste0(dir_dat, 'hydro_sign_camels_', country, '_', per_str, '_NAtol', tol, '.txt'),
-            row.names = FALSE, quote = FALSE, sep = ';')
+            row.names = FALSE,
+            quote = FALSE,
+            sep = ';'
+)
 
 ### PLOT MAPS
 camels_clim <- merge(camels_topo, camels_clim)
@@ -143,9 +156,15 @@ for (my_var in names(camels_clim[c(-1, -2, -3)])) {
 
   qual <- is.factor(camels_clim[, my_var])
 
-  plot_points(x = camels_clim$gauge_lon, y = camels_clim$gauge_lat, z = camels_clim[, my_var],
-              text_legend = my_var, country = 'br', qual = qual,
-              col_scheme = ifelse(qual, 'seas', 'RdYlBu'), color_bar = TRUE)
+  plot_points(x = camels_clim$gauge_lon,
+              y = camels_clim$gauge_lat,
+              z = camels_clim[, my_var],
+              text_legend = my_var,
+              country = 'br',
+              qual = qual,
+              col_scheme = ifelse(qual, 'seas', 'RdYlBu'),
+              color_bar = TRUE
+  )
 
 }
 
@@ -157,9 +176,15 @@ for (my_var in names(camels_hydro_obs[c(-1, -2, -3)])) {
 
   qual <- is.factor(camels_hydro_obs[, my_var])
 
-  plot_points(x = camels_clim$gauge_lon, y = camels_clim$gauge_lat, z = camels_hydro_obs[, my_var],
-              text_legend = my_var, country = 'br', qual = qual,
-              col_scheme = ifelse(qual, 'seas', 'RdYlBu'), color_bar = !qual)
+  plot_points(x = camels_clim$gauge_lon,
+              y = camels_clim$gauge_lat,
+              z = camels_hydro_obs[, my_var],
+              text_legend = my_var,
+              country = 'br',
+              qual = qual,
+              col_scheme = ifelse(qual, 'seas', 'RdYlBu'),
+              color_bar = !qual
+  )
 
 }
 

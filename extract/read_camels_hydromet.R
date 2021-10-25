@@ -1,17 +1,23 @@
 ### LOAD CATCHMENT METADATA TO RETRIVE CATCHMENT AREA AND COMPUTE SPECIFIC DISCHARGE
 
 gauge_table <- read.table(paste0(dir_basin_dataset, 'basin_metadata/gauge_information.txt'),
-                          sep = '\t', quote = '', header = FALSE, skip = 1,
-                          colClasses = c(rep("factor", 3), rep("numeric", 3)))
+                          sep = '\t',
+                          quote = '',
+                          header = FALSE,
+                          skip = 1,
+                          colClasses = c(rep("factor", 3), rep("numeric", 3))
+)
+
 colnames(gauge_table) <- c('huc_02', 'gage_id', 'gage_name', 'gage_lat', 'gage_lon',
                            'area_usgs_km2') # I didn't manage to import the header from the original
                                             # file because of spaces in "DRAINAGE AREA (KM^2)"
+
 #gauge_table<<-gauge_table[order(gauge_table$gage_id),] # sort catchments by ID
 
 ### LOAD DATA FOR DESIRED CATCHMENT INTO INDIVIDUAL ARRAYS (prec, temp, etc)
 
-get_catchment_data_arrays <- function(huc, id, date_start, date_end,
-                                      forcing_dataset = 'daymet', ens_method = 'mean') {
+get_catchment_data_arrays <- function(huc, id, date_start, date_end, forcing_dataset = 'daymet',
+                                      ens_method = 'mean') {
 
   # ARGUMENTS
   # ens_method: should the SAC runs be averaged ('mean') or should only the best one be used ('best')?
@@ -45,7 +51,10 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
 
       forcing_table <- read.table(paste0(dir_basin_dataset, 'basin_mean_forcing/maurer/', huc, '/',
                                          id, '_lump_maurer_forcing_leap.txt'),
-                                  skip = 4, header = FALSE)
+                                  skip = 4,
+                                  header = FALSE
+      )
+
       colnames(forcing_table) <- c("year", "mnth", "day", "hr", "dayl.s.", "prcp.mm.day.",
                                    "srad.w.m2.", "swe.mm.", "tmax.c.", "tmin.c.", "vp.pa.")
 
@@ -53,7 +62,8 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
 
       forcing_table <- read.table(paste0(dir_basin_dataset, 'basin_mean_forcing/maurer/', huc, '/',
                                          id, '_lump_maurer_forcing_leap.txt'),
-                                  skip = 3, header = TRUE)
+                                  skip = 3,
+                                  header = TRUE)
 
     }
 
@@ -87,12 +97,16 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
   # A:e -> streamflow value is certified by the USGS as the actual ESTIMATED daily mean flow
   streamflow_table <- read.table(paste0(dir_basin_dataset, 'usgs_streamflow/', huc, '/', id,
                                         '_streamflow_qc.txt'),
-                                 header = FALSE, col.names = c('ID', 'Y', 'M', 'D', 'Q', 'QC_FLAG'),
-                                 fill = TRUE) # fill=TRUE handles cases QC_FLAG is missing
+                                 header = FALSE,
+                                 col.names = c('ID', 'Y', 'M', 'D', 'Q', 'QC_FLAG'),
+                                 fill = TRUE # fill=TRUE handles cases QC_FLAG is missing
+  )
+
   t_streamflow <- as.Date(paste0(streamflow_table$Y, sprintf('%02d', as.numeric(streamflow_table$M)),
                                  sprintf('%02d', as.numeric(streamflow_table$D))), '%Y%m%d')
 
   streamflow_table$Q[streamflow_table$Q == -999] <- NA # missing values: change -999 to NA
+
   if (sum(streamflow_table$QC_FLAG == 'M') != sum(is.na(streamflow_table$Q))) {
     stop('Inconsistency between number of M flags and number of -999 values')
   }
@@ -121,7 +135,8 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
   # IMPORT ET AND PET FROM SACRAMENTO OUTPUT
   output_hydro_files <- system(paste0('ls ', dir_basin_dataset, 'model_output/flow_timeseries/',
                                       forcing_dataset, '/', huc, '/', id, '_??_model_output.txt'),
-                               intern = TRUE)
+                               intern = TRUE
+  )
 
   if (length(output_hydro_files) != 10) { stop('Unexpected number of hydrological output files') }
 
@@ -284,7 +299,8 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
                              et = et_input$et,
                              q_obs = streamflow_input$streamflow,
                              q_obs_sac = q_obs_sac_input$q_obs_sac,
-                             q_sim_sac = q_sim_sac_input$q_sim_sac)
+                             q_sim_sac = q_sim_sac_input$q_sim_sac
+  )
 
   return(output_table)
 

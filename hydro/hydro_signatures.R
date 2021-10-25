@@ -59,7 +59,8 @@ compute_hydro_signatures_camels <- function(q, p, d, tol, hy_cal) {
                     high_q_dur = hf_stats$hf_dur,
                     low_q_freq = lf_stats$lf_freq,
                     low_q_dur = lf_stats$lf_dur,
-                    zero_q_freq = compute_no_flow(q, thres = 0, tol)))
+                    zero_q_freq = compute_no_flow(q, thres = 0, tol))
+  )
 
 }
 

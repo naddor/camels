@@ -13,13 +13,27 @@ plot_map_catch_attr <- function(dat, c2p, n_classes = 6, col_scheme = 'RdYlBu', 
   if (colnames(dat)[1] != 'gauge_id') { stop('First column of dat must be gauge_id') }
 
   # check that key attributes have either 1 or length(cp) element
-  if (!length(col_scheme) %in% c(1, length(c2p))) { stop('col_scheme must have either 1 or length(c2p) elements') }
-  if (!length(b_round) %in% c(1, length(c2p))) { stop('b_round must have either 1 or length(c2p) elements') }
-  if (!length(col_rev) %in% c(1, length(c2p))) { stop('col_rev must have either 1 or length(c2p) elements') }
-  if (!length(qual) %in% c(1, length(c2p))) { stop('qual must have either 1 or length(c2p) elements') }
-  if (!length(subplot_hist) %in% c(1, length(c2p))) { stop('subplot_hist must have either 1 or length(c2p) elements') }
-  if (!length(set_breaks) %in% c(1, length(c2p))) { stop('set_breaks must have either 1 or length(c2p) elements') }
-  if (!length(breaks) %in% c(1, length(c2p))) { stop('breaks must have either 1 or length(c2p) elements') }
+  if (!length(col_scheme) %in% c(1, length(c2p))) {
+    stop('col_scheme must have either 1 or length(c2p) elements')
+  }
+  if (!length(b_round) %in% c(1, length(c2p))) {
+    stop('b_round must have either 1 or length(c2p) elements')
+  }
+  if (!length(col_rev) %in% c(1, length(c2p))) {
+    stop('col_rev must have either 1 or length(c2p) elements')
+  }
+  if (!length(qual) %in% c(1, length(c2p))) {
+    stop('qual must have either 1 or length(c2p) elements')
+  }
+  if (!length(subplot_hist) %in% c(1, length(c2p))) {
+    stop('subplot_hist must have either 1 or length(c2p) elements')
+  }
+  if (!length(set_breaks) %in% c(1, length(c2p))) {
+    stop('set_breaks must have either 1 or length(c2p) elements')
+  }
+  if (!length(breaks) %in% c(1, length(c2p))) {
+    stop('breaks must have either 1 or length(c2p) elements')
+  }
 
   # divide screen to create multiple panels
   def.par <- par(no.readonly = TRUE) # save default, for resetting...
@@ -42,14 +56,22 @@ plot_map_catch_attr <- function(dat, c2p, n_classes = 6, col_scheme = 'RdYlBu', 
   for (v in c2p) {
 
     # set plotting details
-    my_col_scheme <- ifelse(length(col_scheme) == length(c2p), col_scheme[v == c2p], col_scheme)
-    my_b_round <- ifelse(length(b_round) == length(c2p), b_round[v == c2p], b_round)
-    my_col_rev <- ifelse(length(col_rev) == length(c2p), col_rev[v == c2p], col_rev)
-    my_qual <- ifelse(length(qual) == length(c2p), qual[v == c2p], qual)
-    my_subplot_hist <- ifelse(length(subplot_hist) == length(c2p), subplot_hist[v == c2p], subplot_hist)
-    my_force_zero_center <- ifelse(length(force_zero_center) == length(c2p), force_zero_center[v == c2p], force_zero_center)
-    my_force_n_classes <- ifelse(length(force_n_classes) == length(c2p), force_n_classes[v == c2p], force_n_classes)
-    my_set_breaks <- ifelse(length(set_breaks) == length(c2p), set_breaks[v == c2p], set_breaks)
+    my_col_scheme <- ifelse(length(col_scheme) == length(c2p),
+                            col_scheme[v == c2p], col_scheme)
+    my_b_round <- ifelse(length(b_round) == length(c2p),
+                         b_round[v == c2p], b_round)
+    my_col_rev <- ifelse(length(col_rev) == length(c2p),
+                         col_rev[v == c2p], col_rev)
+    my_qual <- ifelse(length(qual) == length(c2p),
+                      qual[v == c2p], qual)
+    my_subplot_hist <- ifelse(length(subplot_hist) == length(c2p),
+                              subplot_hist[v == c2p], subplot_hist)
+    my_force_zero_center <- ifelse(length(force_zero_center) == length(c2p),
+                                   force_zero_center[v == c2p], force_zero_center)
+    my_force_n_classes <- ifelse(length(force_n_classes) == length(c2p),
+                                 force_n_classes[v == c2p], force_n_classes)
+    my_set_breaks <- ifelse(length(set_breaks) == length(c2p),
+                            set_breaks[v == c2p], set_breaks)
 
     # set breaks
     if (length(breaks) == length(c2p)) { #
@@ -197,8 +219,11 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
 
     }else {
 
-      b <- unique(round(quantile(z, seq(1 / n_classes, 1 - 1 / n_classes, length.out = n_classes - 1),
-                                 na.rm = TRUE), b_round))
+      b <- unique(round(quantile(z,
+                                 seq(1 / n_classes, 1 - 1 / n_classes, length.out = n_classes - 1),
+                                 na.rm = TRUE),
+                        b_round)
+      )
 
       if (b[1] == 0 & length(b) > 1) { b <- b[-1] }
 
@@ -206,8 +231,11 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
 
         z_temp <- z[z > b[1]] # only works if first class is the most populated one (e.g. no snow).
         # TODO: use which.max(table(findInterval))
-        b_temp <- unique(round(quantile(z_temp, seq(1 / n_classes, 1 - 1 / n_classes, length.out = n_classes - 2),
-                                        na.rm = TRUE), b_round))
+        b_temp <- unique(round(quantile(z_temp,
+                                        seq(1 / n_classes, 1 - 1 / n_classes, length.out = n_classes - 2),
+                                        na.rm = TRUE),
+                               b_round)
+        )
         b <- c(b[1], b_temp)
 
       }
@@ -380,13 +408,13 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
       par(mar = c(3, 5, 0, 5), cex = 1)
       plot.legend.na(col, b, vert = FALSE)
     }
-  }else {
+  } else {
     par(mar = c(3, 5, 0, 5), cex = 1)
     plot.new()
     if (pch >= 21) {
       legend('top', pt.bg = as.character(col_table$R_color), legend = col_table$categ,
              pch = pch, ncol = 2, bty = 'n')
-    }else {
+    } else {
       legend('top', col = as.character(col_table$R_color), legend = col_table$categ,
              pch = pch, ncol = 2, bty = 'n')
     }

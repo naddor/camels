@@ -11,13 +11,9 @@ require(mapdata)  # contains the hi-resolution points that mark out the countrie
 hostname <- system('hostname', intern = TRUE)
 
 if (hostname == 'uncertainty.rap.ucar.edu' | substr(hostname, 1, 3) == 'vpn') {
-
   source('/Volumes/d1/naddor/hc1_home/scripts/r_scripts/set_paths.R')  # set all paths
-
 } else {
-
   source('/home/naddor/scripts/r_scripts/set_paths.R')  # set all paths
-
 }
 
 # set country
@@ -77,7 +73,8 @@ glim_classes_col <- glim_classes_col[order(glim_classes_col$order),]
 
 # plot a map with catchments
 pdf(paste0(dir_plots, 'camels/geol/glim_', country, '_overview.pdf', sep = ''),
-    width = width_pdf, height = height_pdf)
+    width = width_pdf,
+    height = height_pdf)
 
 plot(limw_wgs84, col = as.character(glim_classes_col$R_col), border = NA)
 
@@ -103,7 +100,9 @@ glim_2nd_frac <- array()
 glim_carbonate_rocks_frac <- array()
 
 pdf(paste0(dir_plots, 'camels/geol/glim_', country, '_extraction.pdf', sep = ''),
-    width = width_pdf, height = height_pdf)
+    width = width_pdf,
+    height = height_pdf
+)
 
 plot(limw_wgs84, col = as.character(glim_classes_col$R_col), border = NA)
 
@@ -116,7 +115,8 @@ if (country == 'us') {
 
 legend('bottomleft', col = as.character(table_glim_classes$R_col),
        legend = table_glim_classes$long_name,
-       ncol = 2, pch = 15, bty = 'n', cex = 0.7)
+       ncol = 2, pch = 15, bty = 'n', cex = 0.7
+)
 
 for (e in 1:nrow(catch_topo)) {
 
@@ -126,9 +126,11 @@ for (e in 1:nrow(catch_topo)) {
   # determime area of polygons overlapping with each catchment
   inter <- intersect(limw_wgs84, shp_catch[shp_catch@data$gauge_id == catch_id,])
   inter_data <- inter@data
-  inter_data <- data.frame(inter_data, area = area(inter),
+  inter_data <- data.frame(inter_data,
+                           area = area(inter),
                            area_frac = area(inter) / sum(area(inter)),
-                           sort = 1:nrow(inter_data))
+                           sort = 1:nrow(inter_data)
+  )
   inter_data <- merge(inter_data, table_glim_classes, by.x = 'xx', by.y = 'short_name') # does not preserve row order
   inter_data <- inter_data[order(inter_data$sort),] # re-sort data to match order in inter
 
@@ -169,12 +171,12 @@ for (e in 1:nrow(catch_topo)) {
 
   text(mean(catch_box['x',]), mean(catch_box['y',]), labels = catch_id, cex = 0.1) # add catch name
 
-  plot(shp_catch_to_plot, add = TRUE,
-       col = NA, border = 'black', lty = 1, lwd = 0.5)
+  plot(shp_catch_to_plot, add = TRUE, col = NA, border = 'black', lty = 1, lwd = 0.5)
 
   plot(shp_catch_to_plot, add = TRUE, col = NA,
        border = as.character(table_glim_classes$R_color[table_glim_classes$long_name == names(dom_geol[1])]),
-       lty = 1, lwd = 0.25)
+       lty = 1, lwd = 0.25
+  )
 
   # save dominant geology class and fraction
   glim_1st_class[e] <- names(dom_geol[1])
@@ -207,5 +209,9 @@ catch_geol_glim <- data.frame(gauge_id = catch_topo$gauge_id, glim_1st_class, gl
 # save data to temp directory
 save(catch_geol_glim, file = paste0(dir_catch_attr_temp, 'catch_geol_glim_', country, '.Rdata'))
 
-write.table(catch_geol_glim, file = paste0(dir_catch_attr, 'catch_geol_glim_', country, '.txt'),
-            row.names = FALSE, quote = FALSE, sep = ';')
+write.table(catch_geol_glim,
+            file = paste0(dir_catch_attr, 'catch_geol_glim_', country, '.txt'),
+            row.names = FALSE,
+            quote = FALSE,
+            sep = ';'
+)
