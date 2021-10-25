@@ -68,9 +68,7 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
     }
 
   } else {
-
     stop(paste('Unkown forcing forcing data set:', forcing_dataset))
-
   }
 
   # Rename forcing variables
@@ -84,9 +82,7 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
                                  'srad(W/m2)', 'swe(mm)', 'tmax(C)', 'tmin(C)', 'vp(Pa)')
 
   } else {
-
     stop('Unexpected header of the forcing file')
-
   }
 
   t_forcing <- as.Date(paste0(forcing_table$year, sprintf('%02d', as.numeric(forcing_table$month)),
@@ -138,7 +134,9 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
                                intern = TRUE
   )
 
-  if (length(output_hydro_files) != 10) { stop('Unexpected number of hydrological output files') }
+  if (length(output_hydro_files) != 10) {
+    stop('Unexpected number of hydrological output files')
+  }
 
   first_file <- TRUE
 
@@ -203,9 +201,7 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
     q_sim_sac <- q_sim_sac_ens[, best_ps_rmse]
 
   } else {
-
     stop(paste('Unkown method for the aggregation of the SAC runs:', ens_method))
-
   }
 
   # 3 MAR 2016: PET computed by Andy can sometimes negative (e.g. 12054000 min PET is -0.13)
@@ -250,17 +246,12 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
     if (any(t_forcing[t_forcing >= min(t_input) & t_forcing <= max(t_input)] != t_input)) {
       stop('t_forcing and t_input differ')
     }
-
   } else if (min(t_forcing) > min(t_input)) {
-
     stop(paste('Forcing data start on', min(t_forcing), 'so forcing for',
                 min(t_input), 'cannot be extracted.'))
-
   } else if (max(t_forcing) < max(t_input)) {
-
     stop(paste('Forcing data end on', max(t_forcing), 'so forcing for',
                 max(t_input), 'cannot be extracted.'))
-
   }
 
   # Streamflow: trim or add na using merge - # all.x adds NA when obs not available
@@ -282,20 +273,17 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
   # if(any(abs(q_obs_sac-streamflow)>1,na.rm=TRUE)){stop('q_obs_sac and streamflow do not match')}
 
   # Create table with all data
-  output_table <- data.frame(date = format(t_input, '%Y%m%d'),
-                             day_length = forcing_table[, 'dayl(s)'],
-                             prec = forcing_table[, 'prcp(mm/day)'],
-                             sw_inc_rad = forcing_table[, 'srad(W/m2)'],
-                             temp_min = forcing_table[, 'tmin(C)'],
-                             temp_max = forcing_table[, 'tmax(C)'],
-                             vapor_pressure = forcing_table[, 'vp(Pa)'],
-                             pet = pet_input$pet,
-                             et = et_input$et,
-                             q_obs = streamflow_input$streamflow,
-                             q_obs_sac = q_obs_sac_input$q_obs_sac,
-                             q_sim_sac = q_sim_sac_input$q_sim_sac
+  data.frame(date = format(t_input, '%Y%m%d'),
+             day_length = forcing_table[, 'dayl(s)'],
+             prec = forcing_table[, 'prcp(mm/day)'],
+             sw_inc_rad = forcing_table[, 'srad(W/m2)'],
+             temp_min = forcing_table[, 'tmin(C)'],
+             temp_max = forcing_table[, 'tmax(C)'],
+             vapor_pressure = forcing_table[, 'vp(Pa)'],
+             pet = pet_input$pet,
+             et = et_input$et,
+             q_obs = streamflow_input$streamflow,
+             q_obs_sac = q_obs_sac_input$q_obs_sac,
+             q_sim_sac = q_sim_sac_input$q_sim_sac
   )
-
-  return(output_table)
-
 }

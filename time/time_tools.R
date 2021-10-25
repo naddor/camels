@@ -37,7 +37,6 @@ get_hydro_year <- function(d, hy_cal) {
   }
 
   return(hy)
-
 }
 
 get_hydro_year_stats <- function(d, hy_cal) {
@@ -55,35 +54,25 @@ get_hydro_year_stats <- function(d, hy_cal) {
   hy <- y                         # Create array for hydrological year
 
   if (hy_cal == 'oct_us_gb') {      # USA and Great Britian
-
     # Hydrological year 2010 starts on Oct 1st 2009 and finishes on Sep 30th 2010
     hy[m >= 10] <- (hy[m >= 10] + 1)
     start_hy <- as.Date(paste0(hy - 1, '-10-01'))
-
   } else if (hy_cal == 'sep_br') {  # Brazil
-
     # Hydrological year 2010 starts on Sep 1st 2009 and finishes on Aug 31st 2010
     hy[m >= 9] <- (hy[m >= 9] + 1)
     start_hy <- as.Date(paste0(hy - 1, '-09-01'))
-
   } else if (hy_cal == 'apr_cl') {  # Chile
-
     # Hydrological year 2010 starts on Apr 1st 2010 and finishes on Mar 31st 2011
     hy[m <= 3] <- (hy[m <= 3] - 1)
     start_hy <- as.Date(paste0(hy, '-04-01'))
-
   } else {
-
     stop(paste0('Unkown hydrological year calendar:', hy_cal))
-
   }
 
   day_of_hy <- as.numeric(d - start_hy + 1) # Days since the beginning of the hydro year
 
   if (any(day_of_hy < 1 | day_of_hy > 366)) {
-
     stop('Error when computing day of hydro year')
-
   }
 
   return(data.frame(hy, day_of_hy))
@@ -142,15 +131,10 @@ find_avail_data_array <- function(x, tol) {
   avail_data <- !(is.na(x)) # Time steps for which data are available
 
   if (sum(!avail_data) >= tol * length(x)) { # More than tol*100 % of the time series are missing
-
     return(x * NA) # Return a vector of NA values
-
   } else {
-
     return(avail_data) # Return a vector of TRUE/FALSE values
-
   }
-
 }
 
 # Deal with missing values in several arrays organised as a data.frame
@@ -173,5 +157,4 @@ find_avail_data_df <- function(x, tol) {
   avail_data <- find_avail_data_array(joint_avail, tol)
 
   return(avail_data)
-
 }

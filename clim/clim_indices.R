@@ -20,19 +20,18 @@ compute_clim_indices_camels <- function(temp, prec, pet, day, tol) {
   ind_extreme_precip <- compute_extreme_precip_indices(prec, day, rel_hp_thres = 5,
                                                        abs_lp_thres = 1, tol)
 
-  return(data.frame(p_mean = ind_berghuijs$p_mean,
-                    pet_mean = ind_berghuijs$pet_mean,
-                    aridity = ind_berghuijs$aridity,
-                    p_seasonality = ind_berghuijs$p_seasonality,
-                    frac_snow = ind_berghuijs$frac_snow_daily,
-                    high_prec_freq = ind_extreme_precip$high_prec_freq,
-                    high_prec_dur = ind_extreme_precip$high_prec_dur,
-                    high_prec_timing = ind_extreme_precip$high_prec_timing,
-                    low_prec_freq = ind_extreme_precip$low_prec_freq,
-                    low_prec_dur = ind_extreme_precip$low_prec_dur,
-                    low_prec_timing = ind_extreme_precip$low_prec_timing)
+  data.frame(p_mean = ind_berghuijs$p_mean,
+             pet_mean = ind_berghuijs$pet_mean,
+             aridity = ind_berghuijs$aridity,
+             p_seasonality = ind_berghuijs$p_seasonality,
+             frac_snow = ind_berghuijs$frac_snow_daily,
+             high_prec_freq = ind_extreme_precip$high_prec_freq,
+             high_prec_dur = ind_extreme_precip$high_prec_dur,
+             high_prec_timing = ind_extreme_precip$high_prec_timing,
+             low_prec_freq = ind_extreme_precip$low_prec_freq,
+             low_prec_dur = ind_extreme_precip$low_prec_dur,
+             low_prec_timing = ind_extreme_precip$low_prec_timing
   )
-
 }
 
 ### Functions for individual signatures

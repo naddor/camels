@@ -46,20 +46,20 @@ compute_hydro_signatures_camels <- function(q, p, d, tol, hy_cal) {
   lf_stats <- compute_lf_freq_dur(q, d, tol)
   bfi <- comp_i_bf(q, d, alpha = 0.925, passes = 3, tol)
 
-  return(data.frame(q_mean = compute_q_mean(q, d, tol)$q_mean_yea,
-                    runoff_ratio = comp_r_qp(q, p, tol),
-                    stream_elas = comp_e_qp(q, p, d, tol, hy_cal)$e_qp_sanka,
-                    slope_fdc = comp_s_fdc(q, tol)$sfdc_sawicz_2011,
-                    baseflow_index_landson = bfi$i_bf_landson,
-                    baseflow_index_lfstat = bfi$i_bf_lfstat,
-                    hfd_mean = compute_hfd_mean_sd(q, d, tol, hy_cal)$hfd_mean,
-                    Q5 = qxx$q95,
-                    Q95 = qxx$q5,
-                    high_q_freq = hf_stats$hf_freq,
-                    high_q_dur = hf_stats$hf_dur,
-                    low_q_freq = lf_stats$lf_freq,
-                    low_q_dur = lf_stats$lf_dur,
-                    zero_q_freq = compute_no_flow(q, thres = 0, tol))
+  data.frame(q_mean = compute_q_mean(q, d, tol)$q_mean_yea,
+             runoff_ratio = comp_r_qp(q, p, tol),
+             stream_elas = comp_e_qp(q, p, d, tol, hy_cal)$e_qp_sanka,
+             slope_fdc = comp_s_fdc(q, tol)$sfdc_sawicz_2011,
+             baseflow_index_landson = bfi$i_bf_landson,
+             baseflow_index_lfstat = bfi$i_bf_lfstat,
+             hfd_mean = compute_hfd_mean_sd(q, d, tol, hy_cal)$hfd_mean,
+             Q5 = qxx$q95,
+             Q95 = qxx$q5,
+             high_q_freq = hf_stats$hf_freq,
+             high_q_dur = hf_stats$hf_dur,
+             low_q_freq = lf_stats$lf_freq,
+             low_q_dur = lf_stats$lf_dur,
+             zero_q_freq = compute_no_flow(q, thres = 0, tol)
   )
 
 }
@@ -89,14 +89,10 @@ compute_q_mean <- function(q, d, tol) {
 
       q_mean_djf <- q_sea['djf']
       q_mean_jja <- q_sea['jja']
-
     }
   }
 
-  q_mean <- data.frame(q_mean_yea, q_mean_djf, q_mean_jja, row.names = '')
-
-  return(q_mean)
-
+  data.frame(q_mean_yea, q_mean_djf, q_mean_jja, row.names = '')
 }
 
 # runoff_ratio   - Runoff ratio (ratio of mean daily discharge to mean daily precipitation)
@@ -109,13 +105,10 @@ comp_r_qp <- function(q, p, tol) {
   r_qp <- mean(q[avail_data]) / mean(p[avail_data])
 
   if ((!is.na(r_qp)) & r_qp > 1) {
-
     warning(paste('Runoff ratio is greater than 1:', r_qp))
-
   }
 
-  return(r_qp)
-
+  r_qp
 }
 
 # stream_elas - Streamflow precipitation elasticity (sensitivity of streamflow to changes in
@@ -151,10 +144,7 @@ comp_e_qp <- function(q, p, d, tol, hy_cal) {
   e_qp_sanka <- median((dq_sanka / mq_tot) / (dp_sanka / mp_tot))
 
   # Return both estimates
-  e_qp <- data.frame(e_qp_sawicz = e_qp_sawicz, e_qp_sanka = e_qp_sanka)
-
-  return(e_qp)
-
+  data.frame(e_qp_sawicz = e_qp_sawicz, e_qp_sanka = e_qp_sanka)
 }
 
 # slope_fdc - Slope of the flow duration curve (between the log-transformed 33rd and 66th
@@ -217,12 +207,10 @@ comp_s_fdc <- function(q, tol) {
       # Flow exceeded 34% (100-66%) of the time
       q66_quant <- as.numeric(quantile(q[avail_data], 0.66))
       sfdc_addor_2017 <- (log(q66_quant) - log(q33_quant)) / (0.66 - 0.33)
-
     }
   }
 
-  return(data.frame(sfdc_yadav_2007, sfdc_sawicz_2011, sfdc_mcmillan_2017, sfdc_addor_2017))
-
+  data.frame(sfdc_yadav_2007, sfdc_sawicz_2011, sfdc_mcmillan_2017, sfdc_addor_2017)
 }
 
 # baseflow_index - Baseflow index (ratio of mean daily baseflow to mean daily discharge)
@@ -260,6 +248,7 @@ comp_i_bf <- function(q, d, alpha, passes, tol) {
     if (length(bf_landson) != length(q)) {
       stop('Baseflow time series derived using Landson does not match length of Q_OBS')
     }
+
     if (length(bf_lfstat) != length(q)) {
       stop('Baseflow time series derived using lfstat does not match length of Q_OBS')
     }
@@ -273,8 +262,7 @@ comp_i_bf <- function(q, d, alpha, passes, tol) {
 
   }
 
-  return(data.frame(i_bf_landson, i_bf_lfstat))
-
+  data.frame(i_bf_landson, i_bf_lfstat)
 }
 
 # Half flow date (Court, 1962): the date on which the cumulative discharge since the beginning of
@@ -292,7 +280,6 @@ compute_hfd_mean_sd <- function(q, d, tol, hy_cal) {
 
   if (all(is.na(avail_data))) {
     # Fraction of missing values over the whole period is above tol
-
     return(data.frame(hfd_mean = NA, hfd_sd = NA)) # Return NA
 
   } else {
@@ -311,27 +298,20 @@ compute_hfd_mean_sd <- function(q, d, tol, hy_cal) {
     for (y in names(hy_q)) { # Loop through hydrological years
 
       if (sum(hy_q[[y]]) == 0) { # hfd can't be computed if annual discharge is 0
-
         date_hfd[y] <- NA
-
       } else {
-
         # Index of the first day above half of annual total
         i <- which(cumsum(hy_q[[y]]) > 0.5 * sum(hy_q[[y]]))[1]
         # Number of days since beginning of hydro year
         date_hfd[y] <- as.numeric(hy_d[[y]][i])
-
       }
     }
 
     if (any(date_hfd < 0 | date_hfd > 366, na.rm = TRUE)) {
-
       stop(paste('Unexpected value half flow date:', date_hfd[date_hfd < 0 | date_hfd > 366]))
-
     }
 
-    return(data.frame(hfd_mean = mean(date_hfd, na.rm = TRUE), hfd_sd = sd(date_hfd, na.rm = TRUE)))
-
+    data.frame(hfd_mean = mean(date_hfd, na.rm = TRUE), hfd_sd = sd(date_hfd, na.rm = TRUE))
   }
 }
 
@@ -344,19 +324,14 @@ compute_qXX <- function(q, thres, tol) {
   avail_data <- find_avail_data_array(q, tol) # Time steps for which obs and sim are available
 
   if (all(is.na(avail_data))) { # If there is more than tol% of missing value
-
     qXX <- data.frame(t(rep(NA, length(thres))))
-
   } else {
-
     qXX <- data.frame(t(quantile(q[avail_data], 1 - thres)))
-
   }
 
   names(qXX) <- paste0('q', thres * 100)
 
-  return(qXX)
-
+  qXX
 }
 
 # Frequency and duration of high flows
@@ -409,8 +384,7 @@ compute_hf_freq_dur <- function(q, d, tol) {
 
     }
 
-    return(data.frame(hf_freq, hf_dur))
-
+    data.frame(hf_freq, hf_dur)
   }
 }
 
@@ -455,8 +429,7 @@ compute_lf_freq_dur <- function(q, d, tol) {
 
     }
 
-    return(data.frame(lf_freq, lf_dur))
-
+    data.frame(lf_freq, lf_dur)
   }
 }
 
@@ -466,8 +439,7 @@ compute_no_flow <- function(q, thres, tol) {
 
   avail_data <- find_avail_data_array(q, tol)
 
-  return(sum(q[avail_data] <= thres) / length(q[avail_data]))
-
+  sum(q[avail_data] <= thres) / length(q[avail_data])
 }
 
 compute_q_seas <- function(q, d, tol) {
@@ -477,8 +449,7 @@ compute_q_seas <- function(q, d, tol) {
   q_year <- compute_q_mean(q, d, tol)$q_mean_yea
   q_mon <- rapply(split(q[avail_data], format(d[avail_data], '%m')), mean)
 
-  return(sum(abs(q_mon - q_year)) / (q_year * 12))
-
+  sum(abs(q_mon - q_year)) / (q_year * 12)
 }
 
 compute_q_peak <- function(q, d, tol) {

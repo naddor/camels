@@ -135,8 +135,7 @@ for (e in 1:nrow(catch_topo)) {
 
   #plot(inter,col=as.character(inter_data$R_color),add=TRUE,lwd=0.1)
 
-  # Compute error in area_
-
+  # Compute error in area
   if (country == 'us') {
     area_gf <- catch_topo[catch_topo$gage_id == catch_id, 'area_geospa_fabric']
     rel_area_error <- sum(inter_data$area) / 1E6 / area_gf - 1

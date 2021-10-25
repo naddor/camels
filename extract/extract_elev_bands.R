@@ -29,10 +29,13 @@ extract_elev_bands <- function(id, huc, keep_absolute_area = FALSE) {
     # First colum: indice of elevation zone
     elev_tab_format$indice_elevation_zone[z] <- z
     elev_code <- as.numeric(strsplit(as.character(elev_tab[z, 1]), '_')[[1]][4])
+
     # Second colum: mid-point elevation
     elev_tab_format$mid_point_elevation[z] <- elev_code * 100 + 50
+
     # Third column: fraction of the area in this elevation band
     elev_tab_format$area_fraction[z] <- elev_tab[z, 2] / total_area_elev_bands
+
     # Fourth column: area in this elevation band - not needed by FUSE, only for verification purposes
     elev_tab_format$area_m2[z] <- elev_tab[z, 2]
   }
@@ -51,5 +54,5 @@ extract_elev_bands <- function(id, huc, keep_absolute_area = FALSE) {
     stop('Unexpected distance between two successive elevation bands')
   }
 
-  return(elev_tab_format)
+  elev_tab_format
 }

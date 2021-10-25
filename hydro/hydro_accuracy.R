@@ -1,7 +1,6 @@
 source(paste0(dir_r_scripts, 'camels/time/time_tools.R')) # For find_avail_data_df
 
 ### NSE
-
 compute_nse <- function(obs, sim, tol = 0.05) {
   if (length(obs) != length(sim)) {
     stop('the length of OBS and SIM differ')
@@ -10,13 +9,10 @@ compute_nse <- function(obs, sim, tol = 0.05) {
   # Time steps for which obs and sim are available
   avail_data <- find_avail_data_df(cbind(obs, sim), tol)
 
-  nse <- 1 - sum((sim[avail_data] - obs[avail_data])^2) / sum((obs[avail_data] - mean(obs[avail_data]))^2)
-
-  return(nse)
+  1 - sum((sim[avail_data] - obs[avail_data])^2) / sum((obs[avail_data] - mean(obs[avail_data]))^2)
 }
 
 ### RMSE
-
 compute_rmse <- function(obs, sim, tol = 0.05) {
   # Time steps for which obs and sim are available
   avail_data <- find_avail_data_df(cbind(obs, sim), tol)
@@ -25,7 +21,6 @@ compute_rmse <- function(obs, sim, tol = 0.05) {
 }
 
 ### Error in water balance
-
 compute_dv <- function(obs, sim, tol = 0.05) {
 
   # Time steps for which obs and sim are available
@@ -36,7 +31,6 @@ compute_dv <- function(obs, sim, tol = 0.05) {
 }
 
 ### Kling Gupta efficiency
-
 compute_kge <- function(obs, sim, tol = 0.05, return_decomp = FALSE) {
 
   # Time steps for which obs and sim are available
@@ -49,13 +43,8 @@ compute_kge <- function(obs, sim, tol = 0.05, return_decomp = FALSE) {
   kge <- 1 - sqrt((r - 1)^2 + (alpha - 1)^2 + (beta - 1)^2)
 
   if (return_decomp) {
-
     return(data.frame(kge = kge, r = r, alpha = alpha, beta = beta))
-
   } else {
-
-    return(kge)
-
+    kge
   }
-
 }

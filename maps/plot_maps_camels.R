@@ -75,17 +75,12 @@ plot_map_catch_attr <- function(dat, c2p, n_classes = 6, col_scheme = 'RdYlBu', 
 
     # Set breaks
     if (length(breaks) == length(c2p)) { #
-
       if (length(which(v == c2p)) > 1) {
         stop('The same column is used twice')
       }
-
       my_breaks <- breaks[[which(v == c2p)]]
-
     } else {
-
       my_breaks <- breaks
-
     }
 
     plot_points_us_basins(dat[, c(1, v)], n_classes, col_scheme = my_col_scheme,
@@ -122,9 +117,7 @@ plot_points_us_basins <- function(dat, n_classes = 6, col_scheme = 'RdYlBu', col
 
   # Load coordinates
   if (!exists('camels_topo')) {
-
     load(paste0(dir_catch_attr, 'camels_topo.Rdata'))
-
   }
 
   dat2plot <- merge(dat, camels_topo, by = 'gauge_id')
@@ -185,35 +178,26 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
 
   # Plot background map
   if (country == 'us') {
-
     map("state", col = 'gray60', fill = TRUE, border = NA, xlim = c(-125, -67), ylim = c(25, 50))
     map("state", col = 'gray89', add = TRUE, lwd = 1, resolution = 0)
     map("state", col = 'black', add = TRUE, lwd = 0.8, resolution = 0, interior = FALSE)
 
     coor_legend <- c(-122, 25.5)
     coor_hist <- c(69, 28.5)
-
   } else if (country == 'br') {
-
     map('world', xlim = c(-75, -35), ylim = c(-35, 10))
     map('world', col = 'gray89', fill = TRUE, add = TRUE)
 
     coor_legend <- c(-45, -35)
     coor_hist <- c(-37, 7)
-
   } else {
-
     stop(paste0('Unknown country:', country))
-
   }
 
   # Define colors and breaks
   if (!qual) {
-
     if (set_breaks) {
-
       b <- breaks
-
       # Show breaks
       message(paste0('set_breaks=TRUE, using these values'))
 
@@ -246,20 +230,15 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
 
       # Show breaks
       message(paste0('set_breaks=FALSE, using these values for breaks'))
-
     }
 
     print(b)
 
     # Define colors
     if (length(b) < 2) { # The mimimum number of color delivered by colorbrewer is 3
-
       col <- brewer.pal(4, col_scheme)[1:(length(b) + 1)]
-
     } else {
-
       col <- brewer.pal(length(b) + 1, col_scheme)
-
     }
 
   } else { # Qualitative classes
@@ -275,9 +254,7 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
     if (col_scheme == 'seas') {
 
       if (any(!qc_label %in% c('djf', 'jja', 'mam', 'son'))) {
-
         stop('When color scheme is seas, the variable to plot can only use these 4 levels: djf, jja, mam, son')
-
       }
 
       col_table <- data.frame(categ = c('djf', 'mam', 'jja', 'son'),
@@ -288,9 +265,7 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
       file_glim_colors <- paste0(dir_data, 'GLiM/GLiM_classes_colors.txt')
 
       if (!file.exists(file_glim_colors)) {
-
         stop(paste('File with glim colors is missing:', file_glim_colors))
-
       }
 
       # Load colors
@@ -298,9 +273,7 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
       table_glim_classes$short_name <- as.factor(table_glim_classes$short_name)
 
       if (any(colnames(table_glim_classes) != c('short_name', 'long_name', 'R_color'))) {
-
         stop(paste('Unexpect colum names in:', file_glim_colors))
-
       }
 
       col_table <- data.frame(categ = table_glim_classes$long_name,
@@ -313,7 +286,6 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
     } else {
 
       if (length(qc_nonzero) > 11) { # The maximum number of color delivered by colorbrewer is around 10
-
         print('combining two colors classes because number of breaks > 11')
 
         # Combining two color classes
@@ -322,14 +294,11 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
                  brewer.pal(length(qc_nonzero) - n_colors_paired, 'Set3'))
 
       } else {
-
         col <- brewer.pal(length(qc_nonzero), col_scheme)
-
       }
 
       col_table <- data.frame(categ = qc_label,
                               R_color = col)
-
     }
 
     # Determine color of each basin
@@ -341,9 +310,7 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
     merged_table <- merged_table[order(merged_table$sort_column),]
 
     if (dim(merged_table)[1] != length(z)) {
-
       stop('Error when determining colors.')
-
     }
 
     col_each_basin <- as.character(merged_table$R_color)
@@ -436,8 +403,7 @@ plot.legend.na <- function(col, breaks, vert = TRUE, density = NULL, angle = 45,
   }
   if (is.null(density)) {
     dens <- NULL
-  }
-  else {
+  } else {
     dens <- rep(density, length = ncol)
   }
 
