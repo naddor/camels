@@ -1,4 +1,4 @@
-### LOAD CATCHMENT METADATA TO RETRIVE CATCHMENT AREA AND COMPUTE SPECIFIC DISCHARGE
+### Load catchment metadata to retrive catchment area and compute specific discharge
 
 gauge_table <- read.table(paste0(dir_basin_dataset, 'basin_metadata/gauge_information.txt'),
                           sep = '\t',
@@ -12,9 +12,9 @@ colnames(gauge_table) <- c('huc_02', 'gage_id', 'gage_name', 'gage_lat', 'gage_l
                            'area_usgs_km2') # I didn't manage to import the header from the original
                                             # file because of spaces in "DRAINAGE AREA (KM^2)"
 
-#gauge_table<<-gauge_table[order(gauge_table$gage_id),] # sort catchments by ID
+#gauge_table<<-gauge_table[order(gauge_table$gage_id),] # Sort catchments by ID
 
-### LOAD DATA FOR DESIRED CATCHMENT INTO INDIVIDUAL ARRAYS (prec, temp, etc)
+### Load data for desired catchment into individual arrays (prec, temp, etc)
 
 get_catchment_data_arrays <- function(huc, id, date_start, date_end, forcing_dataset = 'daymet',
                                       ens_method = 'mean') {
@@ -33,13 +33,13 @@ get_catchment_data_arrays <- function(huc, id, date_start, date_end, forcing_dat
 
 }
 
-### RETURN DATA FOR DESIRED CATCHMENT INTO A SINGLE DATAFRAME (with columns prec, temp, etc)
-### AND SAVE DAY AS GLOBAL ARRAY
+# Return data for desired catchment into a single dataframe (with columns prec, temp, etc)
+# and save day as global array
 
 get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_end = '20080930',
                                          forcing_dataset = 'daymet', ens_method = 'mean') {
 
-  # IMPORT FORCING DATA
+  # Import forcing data
   if (forcing_dataset == 'daymet') {
 
     forcing_table <- read.table(paste0(dir_basin_dataset, 'basin_mean_forcing/daymet/', huc, '/',
@@ -47,7 +47,7 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
 
   } else if (forcing_dataset == 'maurer') {
 
-    if (id %in% c('02108000', '05120500', '07067000', '09492400')) { # header is incomplete in original files
+    if (id %in% c('02108000', '05120500', '07067000', '09492400')) { # Header is incomplete in original files
 
       forcing_table <- read.table(paste0(dir_basin_dataset, 'basin_mean_forcing/maurer/', huc, '/',
                                          id, '_lump_maurer_forcing_leap.txt'),
@@ -58,7 +58,7 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
       colnames(forcing_table) <- c("year", "mnth", "day", "hr", "dayl.s.", "prcp.mm.day.",
                                    "srad.w.m2.", "swe.mm.", "tmax.c.", "tmin.c.", "vp.pa.")
 
-    }else {
+    } else {
 
       forcing_table <- read.table(paste0(dir_basin_dataset, 'basin_mean_forcing/maurer/', huc, '/',
                                          id, '_lump_maurer_forcing_leap.txt'),
@@ -67,14 +67,14 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
 
     }
 
-  }else {
+  } else {
 
     stop(paste('Unkown forcing forcing data set:', forcing_dataset))
 
   }
 
-  # rename forcing variables
-  # converting to lower case, as Daymet and Maurer files use different upper/lower case combinations
+  # Rename forcing variables
+  # Converting to lower case, as Daymet and Maurer files use different upper/lower case combinations
   colnames(forcing_table) <- tolower(colnames(forcing_table))
 
   if (all(colnames(forcing_table) == c("year", "mnth", "day", "hr", "dayl.s.", "prcp.mm.day.",
@@ -92,7 +92,7 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
   t_forcing <- as.Date(paste0(forcing_table$year, sprintf('%02d', as.numeric(forcing_table$month)),
                               sprintf('%02d', as.numeric(forcing_table$day))), '%Y%m%d')
 
-  # IMPORT STREAMFLOW DATA
+  # Import streamflow data
   # A ->  streaflow value is certified by USGS as the actual daily mean flow
   # A:e -> streamflow value is certified by the USGS as the actual ESTIMATED daily mean flow
   streamflow_table <- read.table(paste0(dir_basin_dataset, 'usgs_streamflow/', huc, '/', id,
@@ -105,13 +105,13 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
   t_streamflow <- as.Date(paste0(streamflow_table$Y, sprintf('%02d', as.numeric(streamflow_table$M)),
                                  sprintf('%02d', as.numeric(streamflow_table$D))), '%Y%m%d')
 
-  streamflow_table$Q[streamflow_table$Q == -999] <- NA # missing values: change -999 to NA
+  streamflow_table$Q[streamflow_table$Q == -999] <- NA # Missing values: change -999 to NA
 
   if (sum(streamflow_table$QC_FLAG == 'M') != sum(is.na(streamflow_table$Q))) {
     stop('Inconsistency between number of M flags and number of -999 values')
   }
 
-  # determine the actual start and end date of the streamflow observations - the first day and last
+  # Determine the actual start and end date of the streamflow observations - the first day and last
   # day which are not NA
   q_obs_na <- is.na(streamflow_table$Q)
   i_qobs_start <- min(which(!q_obs_na))
@@ -119,20 +119,20 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
   start_discharge_record <<- t_streamflow[i_qobs_start]
   end_discharge_record <<- t_streamflow[i_qobs_end]
 
-  # proportion of NA and estimated values
+  # Proportion of NA and estimated values
   prop_na_q_obs <<- round(sum(streamflow_table$QC_FLAG == 'M') / length(t_streamflow), 2)
   prop_est_q_obs <<- round(sum(streamflow_table$QC_FLAG == 'A:e') / length(t_streamflow), 2)
 
-  # convert streamflow to mm/day
+  # Convert streamflow to mm/day
   streamflow <- streamflow_table$Q * (0.3048^3)
   streamflow <- streamflow * 3600 * 24 * 1000 /
-    (camels_topo$area_geospa_fabric[camels_name$gauge_id == id] * 1E6) # convert m^3/sec to mm/day
+    (camels_topo$area_geospa_fabric[camels_name$gauge_id == id] * 1E6) # Convert m^3/sec to mm/day
   #streamflow <- streamflow * 3600 * 24 * 1000 /
-  #  (gauge_table$area_usgs_km2[gauge_table$gage_id == id] * 1E6) # convert m^3/sec to mm/day
+  #  (gauge_table$area_usgs_km2[gauge_table$gage_id == id] * 1E6) # Convert m^3/sec to mm/day
   #streamflow <- streamflow * 3600 * 24 * 1000 /
-  #  (camels_topo$area_gages2[camels_name$gauge_id == id] * 1E6) # convert m^3/sec to mm/day
+  #  (camels_topo$area_gages2[camels_name$gauge_id == id] * 1E6) # Convert m^3/sec to mm/day
 
-  # IMPORT ET AND PET FROM SACRAMENTO OUTPUT
+  # Import et and pet from sacramento output
   output_hydro_files <- system(paste0('ls ', dir_basin_dataset, 'model_output/flow_timeseries/',
                                       forcing_dataset, '/', huc, '/', id, '_??_model_output.txt'),
                                intern = TRUE
@@ -142,7 +142,7 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
 
   first_file <- TRUE
 
-  for (f in output_hydro_files) { # loop through the 10 files and store their content in arrays
+  for (f in output_hydro_files) { # Loop through the 10 files and store their content in arrays
 
     hydro_sim <- read.table(f, header = TRUE)
 
@@ -157,7 +157,7 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
 
       first_file <- FALSE
 
-    }else {
+    } else {
 
       et_ens <- cbind(et_ens, hydro_sim$ET)
       pet_ens <- cbind(pet_ens, hydro_sim$PET)
@@ -182,43 +182,41 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
     pet <- rowMeans(pet_ens)
     q_sim_sac <- rowMeans(q_sim_sac_ens)
 
-  }else if (ens_method == 'best') {
+  } else if (ens_method == 'best') {
 
-    # COMPUTE RMSE AND FOR ALL MODEL RUNS OVER THE CALIBRATION PERIOD
+    # Compute rmse and for all model runs over the calibration period
     # For the spin up, the first year was run repeatedly until the soil moisture stabilized.
     # Simulations over this spin up period were not saved in the output files, i.e. the output
     # files only contain the post-spin up period.
     # Model calibration was performed over the first 15 years
 
-    start_cal <- t_hydro_sim[1] # start of calibration period
-    end_cal <- seq(start_cal, by = 'year', length.out = 16)[16] - 1 # end of calibration period
+    start_cal <- t_hydro_sim[1] # Start of calibration period
+    end_cal <- seq(start_cal, by = 'year', length.out = 16)[16] - 1 # End of calibration period
     cal_period <- t_hydro_sim %in% seq(start_cal, end_cal, by = 'day')
 
     sac_rmse <- apply(q_sim_sac_ens[cal_period,], 2, compute_rmse, obs = q_obs_sac[cal_period])
     sac_nse <- apply(q_sim_sac_ens[cal_period,], 2, compute_nse, obs = q_obs_sac[cal_period])
-    best_ps_rmse <- which.min(sac_rmse) # find index of best parameter set
+    best_ps_rmse <- which.min(sac_rmse) # Find index of best parameter set
 
     et <- et_ens[, best_ps_rmse]
     pet <- pet_ens[, best_ps_rmse]
     q_sim_sac <- q_sim_sac_ens[, best_ps_rmse]
 
-  }else {
+  } else {
 
     stop(paste('Unkown method for the aggregation of the SAC runs:', ens_method))
 
   }
 
-  ### 3 MAR 2016: PET computed by Andy can sometimes negative (e.g. 12054000 min PET is -0.13)
-  ### 14 MAR 2016: Now this is fixed in version 1.2, but still checking
+  # 3 MAR 2016: PET computed by Andy can sometimes negative (e.g. 12054000 min PET is -0.13)
+  # 14 MAR 2016: Now this is fixed in version 1.2, but still checking
 
   if (any(pet < 0)) {
-
     stop('Some PET values are negative')
-
   }
 
-  ### 14 MAR 2016: There used to be missing days in the simulations, now this is fixed in version 1.2
-  ### 8 MAR 2018: Two entries for 2008/12/31 in Maurer simulations (last two entries of each file)
+  # 14 MAR 2016: There used to be missing days in the simulations, now this is fixed in version 1.2
+  # 8 MAR 2018: Two entries for 2008/12/31 in Maurer simulations (last two entries of each file)
 
   if (forcing_dataset == 'maurer') {
 
@@ -226,7 +224,7 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
 
     if (length(i_20081231) == 2) {
 
-      # remove second entry for 2008/12/31
+      # Remove second entry for 2008/12/31
       t_hydro_sim <- t_hydro_sim[-i_20081231[2]]
       et <- et[-i_20081231[2]]
       pet <- pet[-i_20081231[2]]
@@ -237,24 +235,20 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
   }
 
   if (any(diff(t_hydro_sim) != 1)) {
-
     stop('There are missing or duplicated days in the simulated time series')
-
   }
 
-  ### EXTRACT DESIRED PERIOD FROM EACH TIME SERIES AND SAVE DAY AS GLOBAL ARRAY
+  # Extract desired period from each time series and save day as global array
   t_input <<- seq(as.Date(date_start, '%Y%m%d'), as.Date(date_end, '%Y%m%d'), by = 'day')
 
-  ### FORCING: TRIM DATA IF NECESSARY
+  # Forcing: trim data if necessary
 
   if (min(t_forcing) <= min(t_input) & max(t_forcing) >= max(t_input)) {
 
     forcing_table <- forcing_table[t_forcing >= min(t_input) & t_forcing <= max(t_input),]
 
     if (any(t_forcing[t_forcing >= min(t_input) & t_forcing <= max(t_input)] != t_input)) {
-
       stop('t_forcing and t_input differ')
-
     }
 
   } else if (min(t_forcing) > min(t_input)) {
@@ -269,12 +263,12 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
 
   }
 
-  ### STREAMFLOW: TRIM OR ADD NA USING MERGE - # all.x adds NA when obs not available
+  # Streamflow: trim or add na using merge - # all.x adds NA when obs not available
 
   streamflow_input <- merge(data.frame(t_input), data.frame(streamflow, t_streamflow),
                             by.x = 't_input', by.y = 't_streamflow', all.x = TRUE)
 
-  ### SAC HYDROLOGICAL SIMULATIONS: TRIM OR ADD NA USING MERGE - all.x adds NA when obs not available
+  # SAC hydrological simulations: trim or add na using merge - all.x adds NA when obs not available
   pet_input <- merge(data.frame(t_input), data.frame(pet, t_hydro_sim),
                      by.x = 't_input', by.y = 't_hydro_sim', all.x = TRUE)
   et_input <- merge(data.frame(t_input), data.frame(et, t_hydro_sim),
@@ -284,10 +278,10 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
   q_sim_sac_input <- merge(data.frame(t_input), data.frame(q_sim_sac, t_hydro_sim),
                            by.x = 't_input', by.y = 't_hydro_sim', all.x = TRUE)
 
-  # check consistence of q_obs and sac_q_obs
+  # Check consistence of q_obs and sac_q_obs
   # if(any(abs(q_obs_sac-streamflow)>1,na.rm=TRUE)){stop('q_obs_sac and streamflow do not match')}
 
-  # create table with all data
+  # Create table with all data
   output_table <- data.frame(date = format(t_input, '%Y%m%d'),
                              day_length = forcing_table[, 'dayl(s)'],
                              prec = forcing_table[, 'prcp(mm/day)'],

@@ -1,16 +1,16 @@
-### RUN THIS ON GEYSER ONLY!
+### Run this on geyser only!
 
 rm(list = ls())
 
 require(maps)
 require(rgdal)
-require(raster) # for crop
-require(rgeos) # for crop
+require(raster) # For crop
+require(rgeos) # For crop
 
 dir_r_data <- '/glade/scratch/naddor/data/r_data/'
 
 # The input file geodatabase and read the feature class
-# To List all feature classes in a file geodatabase use:
+# to List all feature classes in a file geodatabase use:
 # subset(ogrDrivers(), grepl("GDB", name))
 # fc_list <- ogrListLayers(fgdb)
 # print(fc_list)

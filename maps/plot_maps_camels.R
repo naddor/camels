@@ -5,14 +5,14 @@ plot_map_catch_attr <- function(dat, c2p, n_classes = 6, col_scheme = 'RdYlBu', 
                                 set_breaks = FALSE, breaks = NA, layout_on = FALSE,
                                 layout_ncol = 3, layout_nrow = 1) {
 
-  # arguments:
+  # Arguments:
   # dat: data as data.frame
   # c2p: columns to use for plotting
 
-  # check that first column is gauge_id
+  # Check that first column is gauge_id
   if (colnames(dat)[1] != 'gauge_id') { stop('First column of dat must be gauge_id') }
 
-  # check that key attributes have either 1 or length(cp) element
+  # Check that key attributes have either 1 or length(cp) element
   if (!length(col_scheme) %in% c(1, length(c2p))) {
     stop('col_scheme must have either 1 or length(c2p) elements')
   }
@@ -35,8 +35,8 @@ plot_map_catch_attr <- function(dat, c2p, n_classes = 6, col_scheme = 'RdYlBu', 
     stop('breaks must have either 1 or length(c2p) elements')
   }
 
-  # divide screen to create multiple panels
-  def.par <- par(no.readonly = TRUE) # save default, for resetting...
+  # Divide screen to create multiple panels
+  def.par <- par(no.readonly = TRUE) # Save default, for resetting...
 
   if (layout_on) {
 
@@ -46,16 +46,16 @@ plot_map_catch_attr <- function(dat, c2p, n_classes = 6, col_scheme = 'RdYlBu', 
       nf <- layout(matrix(1:(n_panels * 2), layout_nrow * 2, layout_ncol),
                     heights = rep(c(1, 0.22), times = layout_nrow), widths = 1)
       # layout.show(nf)
-    }else {
+    } else {
       nf <- layout(matrix(1:n_panels, layout_nrow, layout_ncol), heights = 1, widths = 1)
       # layout.show(nf)
     }
   }
 
-  # loop through colums and plot corresponding maps
+  # Loop through colums and plot corresponding maps
   for (v in c2p) {
 
-    # set plotting details
+    # Set plotting details
     my_col_scheme <- ifelse(length(col_scheme) == length(c2p),
                             col_scheme[v == c2p], col_scheme)
     my_b_round <- ifelse(length(b_round) == length(c2p),
@@ -73,7 +73,7 @@ plot_map_catch_attr <- function(dat, c2p, n_classes = 6, col_scheme = 'RdYlBu', 
     my_set_breaks <- ifelse(length(set_breaks) == length(c2p),
                             set_breaks[v == c2p], set_breaks)
 
-    # set breaks
+    # Set breaks
     if (length(breaks) == length(c2p)) { #
 
       if (length(which(v == c2p)) > 1) {
@@ -82,7 +82,7 @@ plot_map_catch_attr <- function(dat, c2p, n_classes = 6, col_scheme = 'RdYlBu', 
 
       my_breaks <- breaks[[which(v == c2p)]]
 
-    }else {
+    } else {
 
       my_breaks <- breaks
 
@@ -107,9 +107,9 @@ plot_points_us_basins <- function(dat, n_classes = 6, col_scheme = 'RdYlBu', col
                                   force_zero_center = FALSE, force_n_classes = FALSE,
                                   set_breaks = FALSE, breaks = NA, layout_on = FALSE) {
 
-  # purpose: merge coordinates with variables to plot based on camels_topo
+  # Purpose: merge coordinates with variables to plot based on camels_topo
 
-  # input variables:
+  # Input variables:
   # dat: matrix with two columns: catchment id (must be named 'gauge_id') and variable to plot
   # n_classes: number of color classes (even number suggested)
   # col_scheme: http://colorbrewer2.org/ color scheme - RdYlBu: red to blue - BrBG: green to brown -
@@ -120,7 +120,7 @@ plot_points_us_basins <- function(dat, n_classes = 6, col_scheme = 'RdYlBu', col
   # text_legend: text to add above the color bar
   # qual: is the information qualitative (e.g. vegetation classes)
 
-  # load coordinates
+  # Load coordinates
   if (!exists('camels_topo')) {
 
     load(paste0(dir_catch_attr, 'camels_topo.Rdata'))
@@ -138,7 +138,7 @@ plot_points_us_basins <- function(dat, n_classes = 6, col_scheme = 'RdYlBu', col
 
 }
 
-### PLOT POINTS ON US MAP
+### Plot points on us map
 
 plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev = FALSE,
                         color_bar = TRUE, subplot_hist = TRUE, col_trans = 0, b_round = 2,
@@ -146,9 +146,9 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
                         force_zero_center = FALSE, force_n_classes = FALSE,
                         set_breaks = FALSE, breaks = NA, country = 'us', layout_on = FALSE) {
 
-  # purpose: plot map for chosen country and add a dot per catchment
+  # Purpose: plot map for chosen country and add a dot per catchment
 
-  # input variables:
+  # Input variables:
   # x,y: coordinates
   # z: variable to plot
   # n_classes: number of color classes (even number suggested)
@@ -161,7 +161,7 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
 
   require(RColorBrewer)
   require(maps)
-  require(TeachingDemos) # for subplot
+  require(TeachingDemos) # For subplot
 
   if (length(x) != length(y) | length(x) != length(z)) {
     stop('x,y and z must have the same length')
@@ -171,7 +171,7 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
     stop('n_classes must be an even number if force_zero_center is TRUE')
   }
 
-  # setup layout - this might have to be changed for when layout_on=FALSE
+  # Setup layout - this might have to be changed for when layout_on=FALSE
   if (color_bar) {
     if (!layout_on) {
       layout(matrix(1:2, 2, 1), heights = c(4, 0.7), widths = 1)
@@ -180,10 +180,10 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
     par(mfrow = c(1, 1))
   }
 
-  # initialise par
+  # Initialise par
   par(mar = c(0, 0, 0, 0), cex = 1)
 
-  # plot background map
+  # Plot background map
   if (country == 'us') {
 
     map("state", col = 'gray60', fill = TRUE, border = NA, xlim = c(-125, -67), ylim = c(25, 50))
@@ -207,17 +207,17 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
 
   }
 
-  # define colors and breaks
+  # Define colors and breaks
   if (!qual) {
 
     if (set_breaks) {
 
       b <- breaks
 
-      # show breaks
+      # Show breaks
       message(paste0('set_breaks=TRUE, using these values'))
 
-    }else {
+    } else {
 
       b <- unique(round(quantile(z,
                                  seq(1 / n_classes, 1 - 1 / n_classes, length.out = n_classes - 1),
@@ -229,7 +229,7 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
 
       if (force_n_classes & length(b) < n_classes) {
 
-        z_temp <- z[z > b[1]] # only works if first class is the most populated one (e.g. no snow).
+        z_temp <- z[z > b[1]] # Only works if first class is the most populated one (e.g. no snow).
         # TODO: use which.max(table(findInterval))
         b_temp <- unique(round(quantile(z_temp,
                                         seq(1 / n_classes, 1 - 1 / n_classes, length.out = n_classes - 2),
@@ -244,15 +244,15 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
         b[n_classes / 2] <- 0
       }
 
-      # show breaks
+      # Show breaks
       message(paste0('set_breaks=FALSE, using these values for breaks'))
 
     }
 
     print(b)
 
-    # define colors
-    if (length(b) < 2) { # the mimimum number of color delivered by colorbrewer is 3
+    # Define colors
+    if (length(b) < 2) { # The mimimum number of color delivered by colorbrewer is 3
 
       col <- brewer.pal(4, col_scheme)[1:(length(b) + 1)]
 
@@ -262,16 +262,16 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
 
     }
 
-  } else { # qualitative classes
+  } else { # Qualitative classes
 
-    # create an array containing the name of all classes to be plotted
+    # Create an array containing the name of all classes to be plotted
     qc <- table(z)
     qc_nonzero <- qc[as.numeric(qc) != 0]
     qc_label <- names(qc_nonzero)
 
     print(qc_label)
 
-    # create a table associating expected classes to hard-coded colors
+    # Create a table associating expected classes to hard-coded colors
     if (col_scheme == 'seas') {
 
       if (any(!qc_label %in% c('djf', 'jja', 'mam', 'son'))) {
@@ -293,7 +293,7 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
 
       }
 
-      # load colors
+      # Load colors
       table_glim_classes <- read.table(file_glim_colors, sep = ';', header = TRUE)
       table_glim_classes$short_name <- as.factor(table_glim_classes$short_name)
 
@@ -312,11 +312,11 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
 
     } else {
 
-      if (length(qc_nonzero) > 11) { # the maximum number of color delivered by colorbrewer is around 10
+      if (length(qc_nonzero) > 11) { # The maximum number of color delivered by colorbrewer is around 10
 
         print('combining two colors classes because number of breaks > 11')
 
-        # combining two color classes
+        # Combining two color classes
         n_colors_paired <- ceiling(length(qc_nonzero) / 2)
         col <- c(brewer.pal(n_colors_paired, 'Paired'),
                  brewer.pal(length(qc_nonzero) - n_colors_paired, 'Set3'))
@@ -332,12 +332,12 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
 
     }
 
-    # determine color of each basin
+    # Determine color of each basin
     # add a sorting column
     z_temp <- data.frame(sort_column = seq_along(z), z = z)
     # all.x allows to keep NA values
     merged_table <- merge(z_temp, col_table, by.x = 'z', by.y = 'categ', all.x = TRUE)
-    # sort
+    # Sort
     merged_table <- merged_table[order(merged_table$sort_column),]
 
     if (dim(merged_table)[1] != length(z)) {
@@ -350,12 +350,12 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
 
   }
 
-  # reverse color scheme if necessary
+  # Reverse color scheme if necessary
   if (col_rev) { col <- rev(col) }
-  # use semi-transparent colors if necessary
+  # Use semi-transparent colors if necessary
   if (col_trans > 0) { col <- paste0(col, col_trans) }
 
-  # plots points on the map
+  # Plots points on the map
   if (qual) {
 
     if (pch >= 21) {
@@ -377,7 +377,7 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
   # add text (usually for variable name)
   text(coor_legend[1], coor_legend[2], text_legend, pos = 4)
 
-  # add historgram if required
+  # Add historgram if required
   if (subplot_hist) {
 
     message('Trying to plot histogram')
@@ -402,7 +402,7 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
     }
   }
 
-  # plot legend
+  # Plot legend
   if (!qual) {
     if (color_bar) {
       par(mar = c(3, 5, 0, 5), cex = 1)
@@ -420,12 +420,12 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
     }
   }
 
-  # reset par
+  # Reset par
   # par(mar=c(0,0,0,0),cex=1)
 
 }
 
-# function to plot horizontal or vertical color bar
+# Function to plot horizontal or vertical color bar
 plot.legend.na <- function(col, breaks, vert = TRUE, density = NULL, angle = 45, slwd = par("lwd"), cex.leg = 1) {
 
   nbrk <- length(breaks)
@@ -458,7 +458,7 @@ plot.legend.na <- function(col, breaks, vert = TRUE, density = NULL, angle = 45,
 
     axis(4, lwd = 0, at = seq(2, ncol), labels = breaks, las = 1, tick = FALSE, cex.axis = cex.leg)
 
-  }else {
+  } else {
 
     image(y = 1, x = seq(1, (ncol + 1)) - 0.5, z = matrix(seq(1, (ncol + 1)) - 0.5, ncol = 1),
           col = col, breaks = seq(1, (ncol + 1)), xlim = c(1, (ncol + 1)),

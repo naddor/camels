@@ -1,6 +1,6 @@
 rm(list = ls())
 
-# load functions
+# Load functions
 source(paste0(dir_r_scripts, 'camels/clim/clim_indices.R'))
 source(paste0(dir_r_scripts, 'camels/hydro/hydro_signatures.R'))
 source(paste0(dir_r_scripts, 'camels/maps/plot_maps_camels.R'))
@@ -15,7 +15,7 @@ if (country == 'us') {
 
 } else if (country == 'gb') {
 
-  # set dir and preferences
+  # Set dir and preferences
   hy_cal <- 'oct_us_gb'
   tol <- 0.85 # Gem asked for no restriction at first (see email from 10 Dec 2019) but the code
   # crashes (streamflow elasticity) when there is only a year of available data, which happens for
@@ -25,16 +25,16 @@ if (country == 'us') {
   list_files <- system(paste0('ls ', dir_dat, 'timeseries_2dp/'), intern = TRUE)
   list_catch <- rapply(strsplit(list_files, '_'), function(x) x[5])
 
-  # define period over which indices and signatures will be computed
+  # Define period over which indices and signatures will be computed
   # 1st Oct 1970 to 30th Sept 2015
-  per_str <- 'hy1971-2015' # string used to name output files
+  per_str <- 'hy1971-2015' # String used to name output files
   per_start <- as.Date('1970-10-01')
   per_end <- as.Date('2015-09-30')
   per_all <- seq(per_start, per_end, by = 'day')
 
 } else if (country == 'br') {
 
-  # set dir and preferences
+  # Set dir and preferences
   hy_cal <- 'sep_br'
   tol <- 0.05
   dir_dat <- '/Volumes/d1/data/camels_br/'
@@ -42,40 +42,41 @@ if (country == 'us') {
   list_files <- system(paste0('ls ', dir_dat, 'Brazil_complete_series/'), intern = TRUE)
   list_catch <- rapply(strsplit(list_files, '_'), function(x) x[1])
 
-  # define period over which indices and signatures will be computed
-  per_str <- 'hy1990-2009' # string used to name output files
+  # Define period over which indices and signatures will be computed
+  per_str <- 'hy1990-2009' # String used to name output files
   per_start <- as.Date('1989-09-01')
   per_end <- as.Date('2009-08-31')
   per_all <- seq(per_start, per_end, by = 'day')
 
-  # load gauge coordinates
+  # Load gauge coordinates
   camels_topo <- read.table(paste0(dir_dat, 'brazil_gauges_coordinates.txt'), header = TRUE)
 
 } else {
   stop(paste('Country code unknown:', country))
 }
 
-# create data.frames
+# Create data.frames
 camels_clim <- data.frame(stringsAsFactors = FALSE)
 camels_hydro_obs <- data.frame(stringsAsFactors = FALSE)
 
-# loop through catchments, load data and compute CI and HS
+# Loop through catchments, load data and compute CI and HS
 for (i in seq_along(list_catch)) {
 
   catch_id <- list_catch[i]
 
   print(paste0(i, ') ', catch_id))
 
-  # load data
+  # Load data
   if (country == 'us') {
 
-  }else if (country == 'gb') {
+  } else if (country == 'gb') {
 
     dat <- read.csv(paste0(dir_dat, 'timeseries_2dp/CAMELS_GB_hydromet_timeseries_', catch_id,
                            '_19701001-20150930.txt'),
                     header = TRUE,
                     na.strings = 'NaN'
     )
+
     day <- as.Date(dat$date)
 
     prec <- dat$precipitation
@@ -83,12 +84,13 @@ for (i in seq_along(list_catch)) {
     pet <- dat$pet
     q_obs <- dat$discharge_spec
 
-  }else if (country == 'br') {
+  } else if (country == 'br') {
 
     dat <- read.table(paste0(dir_dat, 'Brazil_complete_series/', catch_id, '_pet_p_t_q.txt'),
                       header = TRUE,
                       na.strings = 'NaN'
     )
+
     dat$DD <- sprintf('%02d', dat$DD); dat$MM <- sprintf('%02d', dat$MM)
 
     day <- as.Date(apply(dat[, 1:3], 1, paste, collapse = '-'))
@@ -100,7 +102,7 @@ for (i in seq_along(list_catch)) {
 
   }
 
-  ### SELECT SUB-PERIOD OVER WHICH INDICES WILL BE COMPUTED
+  # Select sub-period over which indices will be computed
   if (min(day) > per_start || max(day) < per_end) {
     stop('The period over which the indices should be computed is not fully covered by the data')
   }
@@ -113,7 +115,7 @@ for (i in seq_along(list_catch)) {
   q_obs <- q_obs[in_period]
   day <- day[in_period]
 
-  ### COMPUTE CLIMATE INDICES
+  # Compute climate indices
   camels_clim[i, 'gauge_id'] <- as.character(catch_id)
   dat <- compute_clim_indices_camels(temp = temp, prec = prec, pet = pet, day = day, tol = tol)
   camels_clim[i, names(dat)] <- dat
@@ -121,14 +123,14 @@ for (i in seq_along(list_catch)) {
   levels(camels_clim$high_prec_timing) <- c('djf', 'mam', 'jja', 'son')
   levels(camels_clim$low_prec_timing) <- c('djf', 'mam', 'jja', 'son')
 
-  ### COMPUTE HYDROLOGICAL SIGNATURES FOR OBSERVED Q
+  # Compute hydrological signatures for observed Q
   camels_hydro_obs[i, 'gauge_id'] <- as.character(catch_id)
   dat <- compute_hydro_signatures_camels(q = q_obs, p = prec, d = day, tol = tol, hy_cal = hy_cal)
   camels_hydro_obs[i, names(dat)] <- dat
 
 }
 
-### SAVE
+# Save
 save(camels_clim, camels_hydro_obs, list_catch,
      file = paste0(dir_dat, 'ci_hs_camels_', country, '_', per_str, '_NAtol', tol, '.Rdata'))
 
@@ -146,7 +148,7 @@ write.table(camels_hydro_obs,
             sep = ';'
 )
 
-### PLOT MAPS
+# Plot maps
 camels_clim <- merge(camels_topo, camels_clim)
 camels_hydro_obs <- merge(camels_topo, camels_hydro_obs)
 
