@@ -3,49 +3,49 @@
 
 # Determine the hydrological year for different countries
 
-get_hydro_year <- function(d, hy_cal) {
+get_hydro_year <- function(d, hydro_year_cal) {
 
   # Input variables:
   # d: array of dates of class Date
-  # hy_cal: hydrological year calendar, current options are 'oct_us_gb', 'sep_br' and 'apr_cl'
+  # hydro_year_cal: hydrological year calendar, current options are 'oct', 'sep' and 'apr'
 
   if (class(d) != 'Date') { stop('d should be of class Date - use as.Date') }
 
   m <- as.numeric(format(d, '%m')) # Extract month
   y <- as.numeric(format(d, '%Y')) # Extract year
-  hy <- y                         # Create array for hydrological year
+  hy <- y                          # Create array for hydrological year
 
-  if (hy_cal == 'oct_us_gb') { # USA and Great Britian
+  if (hydro_year_cal == 'oct') { # USA and Great Britian
 
     # Hydrological year 2010 starts on Oct 1st 2009 and finishes on Sep 30th 2010
     hy[m >= 10] <- (hy[m >= 10] + 1)
 
-  } else if (hy_cal == 'sep_br') { # Brazil
+  } else if (hydro_year_cal == 'sep') { # Brazil
 
     # Hydrological year 2010 starts on Sep 1st 2009 and finishes on Aug 31st 2010
     hy[m >= 9] <- (hy[m >= 9] + 1)
 
-  } else if (hy_cal == 'apr_cl') { # Chile
+  } else if (hydro_year_cal == 'apr') { # Chile
 
     # Hydrological year 2010 starts on Apr 1st 2010 and finishes on Mar 31st 2011
     hy[m <= 3] <- (hy[m <= 3] - 1)
 
   } else {
 
-    stop(paste0('Unkown hydrological year calendar:', hy_cal))
+    stop(paste0('Unkown hydrological year calendar:', hydro_year_cal))
 
   }
 
   return(hy)
 }
 
-get_hydro_year_stats <- function(d, hy_cal) {
+get_hydro_year_stats <- function(d, hydro_year_cal) {
 
   # Note: this function includes get_hydro_year and should be used instead
 
   # Input variables:
   # d: array of dates of class Date
-  # hy_cal: hydrological year calendar, current options are 'oct_us_gb', 'sep_br' and 'apr_cl'
+  # hydro_year_cal: hydrological year calendar, current options are 'oct', 'sep' and 'apr'
 
   if (class(d) != 'Date') { stop('d should be of class Date - use as.Date') }
 
@@ -53,20 +53,20 @@ get_hydro_year_stats <- function(d, hy_cal) {
   y <- as.numeric(format(d, '%Y')) # Extract year
   hy <- y                         # Create array for hydrological year
 
-  if (hy_cal == 'oct_us_gb') {      # USA and Great Britian
+  if (hydro_year_cal == 'oct') {      # USA and Great Britian
     # Hydrological year 2010 starts on Oct 1st 2009 and finishes on Sep 30th 2010
     hy[m >= 10] <- (hy[m >= 10] + 1)
     start_hy <- as.Date(paste0(hy - 1, '-10-01'))
-  } else if (hy_cal == 'sep_br') {  # Brazil
+  } else if (hydro_year_cal == 'sep') {  # Brazil
     # Hydrological year 2010 starts on Sep 1st 2009 and finishes on Aug 31st 2010
     hy[m >= 9] <- (hy[m >= 9] + 1)
     start_hy <- as.Date(paste0(hy - 1, '-09-01'))
-  } else if (hy_cal == 'apr_cl') {  # Chile
+  } else if (hydro_year_cal == 'apr') {  # Chile
     # Hydrological year 2010 starts on Apr 1st 2010 and finishes on Mar 31st 2011
     hy[m <= 3] <- (hy[m <= 3] - 1)
     start_hy <- as.Date(paste0(hy, '-04-01'))
   } else {
-    stop(paste0('Unkown hydrological year calendar:', hy_cal))
+    stop(paste0('Unkown hydrological year calendar:', hydro_year_cal))
   }
 
   day_of_hy <- as.numeric(d - start_hy + 1) # Days since the beginning of the hydro year

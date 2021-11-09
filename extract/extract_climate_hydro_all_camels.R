@@ -16,7 +16,7 @@ if (country == 'us') {
 } else if (country == 'gb') {
 
   # Set dir and preferences
-  hy_cal <- 'oct_us_gb'
+  hydro_year_cal <- 'oct'
   tol <- 0.85 # Gem asked for no restriction at first (see email from 10 Dec 2019) but the code
   # crashes (streamflow elasticity) when there is only a year of available data, which happens for
   # catchments not in CAMELS-GB, now tolerating 85% of missing values (see email from 16 Dec 2019)
@@ -35,7 +35,7 @@ if (country == 'us') {
 } else if (country == 'br') {
 
   # Set dir and preferences
-  hy_cal <- 'sep_br'
+  hydro_year_cal <- 'sep'
   tol <- 0.05
   dir_dat <- '/Volumes/d1/data/camels_br/'
   dir_plots <- '/Volumes/d1/data/camels_br/plots/'
@@ -125,7 +125,7 @@ for (i in seq_along(list_catch)) {
 
   # Compute hydrological signatures for observed Q
   camels_hydro_obs[i, 'gauge_id'] <- as.character(catch_id)
-  dat <- compute_hydro_signatures_camels(q = q_obs, p = prec, d = day, tol = tol, hy_cal = hy_cal)
+  dat <- compute_hydro_signatures_camels(q = q_obs, p = prec, d = day, tol = tol, hydro_year_cal = hydro_year_cal)
   camels_hydro_obs[i, names(dat)] <- dat
 
 }
