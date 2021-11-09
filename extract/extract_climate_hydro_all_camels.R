@@ -6,9 +6,10 @@ source(paste0(dir_r_scripts, 'camels/hydro/hydro_signatures.R'))
 source(paste0(dir_r_scripts, 'camels/maps/plot_maps_camels.R'))
 
 # Define the country
-country <- 'us'
+#country <- 'us'
 #country <- 'gb'
 #country <- 'br'
+country <- 'ch'
 
 # Define directory for files and list of catchment IDs
 if (country == 'us') {
@@ -50,6 +51,25 @@ if (country == 'us') {
 
   # Load gauge coordinates
   camels_topo <- read.table(paste0(dir_dat, 'brazil_gauges_coordinates.txt'), header = TRUE)
+
+} else if (country == 'ch') {
+
+  # Set dir and preferences
+  hydro_year_cal <- 'oct'
+  tol <- ...
+  dir_dat <- ...
+  dir_plots <- ...
+  list_files <- system(paste0('ls ', dir_dat, '.../'), intern = TRUE)
+  list_catch <- rapply(strsplit(list_files, '_'), function(x) x[1])
+
+  # Define period over which indices and signatures will be computed
+  per_str <- 'hy1980-2020' # String used to name output files
+  per_start <- as.Date('1979-10-01')
+  per_end <- as.Date('2020-09-30')
+  per_all <- seq(per_start, per_end, by = 'day')
+
+  # Load gauge coordinates
+  camels_topo <- ...
 
 } else {
   stop(paste('Country code unknown:', country))
@@ -99,6 +119,10 @@ for (i in seq_along(list_catch)) {
     temp <- dat$T
     pet <- dat$PET
     q_obs <- dat$Q
+
+  } else if (country == 'ch') {
+
+
 
   }
 
