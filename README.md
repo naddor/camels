@@ -10,7 +10,14 @@ This code was subsequently used to produce a similar data set for Chile includin
 
 By using the same code for several data sets, we aim to improve results comparability across countries. This code is open source to improve the transparency and reproducibility of hydrological experiments.
 
+# Getting started
+
+To get started, do not forget to:
+
+* Set your R working environment to the project base directory.
+* Copy-paste the .env.example file to .env and edit the paths and variables it contains.
+
 # Style guide
 
-Please follow the coding style as defined by the [The tidyverse style guide](https://style.tidyverse.org/index.html)
+Please follow the coding style as defined by [the tidyverse style guide](https://style.tidyverse.org/index.html)
 
