@@ -12,7 +12,6 @@
 library(here)
 
 ### Load functions
-
 source(here::here('time/time_tools.R')) # For month2sea and get_hydro_year
 
 ### Wrapper and parameter values to compute standard camels hydrological signatures

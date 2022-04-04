@@ -1,5 +1,3 @@
-### Run this on geyser only!
-
 rm(list = ls())
 
 library(dotenv)
