@@ -9,7 +9,7 @@ library(maptools)
 library(mapdata)  # Contains the hi-resolution points that mark out the countries
 
 # Load GLiM data previously clipped for the country of interest and saved in R format
-load(paste0('/d7/naddor/data/geol/limw_wgs84_', Sys.getenv('CAMELS_COUNTRY'), '.Rdata'))
+load(paste0(Sys.getenv('CAMELS_DIR_DATA'), 'limw_wgs84_', Sys.getenv('CAMELS_COUNTRY'), '.Rdata'))
 
 if (Sys.getenv('CAMELS_COUNTRY') == 'US') {
 
@@ -17,7 +17,7 @@ if (Sys.getenv('CAMELS_COUNTRY') == 'US') {
   # load_camels_data('2.0') -> broken
 
   # Load shapefiles
-  load(file = '/home/naddor/data/shp_catch_wgs84.Rdata')
+  load(file = paste0(Sys.getenv('CAMELS_DIR_DATA'), 'shp_catch_wgs84.Rdata'))
 
   # Rename geol to a standard name
   limw_wgs84 <- limw_wgs84_us
@@ -30,7 +30,7 @@ if (Sys.getenv('CAMELS_COUNTRY') == 'US') {
 } else if (Sys.getenv('CAMELS_COUNTRY') == 'CL') {
 
   # Load shapefiles
-  shp_catch <- readShapePoly('/d7/naddor/data/camels_cl/catchments_chile_cag_v2.shp')
+  shp_catch <- readShapePoly(paste0(Sys.getenv('CAMELS_DIR_DATA'), '/catchments_chile_cag_v2.shp'))
   crs(shp_catch) # No crs...
   crs(shp_catch) <- "+proj=longlat +datum=WGS84"
 

@@ -15,7 +15,7 @@ library(rgeos)
 # print(fc_list)
 
 ### GLHYPMS
-fgdb <- '/glade/scratch/naddor/data/GLHYMPS/GLHYMPS.gdb/'
+fgdb <- paste0(Sys.getenv('CAMELS_DIR_DATA'), 'GLHYMPS.gdb/')
 fc <- readOGR(dsn = fgdb, layer = "Final_GLHYMPS_Polygon")
 
 # Change projection system
