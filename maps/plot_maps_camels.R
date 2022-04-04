@@ -121,7 +121,7 @@ plot_points_us_basins <- function(dat, n_classes = 6, col_scheme = 'RdYlBu', col
 
   # Load coordinates
   if (!exists('camels_topo')) {
-    load(paste0(Sys.getenv('CAMELS_DIR_RESULTS'), 'camels_topo.Rdata'))
+    load(file.path(Sys.getenv('CAMELS_DIR_RESULTS'), 'camels_topo.Rdata'))
   }
 
   dat2plot <- merge(dat, camels_topo, by = 'gauge_id')
@@ -203,7 +203,7 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
     if (set_breaks) {
       b <- breaks
       # Show breaks
-      message(paste0('set_breaks=TRUE, using these values'))
+      message('set_breaks=TRUE, using these values')
 
     } else {
 
@@ -233,7 +233,7 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
       }
 
       # Show breaks
-      message(paste0('set_breaks=FALSE, using these values for breaks'))
+      message('set_breaks=FALSE, using these values for breaks')
     }
 
     print(b)
@@ -266,7 +266,7 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
 
     } else if (col_scheme == 'glim') {
 
-      file_glim_colors <- paste0('maps/GLiM_classes_colors.txt')
+      file_glim_colors <- file.path('maps', 'GLiM_classes_colors.txt')
 
       if (!file.exists(file_glim_colors)) {
         stop(paste('File with glim colors is missing:', file_glim_colors))

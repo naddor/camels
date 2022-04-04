@@ -56,21 +56,21 @@ camels_hydro_sac$gauge_id <- as.factor(camels_hydro_sac$gauge_id)
 
 # Save
 write.table(camels_clim,
-            file = paste0(Sys.getenv('CAMELS_DIR_RESULTS'), 'camels_clim.txt'),
+            file = file.path(Sys.getenv('CAMELS_DIR_RESULTS'), 'camels_clim.txt'),
             row.names = FALSE,
             quote = FALSE,
             sep = ';'
 )
 
 write.table(camels_hydro_obs,
-            file = paste0(Sys.getenv('CAMELS_DIR_RESULTS'), 'camels_hydro.txt'),
+            file = file.path(Sys.getenv('CAMELS_DIR_RESULTS'), 'camels_hydro.txt'),
             row.names = FALSE,
             quote = FALSE,
             sep = ';'
 )
 
 write.table(camels_hydro_sac,
-            file = paste0(Sys.getenv('CAMELS_DIR_RESULTS'), 'camels_hydro_sac.txt'),
+            file = file.path(Sys.getenv('CAMELS_DIR_RESULTS'), 'camels_hydro_sac.txt'),
             row.names = FALSE,
             quote = FALSE,
             sep = ';'

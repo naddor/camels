@@ -10,7 +10,7 @@ source(here::here('extract/extract_elev_bands.R'))
 ### Load gauge information and basin characteristics for all basins
 
 # Load gauge information - USGS data
-file_usgs_data <- paste0(Sys.getenv('CAMELS_DIR_DATA'), 'gauge_information.txt')
+file_usgs_data <- file.path(Sys.getenv('CAMELS_DIR_DATA'), 'gauge_information.txt')
 gauge_table <- read.table(file_usgs_data, sep = '\t', quote = '', skip = 1, header = FALSE,
                           colClasses = c(rep("factor", 3), rep("numeric", 3)))
 
@@ -29,7 +29,7 @@ gauge_table$gauge_name <- str_trim(gauge_table$gauge_name, 'left') # Remove lead
 # catchment_state<-rapply(strsplit(as.character(gauge_table$gauge_name),','),function(x) x[2])
 
 # Load basin physical characteristics - produced by Andy
-file_catchment_table <- paste0(Sys.getenv('CAMELS_DIR_DATA'), '/basin_physical_characteristics.txt')
+file_catchment_table <- file.path(Sys.getenv('CAMELS_DIR_DATA'), 'basin_physical_characteristics.txt')
 catchment_table <- read.table(file_catchment_table, header = TRUE,
                               colClasses = c(rep("factor", 2), rep("numeric", 4)))
 
