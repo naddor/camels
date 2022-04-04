@@ -141,7 +141,7 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
                         color_bar = TRUE, subplot_hist = TRUE, col_trans = 0, b_round = 2,
                         text_legend = '', cex = 1, pch = 16, qual = FALSE,
                         force_zero_center = FALSE, force_n_classes = FALSE,
-                        set_breaks = FALSE, breaks = NA, country = 'us', layout_on = FALSE) {
+                        set_breaks = FALSE, breaks = NA, country = 'US', layout_on = FALSE) {
 
   # Purpose: plot map for chosen country and add a dot per catchment
 
@@ -181,14 +181,14 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
   par(mar = c(0, 0, 0, 0), cex = 1)
 
   # Plot background map
-  if (country == 'us') {
+  if (country == 'US') {
     map("state", col = 'gray60', fill = TRUE, border = NA, xlim = c(-125, -67), ylim = c(25, 50))
     map("state", col = 'gray89', add = TRUE, lwd = 1, resolution = 0)
     map("state", col = 'black', add = TRUE, lwd = 0.8, resolution = 0, interior = FALSE)
 
     coor_legend <- c(-122, 25.5)
     coor_hist <- c(69, 28.5)
-  } else if (country == 'br') {
+  } else if (country == 'BR') {
     map('world', xlim = c(-75, -35), ylim = c(-35, 10))
     map('world', col = 'gray89', fill = TRUE, add = TRUE)
 

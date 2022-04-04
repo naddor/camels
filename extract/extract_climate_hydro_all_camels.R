@@ -7,16 +7,10 @@ source(paste0(dir_r_scripts, 'camels/clim/clim_indices.R'))
 source(paste0(dir_r_scripts, 'camels/hydro/hydro_signatures.R'))
 source(paste0(dir_r_scripts, 'camels/maps/plot_maps_camels.R'))
 
-# Define the country
-#country <- 'us'
-#country <- 'gb'
-#country <- 'br'
-country <- 'ch'
-
 # Define directory for files and list of catchment IDs
-if (country == 'us') {
+if (Sys.getenv('CAMELS_COUNTRY') == 'US') {
 
-} else if (country == 'gb') {
+} else if (Sys.getenv('CAMELS_COUNTRY') == 'GB') {
 
   # Set preferences
   hydro_year_cal <- 'oct'
@@ -34,7 +28,7 @@ if (country == 'us') {
   per_end <- as.Date('2015-09-30')
   per_all <- seq(per_start, per_end, by = 'day')
 
-} else if (country == 'br') {
+} else if (Sys.getenv('CAMELS_COUNTRY') == 'BR') {
 
   # preferences
   hydro_year_cal <- 'sep'
@@ -51,7 +45,7 @@ if (country == 'us') {
   # Load gauge coordinates
   camels_topo <- read.table(paste0(Sys.getenv('CAMELS_DIR_DATA'), 'brazil_gauges_coordinates.txt'), header = TRUE)
 
-} else if (country == 'ch') {
+} else if (Sys.getenv('CAMELS_COUNTRY') == 'CH') {
 
   # Set preferences
   hydro_year_cal <- 'oct'
@@ -69,7 +63,7 @@ if (country == 'us') {
   camels_topo <- ...
 
 } else {
-  stop(paste('Country code unknown:', country))
+  stop(paste('Country code unknown:', Sys.getenv('CAMELS_COUNTRY')))
 }
 
 # Create data.frames
@@ -84,9 +78,9 @@ for (i in seq_along(list_catch)) {
   print(paste0(i, ') ', catch_id))
 
   # Load data
-  if (country == 'us') {
+  if (Sys.getenv('CAMELS_COUNTRY') == 'US') {
 
-  } else if (country == 'gb') {
+  } else if (Sys.getenv('CAMELS_COUNTRY') == 'GB') {
 
     dat <- read.csv(paste0(Sys.getenv('CAMELS_DIR_DATA'), '/CAMELS_GB_hydromet_timeseries_', catch_id,
                            '_19701001-20150930.txt'),
@@ -101,7 +95,7 @@ for (i in seq_along(list_catch)) {
     pet <- dat$pet
     q_obs <- dat$discharge_spec
 
-  } else if (country == 'br') {
+  } else if (Sys.getenv('CAMELS_COUNTRY') == 'BR') {
 
     dat <- read.table(paste0(Sys.getenv('CAMELS_DIR_DATA'), '/', catch_id, '_pet_p_t_q.txt'),
                       header = TRUE,
@@ -117,7 +111,7 @@ for (i in seq_along(list_catch)) {
     pet <- dat$PET
     q_obs <- dat$Q
 
-  } else if (country == 'ch') {
+  } else if (Sys.getenv('CAMELS_COUNTRY') == 'CH') {
 
 
 
@@ -153,17 +147,17 @@ for (i in seq_along(list_catch)) {
 
 # Save
 save(camels_clim, camels_hydro_obs, list_catch,
-     file = paste0(Sys.getenv('CAMELS_DIR_DATA'), 'ci_hs_camels_', country, '_', per_str, '_NAtol', tol, '.Rdata'))
+     file = paste0(Sys.getenv('CAMELS_DIR_DATA'), 'ci_hs_camels_', Sys.getenv('CAMELS_COUNTRY'), '_', per_str, '_NAtol', tol, '.Rdata'))
 
 write.table(camels_clim,
-            file = paste0(Sys.getenv('CAMELS_DIR_DATA'), 'clim_indices_camels_', country, '_', per_str, '_NAtol', tol, '.txt'),
+            file = paste0(Sys.getenv('CAMELS_DIR_DATA'), 'clim_indices_camels_', Sys.getenv('CAMELS_COUNTRY'), '_', per_str, '_NAtol', tol, '.txt'),
             row.names = FALSE,
             quote = FALSE,
             sep = ';'
 )
 
 write.table(camels_hydro_obs,
-            file = paste0(Sys.getenv('CAMELS_DIR_DATA'), 'hydro_sign_camels_', country, '_', per_str, '_NAtol', tol, '.txt'),
+            file = paste0(Sys.getenv('CAMELS_DIR_DATA'), 'hydro_sign_camels_', Sys.getenv('CAMELS_COUNTRY'), '_', per_str, '_NAtol', tol, '.txt'),
             row.names = FALSE,
             quote = FALSE,
             sep = ';'
@@ -183,7 +177,7 @@ for (my_var in names(camels_clim[c(-1, -2, -3)])) {
               y = camels_clim$gauge_lat,
               z = camels_clim[, my_var],
               text_legend = my_var,
-              country = 'br',
+              country = Sys.getenv('CAMELS_COUNTRY'),
               qual = qual,
               col_scheme = ifelse(qual, 'seas', 'RdYlBu'),
               color_bar = TRUE
@@ -203,7 +197,7 @@ for (my_var in names(camels_hydro_obs[c(-1, -2, -3)])) {
               y = camels_clim$gauge_lat,
               z = camels_hydro_obs[, my_var],
               text_legend = my_var,
-              country = 'br',
+              country = Sys.getenv('CAMELS_COUNTRY'),
               qual = qual,
               col_scheme = ifelse(qual, 'seas', 'RdYlBu'),
               color_bar = !qual

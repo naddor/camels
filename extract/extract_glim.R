@@ -9,13 +9,10 @@ require(maps)
 require(maptools)
 require(mapdata)  # Contains the hi-resolution points that mark out the countries
 
-# Set country
-country <- 'cl'
-
 # Load GLiM data previously clipped for the country of interest and saved in R format
-load(paste0('/d7/naddor/data/geol/limw_wgs84_', country, '.Rdata'))
+load(paste0('/d7/naddor/data/geol/limw_wgs84_', Sys.getenv('CAMELS_COUNTRY'), '.Rdata'))
 
-if (country == 'us') {
+if (Sys.getenv('CAMELS_COUNTRY') == 'US') {
 
   # Load catchment attributes
   # load_camels_data('2.0') -> broken
@@ -31,7 +28,7 @@ if (country == 'us') {
   width_pdf <- 20
   height_pdf <- 16
 
-} else if (country == 'cl') {
+} else if (Sys.getenv('CAMELS_COUNTRY') == 'CL') {
 
   # Load shapefiles
   shp_catch <- readShapePoly('/d7/naddor/data/camels_cl/catchments_chile_cag_v2.shp')
@@ -64,16 +61,16 @@ glim_classes_col <- merge(glim_classes, table_glim_classes, sort = FALSE) # Add 
 glim_classes_col <- glim_classes_col[order(glim_classes_col$order),]
 
 # Plot a map with catchments
-pdf(paste0(Sys.getenv('CAMELS_DIR_PLOTS'), '/glim_', country, '_overview.pdf', sep = ''),
+pdf(paste0(Sys.getenv('CAMELS_DIR_PLOTS'), '/glim_', Sys.getenv('CAMELS_COUNTRY'), '_overview.pdf', sep = ''),
     width = width_pdf,
     height = height_pdf)
 
 plot(limw_wgs84, col = as.character(glim_classes_col$R_col), border = NA)
 
-if (country == 'us') {
+if (Sys.getenv('CAMELS_COUNTRY') == 'US') {
   map('state', col = 'gray36', lwd = 1, add = TRUE)
   map('worldHires', 'USA', add = TRUE)
-} else if (country == 'cl') {
+} else if (Sys.getenv('CAMELS_COUNTRY') == 'CL') {
   map('worldHires', 'Chile', lwd = 1, col = 'gray36', add = TRUE)
   plot(shp_catch, add = TRUE, lwd = 0.5)
 }
@@ -91,17 +88,17 @@ glim_2nd_class <- array()
 glim_2nd_frac <- array()
 glim_carbonate_rocks_frac <- array()
 
-pdf(paste0(Sys.getenv('CAMELS_DIR_PLOTS'), '/glim_', country, '_extraction.pdf', sep = ''),
+pdf(paste0(Sys.getenv('CAMELS_DIR_PLOTS'), '/glim_', Sys.getenv('CAMELS_COUNTRY'), '_extraction.pdf', sep = ''),
     width = width_pdf,
     height = height_pdf
 )
 
 plot(limw_wgs84, col = as.character(glim_classes_col$R_col), border = NA)
 
-if (country == 'us') {
+if (Sys.getenv('CAMELS_COUNTRY') == 'US') {
   map('state', col = 'black', lwd = 1, add = TRUE)
   map('worldHires', 'USA', add = TRUE)
-} else if (country == 'cl') {
+} else if (Sys.getenv('CAMELS_COUNTRY') == 'CL') {
   map('worldHires', 'Chile', add = TRUE)
 }
 
@@ -129,10 +126,10 @@ for (e in seq_len(nrow(catch_topo))) {
   #plot(inter,col=as.character(inter_data$R_color),add=TRUE,lwd=0.1)
 
   # Compute error in area
-  if (country == 'us') {
+  if (Sys.getenv('CAMELS_COUNTRY') == 'US') {
     area_gf <- catch_topo[catch_topo$gage_id == catch_id, 'area_geospa_fabric']
     rel_area_error <- sum(inter_data$area) / 1E6 / area_gf - 1
-  } else if (country == 'cl') {
+  } else if (Sys.getenv('CAMELS_COUNTRY') == 'CL') {
     rel_area_error <- sum(inter_data$area) / 1E6 / catch_topo$area_km2[e] - 1
   }
 
@@ -188,10 +185,10 @@ catch_geol_glim <- data.frame(gauge_id = catch_topo$gauge_id, glim_1st_class, gl
                               glim_2nd_class, glim_2nd_frac, glim_carbonate_rocks_frac)
 
 # Save data to temp directory
-save(catch_geol_glim, file = paste0(Sys.getenv('CAMELS_DIR_TMP'), 'catch_geol_glim_', country, '.Rdata'))
+save(catch_geol_glim, file = paste0(Sys.getenv('CAMELS_DIR_TMP'), 'catch_geol_glim_', Sys.getenv('CAMELS_COUNTRY'), '.Rdata'))
 
 write.table(catch_geol_glim,
-            file = paste0(Sys.getenv('CAMELS_DIR_RESULTS'), 'catch_geol_glim_', country, '.txt'),
+            file = paste0(Sys.getenv('CAMELS_DIR_RESULTS'), 'catch_geol_glim_', Sys.getenv('CAMELS_COUNTRY'), '.txt'),
             row.names = FALSE,
             quote = FALSE,
             sep = ';'
