@@ -1,11 +1,12 @@
 rm(list = ls())
 
 library(dotenv)
+library(here)
 
-source(paste0(dir_r_scripts, 'camels/read_camels_hydromet.R'))
-source(paste0(dir_r_scripts, 'camels/clim/clim_indices.R'))
-source(paste0(dir_r_scripts, 'camels/hydro/hydro_signatures.R'))
-source(paste0(dir_r_scripts, 'camels/hydro/hydro_accuracy.R'))
+source(here::here('extract/read_camels_hydromet.R'))
+source(here::here('clim/clim_indices.R'))
+source(here::here('hydro/hydro_signatures.R'))
+source(here::here('hydro/hydro_accuracy.R'))
 
 # Choose time period for computation of climate indices and hydrological signatures
 start_date_indices <- '19891001'

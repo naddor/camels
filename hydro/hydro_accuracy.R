@@ -1,4 +1,6 @@
-source(paste0(dir_r_scripts, 'camels/time/time_tools.R')) # For find_avail_data_df
+library(here)
+
+source(here::here('time/time_tools.R')) # For find_avail_data_df
 
 ### NSE
 compute_nse <- function(obs, sim, tol = 0.05) {

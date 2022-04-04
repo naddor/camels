@@ -1,12 +1,13 @@
 rm(list = ls())
 
 library(dotenv)
+library(here)
 
 ### Set paths
 require(maps)
 require(stringr) # To remove leading blank spaces
 
-source(paste0(dir_r_scripts, 'camels/extract/extract_elev_bands.R'))
+source(here::here('extract/extract_elev_bands.R'))
 
 ### Load gauge information and basin characteristics for all basins
 

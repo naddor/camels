@@ -9,9 +9,11 @@
 # returned as a data.frame. Alternative formulations can be added. The objective is to assess the
 # sensitvity of the results to the formulation of the hydrological signatures.
 
+library(here)
+
 ### Load functions
 
-source(paste0(dir_r_scripts, 'camels/time/time_tools.R')) # For month2sea and get_hydro_year
+source(here::here('time/time_tools.R')) # For month2sea and get_hydro_year
 
 ### Wrapper and parameter values to compute standard camels hydrological signatures
 

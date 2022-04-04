@@ -16,6 +16,7 @@ To get started, do not forget to:
 
 * Set your R working environment to the project base directory.
 * Copy-paste the .env.example file to .env and edit the paths and variables it contains.
+* If you change a variable in the .env file you'll need to restart R
 
 # Style guide
 

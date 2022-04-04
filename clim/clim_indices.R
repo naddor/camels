@@ -8,9 +8,10 @@
 # returned as a data.frame. Alternative formulations can be added. The objective is to assess the
 # sensitvity of the results to the formulation of the climatic indices.
 
-### Load functions
+library(here)
 
-source(paste0(dir_r_scripts, 'camels/time/time_tools.R')) # For month2sea
+### Load functions
+source(here::here('time/time_tools.R')) # For month2sea
 
 ### Wrapper to compute standard camels climatic indices
 

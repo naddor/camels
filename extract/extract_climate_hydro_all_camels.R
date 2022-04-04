@@ -1,11 +1,12 @@
 rm(list = ls())
 
 library(dotenv)
+library(here)
 
 # Load functions
-source(paste0(dir_r_scripts, 'camels/clim/clim_indices.R'))
-source(paste0(dir_r_scripts, 'camels/hydro/hydro_signatures.R'))
-source(paste0(dir_r_scripts, 'camels/maps/plot_maps_camels.R'))
+source(here::here('clim/clim_indices.R'))
+source(here::here('hydro/hydro_signatures.R'))
+source(here::here('maps/plot_maps_camels.R'))
 
 # Define directory for files and list of catchment IDs
 if (Sys.getenv('CAMELS_COUNTRY') == 'US') {
