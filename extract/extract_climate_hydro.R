@@ -11,7 +11,7 @@ source(here::here('maps/plot_maps_camels.R'))
 # Define directory for files and list of catchment IDs
 if (Sys.getenv('CAMELS_COUNTRY') == 'US') {
 
-  source(here::here('extract/read_camels_hydromet.R'))
+  source(here::here('extract/camels_us_hydromet.R'))
   source(here::here('hydro/hydro_accuracy.R'))
 
   tol_na <- 0.0502 # Two CAMELS catchments have ~5.01% of missing values, this threshold includes them
