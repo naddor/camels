@@ -1,20 +1,11 @@
 rm(list = ls())
 
 require(raster)
-require("rgdal") # For readOGR
+require(rgdal)
 require(RColorBrewer)
 require(maps)
 require(maptools)
 require(mapdata)  # Contains the hi-resolution points that mark out the countries
-
-# Set paths
-hostname <- system('hostname', intern = TRUE)
-
-if (hostname == 'uncertainty.rap.ucar.edu' | substr(hostname, 1, 3) == 'vpn') {
-  source('/Volumes/d1/naddor/hc1_home/scripts/r_scripts/set_paths.R')  # Set all paths
-} else {
-  source('/home/naddor/scripts/r_scripts/set_paths.R')  # Set all paths
-}
 
 # Set country
 country <- 'cl'
@@ -25,7 +16,7 @@ load(paste0('/d7/naddor/data/geol/limw_wgs84_', country, '.Rdata'))
 if (country == 'us') {
 
   # Load catchment attributes
-  load_camels_data('2.0')
+  # load_camels_data('2.0') -> broken
 
   # Load shapefiles
   load(file = '/home/naddor/data/shp_catch_wgs84.Rdata')
@@ -117,7 +108,7 @@ legend('bottomleft', col = as.character(table_glim_classes$R_col),
        ncol = 2, pch = 15, bty = 'n', cex = 0.7
 )
 
-for (e in 1:nrow(catch_topo)) {
+for (e in seq_len(nrow(catch_topo))) {
 
   catch_id <- catch_topo$gauge_id[e]
   print(paste(e, catch_id))
@@ -128,7 +119,7 @@ for (e in 1:nrow(catch_topo)) {
   inter_data <- data.frame(inter_data,
                            area = area(inter),
                            area_frac = area(inter) / sum(area(inter)),
-                           sort = 1:nrow(inter_data)
+                           sort = seq_len(nrow(inter_data))
   )
   inter_data <- merge(inter_data, table_glim_classes, by.x = 'xx', by.y = 'short_name') # Does not preserve row order
   inter_data <- inter_data[order(inter_data$sort),] # Re-sort data to match order in inter

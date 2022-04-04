@@ -4,8 +4,8 @@ rm(list = ls())
 
 require(maps)
 require(rgdal)
-require(raster) # For crop
-require(rgeos) # For crop
+require(raster)
+require(rgeos)
 
 dir_r_data <- '/glade/scratch/naddor/data/r_data/'
 
