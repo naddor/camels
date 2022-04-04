@@ -3,11 +3,10 @@
 rm(list = ls())
 
 library(dotenv)
-
-require(maps)
-require(rgdal)
-require(raster)
-require(rgeos)
+library(maps)
+library(rgdal)
+library(raster)
+library(rgeos)
 
 # The input file geodatabase and read the feature class
 # to List all feature classes in a file geodatabase use:

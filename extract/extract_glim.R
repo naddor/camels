@@ -1,13 +1,12 @@
 rm(list = ls())
 
 library(dotenv)
-
-require(raster)
-require(rgdal)
-require(RColorBrewer)
-require(maps)
-require(maptools)
-require(mapdata)  # Contains the hi-resolution points that mark out the countries
+library(raster)
+library(rgdal)
+library(RColorBrewer)
+library(maps)
+library(maptools)
+library(mapdata)  # Contains the hi-resolution points that mark out the countries
 
 # Load GLiM data previously clipped for the country of interest and saved in R format
 load(paste0('/d7/naddor/data/geol/limw_wgs84_', Sys.getenv('CAMELS_COUNTRY'), '.Rdata'))

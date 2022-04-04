@@ -156,9 +156,9 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
   # b_round: number of decimals to keep for the break values
   # text_legend: text to add above the color bar
 
-  require(RColorBrewer)
-  require(maps)
-  require(TeachingDemos) # For subplot
+  library(RColorBrewer)
+  library(maps)
+  library(TeachingDemos) # For subplot
 
   if (length(x) != length(y) | length(x) != length(z)) {
     stop('x,y and z must have the same length')

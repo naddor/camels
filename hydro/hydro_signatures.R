@@ -228,7 +228,7 @@ comp_i_bf <- function(q, d, alpha, passes, tol) {
 
   } else {
 
-    require(lfstat)
+    library(lfstat)
     # Ladson et al. (2013). “A standard approach to baseflow separation using the Lyne and
     # Hollick filter.” Australian Journal of Water Resources 17(1): 173-180.
     # https://shorturl.at/hixzA
