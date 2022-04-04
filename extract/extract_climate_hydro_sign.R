@@ -1,3 +1,7 @@
+rm(list = ls())
+
+library(dotenv)
+
 source(paste0(dir_r_scripts, 'camels/read_camels_hydromet.R'))
 source(paste0(dir_r_scripts, 'camels/clim/clim_indices.R'))
 source(paste0(dir_r_scripts, 'camels/hydro/hydro_signatures.R'))
@@ -51,21 +55,21 @@ camels_hydro_sac$gauge_id <- as.factor(camels_hydro_sac$gauge_id)
 
 # Save
 write.table(camels_clim,
-            file = paste0(dir_camels_attr, 'camels_clim.txt'),
+            file = paste0(Sys.getenv('CAMELS_DIR_RESULTS'), 'camels_clim.txt'),
             row.names = FALSE,
             quote = FALSE,
             sep = ';'
 )
 
 write.table(camels_hydro_obs,
-            file = paste0(dir_camels_attr, 'camels_hydro.txt'),
+            file = paste0(Sys.getenv('CAMELS_DIR_RESULTS'), 'camels_hydro.txt'),
             row.names = FALSE,
             quote = FALSE,
             sep = ';'
 )
 
 write.table(camels_hydro_sac,
-            file = paste0(dir_camels_attr, 'camels_hydro_sac.txt'),
+            file = paste0(Sys.getenv('CAMELS_DIR_RESULTS'), 'camels_hydro_sac.txt'),
             row.names = FALSE,
             quote = FALSE,
             sep = ';'

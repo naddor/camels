@@ -1,7 +1,11 @@
+rm(list = ls())
+
+library(dotenv)
+
 extract_elev_bands <- function(id, huc, keep_absolute_area = FALSE) {
 
   # Locate file in which elevations bands are stored
-  file_elev <- paste0(dir_basin_dataset, 'elev_bands_forcing/daymet/', huc, '/', id, '.list')
+  file_elev <- paste0(Sys.getenv('CAMELS_DIR_DATA'), 'daymet/', huc, '/', id, '.list')
 
   # Get number of elevation zones from first line
   n_elevation_zones <- as.numeric(read.table(file_elev, header = FALSE, nrows = 1))

@@ -1,3 +1,7 @@
+rm(list = ls())
+
+library(dotenv)
+
 plot_map_catch_attr <- function(dat, c2p, n_classes = 6, col_scheme = 'RdYlBu', col_rev = FALSE,
                                 color_bar = TRUE, subplot_hist = TRUE, col_trans = 0, b_round = 2,
                                 text_legend = '', cex = 1, pch = 16, qual = FALSE,
@@ -117,7 +121,7 @@ plot_points_us_basins <- function(dat, n_classes = 6, col_scheme = 'RdYlBu', col
 
   # Load coordinates
   if (!exists('camels_topo')) {
-    load(paste0(dir_catch_attr, 'camels_topo.Rdata'))
+    load(paste0(Sys.getenv('CAMELS_DIR_RESULTS'), 'camels_topo.Rdata'))
   }
 
   dat2plot <- merge(dat, camels_topo, by = 'gauge_id')
@@ -262,7 +266,7 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
 
     } else if (col_scheme == 'glim') {
 
-      file_glim_colors <- paste0(dir_data, 'GLiM/GLiM_classes_colors.txt')
+      file_glim_colors <- paste0('maps/GLiM_classes_colors.txt')
 
       if (!file.exists(file_glim_colors)) {
         stop(paste('File with glim colors is missing:', file_glim_colors))

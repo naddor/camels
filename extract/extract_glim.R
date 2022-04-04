@@ -1,5 +1,7 @@
 rm(list = ls())
 
+library(dotenv)
+
 require(raster)
 require(rgdal)
 require(RColorBrewer)
@@ -51,7 +53,7 @@ if (country == 'us') {
 }
 
 # Define colors for GLiM
-table_glim_classes <- read.table(paste0(dir_data, 'GLiM/GLiM_classes_colors.txt'),
+table_glim_classes <- read.table(paste0('maps/GLiM_classes_colors.txt'),
                                  sep = ';', header = TRUE)
 table_glim_classes$short_name <- as.factor(table_glim_classes$short_name)
 
@@ -62,7 +64,7 @@ glim_classes_col <- merge(glim_classes, table_glim_classes, sort = FALSE) # Add 
 glim_classes_col <- glim_classes_col[order(glim_classes_col$order),]
 
 # Plot a map with catchments
-pdf(paste0(dir_plots, 'camels/geol/glim_', country, '_overview.pdf', sep = ''),
+pdf(paste0(Sys.getenv('CAMELS_DIR_PLOTS'), '/glim_', country, '_overview.pdf', sep = ''),
     width = width_pdf,
     height = height_pdf)
 
@@ -89,7 +91,7 @@ glim_2nd_class <- array()
 glim_2nd_frac <- array()
 glim_carbonate_rocks_frac <- array()
 
-pdf(paste0(dir_plots, 'camels/geol/glim_', country, '_extraction.pdf', sep = ''),
+pdf(paste0(Sys.getenv('CAMELS_DIR_PLOTS'), '/glim_', country, '_extraction.pdf', sep = ''),
     width = width_pdf,
     height = height_pdf
 )
@@ -186,10 +188,10 @@ catch_geol_glim <- data.frame(gauge_id = catch_topo$gauge_id, glim_1st_class, gl
                               glim_2nd_class, glim_2nd_frac, glim_carbonate_rocks_frac)
 
 # Save data to temp directory
-save(catch_geol_glim, file = paste0(dir_catch_attr_temp, 'catch_geol_glim_', country, '.Rdata'))
+save(catch_geol_glim, file = paste0(Sys.getenv('CAMELS_DIR_TMP'), 'catch_geol_glim_', country, '.Rdata'))
 
 write.table(catch_geol_glim,
-            file = paste0(dir_catch_attr, 'catch_geol_glim_', country, '.txt'),
+            file = paste0(Sys.getenv('CAMELS_DIR_RESULTS'), 'catch_geol_glim_', country, '.txt'),
             row.names = FALSE,
             quote = FALSE,
             sep = ';'
