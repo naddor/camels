@@ -14,7 +14,6 @@ library(here)
 source(here::here('tools/time_tools.R')) # For month2sea
 
 ### Wrapper to compute standard camels climatic indices
-
 compute_clim_indices_camels <- function(temp, prec, pet, day, tol) {
 
   ind_berghuijs <- compute_climate_indices_berghuijs(temp, prec, pet, day, tol)

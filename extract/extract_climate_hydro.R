@@ -4,7 +4,7 @@ library(dotenv)
 library(here)
 
 # Load functions
-source(here::here('clim/clim_indices.R'))
+source(here::here('climate/climate_indices.R'))
 source(here::here('hydro/hydro_signatures.R'))
 source(here::here('maps/plot_maps_camels.R'))
 
