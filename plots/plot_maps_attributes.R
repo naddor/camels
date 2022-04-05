@@ -1,13 +1,18 @@
 rm(list = ls())
 
 library(dotenv)
+library(RColorBrewer)
+library(maps)
+library(TeachingDemos) # For subplot
+
 
 plot_map_catch_attr <- function(dat, c2p, n_classes = 6, col_scheme = 'RdYlBu', col_rev = FALSE,
                                 color_bar = TRUE, subplot_hist = TRUE, col_trans = 0, b_round = 2,
                                 text_legend = '', cex = 1, pch = 16, qual = FALSE,
                                 force_zero_center = FALSE, force_n_classes = FALSE,
                                 set_breaks = FALSE, breaks = NA, layout_on = FALSE,
-                                layout_ncol = 3, layout_nrow = 1) {
+                                layout_ncol = 3, layout_nrow = 1,
+                                country = Sys.getenv('CAMELS_COUNTRY')) {
 
   # Arguments:
   # dat: data as data.frame
@@ -56,7 +61,7 @@ plot_map_catch_attr <- function(dat, c2p, n_classes = 6, col_scheme = 'RdYlBu', 
     }
   }
 
-  # Loop through colums and plot corresponding maps
+  # Loop through colums and plot corresponding plots
   for (v in c2p) {
 
     # Set plotting details
@@ -87,12 +92,12 @@ plot_map_catch_attr <- function(dat, c2p, n_classes = 6, col_scheme = 'RdYlBu', 
       my_breaks <- breaks
     }
 
-    plot_points_us_basins(dat[, c(1, v)], n_classes, col_scheme = my_col_scheme,
+    plot_points_basins(dat[, c(1, v)], n_classes, col_scheme = my_col_scheme,
                           col_rev = my_col_rev, color_bar, subplot_hist = my_subplot_hist,
                           col_trans, b_round = my_b_round, text_legend = colnames(dat)[v],
                           cex, pch, qual = my_qual, force_zero_center = my_force_zero_center,
                           force_n_classes = my_force_n_classes, set_breaks = my_set_breaks,
-                          breaks = my_breaks, layout_on = layout_on)
+                          breaks = my_breaks, layout_on = layout_on, country = country)
 
   }
 
@@ -100,11 +105,12 @@ plot_map_catch_attr <- function(dat, c2p, n_classes = 6, col_scheme = 'RdYlBu', 
 
 }
 
-plot_points_us_basins <- function(dat, n_classes = 6, col_scheme = 'RdYlBu', col_rev = FALSE,
-                                  color_bar = TRUE, subplot_hist = TRUE, col_trans = 0, b_round = 2,
-                                  text_legend = '', cex = 1, pch = 16, qual = FALSE,
-                                  force_zero_center = FALSE, force_n_classes = FALSE,
-                                  set_breaks = FALSE, breaks = NA, layout_on = FALSE) {
+plot_points_basins <- function(dat, n_classes = 6, col_scheme = 'RdYlBu', col_rev = FALSE,
+                               color_bar = TRUE, subplot_hist = TRUE, col_trans = 0, b_round = 2,
+                               text_legend = '', cex = 1, pch = 16, qual = FALSE,
+                               force_zero_center = FALSE, force_n_classes = FALSE,
+                               set_breaks = FALSE, breaks = NA, layout_on = FALSE,
+                               country = Sys.getenv('CAMELS_COUNTRY')) {
 
   # Purpose: merge coordinates with variables to plot based on camels_topo
 
@@ -131,17 +137,17 @@ plot_points_us_basins <- function(dat, n_classes = 6, col_scheme = 'RdYlBu', col
   plot_points(x = dat2plot$gauge_lon, y = dat2plot$gauge_lat, z = dat2plot[, 2], n_classes,
               col_scheme, col_rev, color_bar, subplot_hist, col_trans, b_round, text_legend,
               cex, pch, qual, force_zero_center, force_n_classes, set_breaks, breaks,
-              layout_on = layout_on)
+              layout_on = layout_on, country = country)
 
 }
 
-### Plot points on us map
-
+### Plot points on map
 plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev = FALSE,
                         color_bar = TRUE, subplot_hist = TRUE, col_trans = 0, b_round = 2,
                         text_legend = '', cex = 1, pch = 16, qual = FALSE,
                         force_zero_center = FALSE, force_n_classes = FALSE,
-                        set_breaks = FALSE, breaks = NA, country = 'US', layout_on = FALSE) {
+                        set_breaks = FALSE, breaks = NA, layout_on = FALSE,
+                        country = Sys.getenv('CAMELS_COUNTRY')) {
 
   # Purpose: plot map for chosen country and add a dot per catchment
 
@@ -155,10 +161,6 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
   # col_trans: use transparent colors (0 is opaque 255 is transparent)
   # b_round: number of decimals to keep for the break values
   # text_legend: text to add above the color bar
-
-  library(RColorBrewer)
-  library(maps)
-  library(TeachingDemos) # For subplot
 
   if (length(x) != length(y) | length(x) != length(z)) {
     stop('x,y and z must have the same length')
@@ -266,7 +268,7 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
 
     } else if (col_scheme == 'glim') {
 
-      file_glim_colors <- file.path('maps', 'GLiM_classes_colors.txt')
+      file_glim_colors <- file.path('', 'GLiM_classes_colors.txt')
 
       if (!file.exists(file_glim_colors)) {
         stop(paste('File with glim colors is missing:', file_glim_colors))

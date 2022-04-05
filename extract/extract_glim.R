@@ -49,7 +49,7 @@ if (Sys.getenv('CAMELS_COUNTRY') == 'US') {
 }
 
 # Define colors for GLiM
-table_glim_classes <- read.table(file.path('maps', 'GLiM_classes_colors.txt'),
+table_glim_classes <- read.table(file.path('../plots', 'GLiM_classes_colors.txt'),
                                  sep = ';', header = TRUE)
 table_glim_classes$short_name <- as.factor(table_glim_classes$short_name)
 

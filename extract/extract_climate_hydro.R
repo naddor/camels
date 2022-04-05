@@ -96,13 +96,21 @@ for (i in seq_along(list_catch)) {
   if (Sys.getenv('CAMELS_COUNTRY') == 'US') {
 
     # Import forcing data, obs and sim discharge and collect metadata
-    get_catchment_data_arrays(huc = camels_name$huc_02[i],
-                              id = camels_name$gauge_id[i],
-                              date_start = start_date_indices,
-                              date_end = end_date_indices,
-                              forcing_dataset = 'daymet',
-                              ens_method = 'best'
+    dat <- get_catchment_data_dataframe(huc = list_catch$huc_02[i],
+                                        id = catch_id,
+                                        date_start = start_date_indices,
+                                        date_end = end_date_indices,
+                                        forcing_dataset = 'daymet',
+                                        ens_method = 'best'
     )
+
+    day <- as.Date(dat$date)
+
+    prec <<- dat$prec
+    temp <<- (dat$temp_min + dat$temp_max) / 2
+    pet <<- dat$pet
+    q_obs <<- dat$q_obs
+    q_sim_sac <<- dat$q_sim_sac
 
   } else if (Sys.getenv('CAMELS_COUNTRY') == 'GB') {
 
