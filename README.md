@@ -18,6 +18,15 @@ To get started, do not forget to:
 * Copy-paste the .env.example file to .env and edit the paths and variables it contains.
 * If you change a variable in the .env file you'll need to restart R
 
+# Repo structure
+
+The repo has the following structure:
+
+* **compute**: functions to compute indices or attributes
+* **extract**: functions and scripts to extract data from files
+* **produce**: scripts to generate files with the attributes and corresponding maps
+* **utils**: utility functions (for example, for plotting)
+
 # Style guide
 
 Please follow the coding style as defined by [the tidyverse style guide](https://style.tidyverse.org/index.html)
