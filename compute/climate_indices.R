@@ -11,7 +11,7 @@
 library(here)
 
 ### Load functions
-source(here::here('tools/time_tools.R')) # For month2sea
+source(here::here('utils/time_tools.R')) # For month2sea
 
 ### Wrapper to compute standard camels climatic indices
 compute_clim_indices_camels <- function(temp, prec, pet, day, tol) {
