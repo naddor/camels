@@ -2,3 +2,5 @@
 *.Rproj
 .Rproj.user
 .env
+.Rhistory
+.RData
