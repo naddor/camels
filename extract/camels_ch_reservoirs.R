@@ -2,8 +2,8 @@
 ### CAMELS-CH: computation of human influence characteristics
 ### Manuela Brunner
 ### 06.04.2022
-### University of Freiburg
-### manuela.i.brunner@gmail.com and manuela.brunner@hydrology.uni-freiburg.de
+### ETH Zurich and SLF
+### manuela.brunner@env.etz.ch
 ###===============================###===============================###
 ###===============================###===============================###
 ### (1) Read in catchment shapes
