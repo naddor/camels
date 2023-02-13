@@ -30,8 +30,8 @@ library(exactextractr)
 ### (1) Read in catchment shapes
 ###===============================###===============================###
 ### read in CAMELS-CH catchment shapes
-setwd(paste(Sys.getenv('CAMELS_DIR_DATA'),'CAMELS_CH_EZG_LV95_v7.2',sep='/'))
-catch <- st_read('CAMELS_CH_EZG_LV95_v72.shp')
+setwd(paste(Sys.getenv('CAMELS_DIR_DATA'),'CAMELS_CH_EZG_7.6',sep='/'))
+catch <- st_read('CAMELS_CH_EZG_76.shp')
 
 #Plot catchments' overview
 plot(st_geometry(catch))
@@ -89,8 +89,8 @@ attr.nm.all <- as.character(attr.nm.all$value)
 
 ### preallocate data frame to store soil attributes
 df_soilattr <- as.data.frame(matrix(NA,dim(catch)[1],1+length(attr.nm)*length(attr.nm.spec)),stringsAsFactors=FALSE)
-df_soilattr[,1] <- catch$ID12
-colnames(df_soilattr) <- c('ID12',attr.nm.all)
+df_soilattr[,1] <- catch$gauge_id
+colnames(df_soilattr) <- c('gauge_id',attr.nm.all)
 rm(attr.nm.spec)
 
 ### function for computing all parameters per attribute
