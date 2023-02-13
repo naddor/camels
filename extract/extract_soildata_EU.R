@@ -106,9 +106,9 @@ SoilGrid.res <- '250m'
 ### (1) Read in catchment shapes and get their extent
 ###===============================###===============================###
 ### read in CAMELS-CH catchment shapes
-setwd(paste(Sys.getenv('CAMELS_DIR_DATA'),'CAMELS_CH_EZG_LV95_v7.2',sep='/'))
-catch <- st_read('CAMELS_CH_EZG_LV95_v72.shp')
-#catch <- readOGR('CAMELS_CH_EZG_LV95_v72.shp',encoding='UTF-8',use_iconv = TRUE)
+setwd(paste(Sys.getenv('CAMELS_DIR_DATA'),'CAMELS_CH_EZG_7.6',sep='/'))
+catch <- st_read('CAMELS_CH_EZG_76.shp')
+#catch <- readOGR('CAMELS_CH_EZG_76.shp',encoding='UTF-8',use_iconv = TRUE)
 #plot catchments' overview
 plot(st_geometry(catch))
 #plot(catch)
@@ -508,9 +508,9 @@ wdir <- getwd()
 # top soil=30cm 
 r.SD <- raster(list.files(wdir)[grep('STU_EU_DEPTH_ROOTS',list.files(wdir))])
 w.T <- 30/r.SD
-#if root depth resp.soil deptch =0 c => weight=0
+#if root depth resp.soil depth =0 cm => weight=0
 w.T[r.SD==0] <- 0
-#if root depth resp.soil deptch <30cm c => weight=1
+#if root depth resp.soil depth <30cm => weight=1
 w.T[r.SD<30] <- 1
 #Check weights
 #plot(w.T)
@@ -533,7 +533,7 @@ for (var.nm in variables) {
   var.soil.wm <- weighted.mean(var.brick, w, na.rm=FALSE)
   
   ### In ESSD where there are no data (e.g. glacierized areas)
-  ### values are set to 0, we need to set these to NA to get the right statics
+  ### values are set to 0, we need to set these to NA to get the right statistics
   ### in the next step. Assumption: where soil depth=0 => NA
   var.soil.wm[r.SD==0] <- NA
   
