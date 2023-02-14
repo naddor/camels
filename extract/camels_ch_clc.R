@@ -7,11 +7,12 @@
 # jan.schwanbeck@giub.unibe.ch
 # ==============================================================================
 
-
+# install library sf and load it
 library(sf)
 
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 mainDir <- getwd()
+# make sure to have input files in the same folder as script
 
 
 # read catchment file and change coordinate system to 
