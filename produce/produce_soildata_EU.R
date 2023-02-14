@@ -30,7 +30,7 @@ library(exactextractr)
 ### (1) Read in catchment shapes
 ###===============================###===============================###
 ### read in CAMELS-CH catchment shapes
-setwd(paste(Sys.getenv('CAMELS_DIR_DATA'),'CAMELS_CH_EZG_7.6',sep='/'))
+setwd(paste(Sys.getenv('CAMELS_DIR_DATA'),'Catchments','CAMELS_CH_EZG_7.6',sep='/'))
 catch <- st_read('CAMELS_CH_EZG_76.shp')
 
 #Plot catchments' overview
@@ -69,7 +69,7 @@ head(catch)
 ###===============================###===============================###
 
 ### set working directory
-setwd(paste(Sys.getenv('CAMELS_DIR_DATA'),'SoilData',Sys.getenv('CAMELS_COUNTRY'),sep='/'))
+setwd(paste(Sys.getenv('CAMELS_DIR_DATA'),'Soil/SoilData',Sys.getenv('CAMELS_COUNTRY'),sep='/'))
 wdir <- getwd()
 
 ### set attribute names
@@ -359,9 +359,14 @@ save(file='soil_attributes.RData', df_soilattr)
 
 ### write to file, use semicolon for separation
 setwd(Sys.getenv('CAMELS_DIR_RESULTS'))
-write.table(file='CAMELS_CH_soil_attributes.txt',
+#write.table(file='CAMELS_CH_soil_attributes.txt',
+#            round(df_soilattr,3),
+#            sep=';',quote=FALSE, row.names=FALSE)
+
+write.table(file='CAMELS_CH_soil_attributes.csv',
             round(df_soilattr,3),
-            sep=';',quote=FALSE, row.names=FALSE)
+            sep=';',quote = FALSE, row.names = FALSE,fileEncoding = "UTF-8")
+
 
 ### clear workspace
 rm(list = ls())
