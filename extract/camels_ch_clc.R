@@ -1,18 +1,21 @@
 # ==============================================================================
-# Creating annual time series per catchment for clc and glacier data
+# aggregate landcover data from clc shapefiles (copernicus server) by catchments
 # 
-# Eawag, Switzerland, Dec. 2022
+# Eawag, Switzerland, Jan. 2023
 #
 # usula.schoenenberger@eawag.ch
+# jan.schwanbeck@giub.unibe.ch
 # ==============================================================================
 
 
 library(sf)
-setwd("/Users/...")
+
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+mainDir <- getwd()
 
 
 # read catchment file and change coordinate system to 
-camels_catch <- st_read("CAMELS_CH_EZG_74.shp")
+camels_catch <- st_read("EZG/CAMELS_CH_EZG_76.shp")
 camels_catch <- st_transform(camels_catch, "EPSG:3035")
 
 # create boundary
@@ -31,13 +34,13 @@ catchments_clc_clip <- function (camels_catch, shp_clc){
   for(i in 1:nrow(camels_catch)){
     df_i <- NULL
     id_i <- NULL
-    
+    print(i)
     catch_i <- camels_catch[i,]
     clc_i <- st_intersection(shp_clc, catch_i)
     clc_agg <- aggregate(st_area(clc_i) ~ Code, FUN = sum, data = clc_i,na.rm = TRUE)
     
     df_i <- data.frame(clc_agg)
-    id_i <- camels_catch$ID[i]
+    id_i <- camels_catch$gauge_id[i]
     colnames(df_i) <- c("Code",id_i)
     
     if (i==1) {
@@ -57,145 +60,145 @@ reclass_clip <- function (clc_clip){
     reclass_i <- NULL
     class_i <- reclass_table$Code[i]
     if (class_i==111) {
-      reclass_table$camels_class[i]<-"urban"
+      reclass_table$camels_class[i]<-"urban_perc"
     }
     if (class_i==112) {
-      reclass_table$camels_class[i]<-"urban"
+      reclass_table$camels_class[i]<-"urban_perc"
     }
     if (class_i==121) {
-      reclass_table$camels_class[i]<-"urban"
+      reclass_table$camels_class[i]<-"urban_perc"
     }
     if (class_i==122) {
-      reclass_table$camels_class[i]<-"urban"
+      reclass_table$camels_class[i]<-"urban_perc"
     }
     if (class_i==123) {
-      reclass_table$camels_class[i]<-"urban"
+      reclass_table$camels_class[i]<-"urban_perc"
     }
     if (class_i==124) {
-      reclass_table$camels_class[i]<-"urban"
+      reclass_table$camels_class[i]<-"urban_perc"
     }
     if (class_i==131) {
-      reclass_table$camels_class[i]<-"loose_rock"
+      reclass_table$camels_class[i]<-"loose_rock_perc"
     }
     if (class_i==132) {
-      reclass_table$camels_class[i]<-"loose_rock"
+      reclass_table$camels_class[i]<-"loose_rock_perc"
     }
     if (class_i==133) {
-      reclass_table$camels_class[i]<-"loose_rock"
+      reclass_table$camels_class[i]<-"loose_rock_perc"
     }
     if (class_i==141) {
-      reclass_table$camels_class[i]<-"grass"
+      reclass_table$camels_class[i]<-"grass_perc"
     }
     if (class_i==142) {
-      reclass_table$camels_class[i]<-"urban"
+      reclass_table$camels_class[i]<-"urban_perc"
     }
     if (class_i==211) {
-      reclass_table$camels_class[i]<-"crop"
+      reclass_table$camels_class[i]<-"crop_perc"
     }
     if (class_i==212) {
-      reclass_table$camels_class[i]<-"crop"
+      reclass_table$camels_class[i]<-"crop_perc"
     }
     if (class_i==213) {
-      reclass_table$camels_class[i]<-"crop"
+      reclass_table$camels_class[i]<-"crop_perc"
     }
     if (class_i==221) {
-      reclass_table$camels_class[i]<-"scrub"
+      reclass_table$camels_class[i]<-"scrub_perc"
     }
     if (class_i==222) {
-      reclass_table$camels_class[i]<-"scrub"
+      reclass_table$camels_class[i]<-"scrub_perc"
     }
     if (class_i==223) {
-      reclass_table$camels_class[i]<-"scrub"
+      reclass_table$camels_class[i]<-"scrub_perc"
     }
     if (class_i==231) {
-      reclass_table$camels_class[i]<-"grass"
+      reclass_table$camels_class[i]<-"grass_perc"
     }
     if (class_i==241) {
-      reclass_table$camels_class[i]<-"crop"
+      reclass_table$camels_class[i]<-"crop_perc"
     }
     if (class_i==242) {
-      reclass_table$camels_class[i]<-"crop"
+      reclass_table$camels_class[i]<-"crop_perc"
     }
     if (class_i==243) {
-      reclass_table$camels_class[i]<-"crop"
+      reclass_table$camels_class[i]<-"crop_perc"
     }
     if (class_i==244) {
-      reclass_table$camels_class[i]<-"scrub"
+      reclass_table$camels_class[i]<-"scrub_perc"
     }
     if (class_i==311) {
-      reclass_table$camels_class[i]<-"dwood"
+      reclass_table$camels_class[i]<-"dwood_perc"
     }
     if (class_i==312) {
-      reclass_table$camels_class[i]<-"ewood"
+      reclass_table$camels_class[i]<-"ewood_perc"
     }
     if (class_i==313) {
-      reclass_table$camels_class[i]<-"mixed_wood"
+      reclass_table$camels_class[i]<-"mixed_wood_perc"
     }
     if (class_i==321) {
-      reclass_table$camels_class[i]<-"grass"
+      reclass_table$camels_class[i]<-"grass_perc"
     }
     if (class_i==322) {
-      reclass_table$camels_class[i]<-"wetlands"
+      reclass_table$camels_class[i]<-"wetlands_perc"
     }
     if (class_i==323) {
-      reclass_table$camels_class[i]<-"scrub"
+      reclass_table$camels_class[i]<-"scrub_perc"
     }
     if (class_i==324) {
-      reclass_table$camels_class[i]<-"scrub"
+      reclass_table$camels_class[i]<-"scrub_perc"
     }
     if (class_i==331) {
-      reclass_table$camels_class[i]<-"loose_rock"
+      reclass_table$camels_class[i]<-"loose_rock_perc"
     }
     if (class_i==332) {
-      reclass_table$camels_class[i]<-"rock"
+      reclass_table$camels_class[i]<-"rock_perc"
     }
     if (class_i==333) {
-      reclass_table$camels_class[i]<-"loose_rock"
+      reclass_table$camels_class[i]<-"loose_rock_perc"
     }
     if (class_i==334) {
-      reclass_table$camels_class[i]<-"loose_rock"
+      reclass_table$camels_class[i]<-"loose_rock_perc"
     }
     if (class_i==335) {
-      reclass_table$camels_class[i]<-"ice"
+      reclass_table$camels_class[i]<-"ice_perc"
     }
     if (class_i==411) {
-      reclass_table$camels_class[i]<-"wetlands"
+      reclass_table$camels_class[i]<-"wetlands_perc"
     }
     if (class_i==412) {
-      reclass_table$camels_class[i]<-"wetlands"
+      reclass_table$camels_class[i]<-"wetlands_perc"
     }
     if (class_i==421) {
-      reclass_table$camels_class[i]<-"wetlands"
+      reclass_table$camels_class[i]<-"wetlands_perc"
     }
     if (class_i==422) {
-      reclass_table$camels_class[i]<-"wetlands"
+      reclass_table$camels_class[i]<-"wetlands_perc"
     }
     if (class_i==423) {
-      reclass_table$camels_class[i]<-"wetlands"
+      reclass_table$camels_class[i]<-"wetlands_perc"
     }
     if (class_i==511) {
-      reclass_table$camels_class[i]<-"inwater"
+      reclass_table$camels_class[i]<-"inwater_perc"
     }
     if (class_i==512) {
-      reclass_table$camels_class[i]<-"inwater"
+      reclass_table$camels_class[i]<-"inwater_perc"
     }
     if (class_i==521) {
-      reclass_table$camels_class[i]<-"inwater"
+      reclass_table$camels_class[i]<-"inwater_perc"
     }
     if (class_i==522) {
-      reclass_table$camels_class[i]<-"inwater"
+      reclass_table$camels_class[i]<-"inwater_perc"
     }
     if (class_i==523) {
-      reclass_table$camels_class[i]<-"inwater"
+      reclass_table$camels_class[i]<-"inwater_perc"
     }
     if (class_i==999) {
-      reclass_table$camels_class[i]<-"blank"
+      reclass_table$camels_class[i]<-"blank_perc"
     }
     if (class_i==990) {
-      reclass_table$camels_class[i]<-"blank"
+      reclass_table$camels_class[i]<-"blank_perc"
     }
     if (class_i==995) {
-      reclass_table$camels_class[i]<-"inwater"
+      reclass_table$camels_class[i]<-"inwater_perc"
     }
   }
   reclass_table
@@ -245,11 +248,25 @@ calculate_percentage <- function (reagg_catch){
   # df_perc<-round(df_perc,2)
   df_perc <- df_perc[,sort(names(df_perc))]
 }
+
+# create static attribute table with dominant land cover
+create_static_attribute<-function(perc_table){
+  dom_land_cover<-rownames(perc_00[which.max(perc_00[,1]),])
+  
+  for(i in 2:ncol(perc_00)){
+    dom_i<-rownames(perc_00[which.max(perc_00[,i]),])
+    dom_land_cover<-c(dom_land_cover,dom_i)
+  }
+  end_table<-data.frame(cbind(round(t(perc_00),2),dom_land_cover))
+  return(end_table)
+}
+
 ####################################################
 
 ## clc 2018
 # read clc-shapefile within boundaries from catchment file
-setwd("/Users/.../u2018_clc2018_v2020_20u1_fgdb/u2018_clc2018_v2020_20u1_fgdb/DATA/")
+subDir<-"/u2018_clc2018_v2020_20u1_fgdb/u2018_clc2018_v2020_20u1_fgdb/DATA/"
+setwd(file.path(mainDir, subDir))
 clc18 <- sf::st_read("U2018_CLC2018_V2020_20u1.gdb",wkt_filter=wkt)
 clc18 <- st_cast(clc18,  "MULTIPOLYGON")
 colnames(clc18)[1] <- "Code"
@@ -261,14 +278,15 @@ reagg_catch_18<-reaggregate(recl_18)
 perc_18<-calculate_percentage(reagg_catch_18)
 
 # save output
-setwd("/Users/...")
-cat("landcover [%]. data source: clc_2018 copernicus server.\n", file="clc_2018_perc.txt")
-write.table(perc_18, file = "clc_2018_perc.txt", append=TRUE, quote=FALSE,sep=";",fileEncoding="UTF-8")
+setwd(mainDir)
+cat("# Land cover attributes as area percentages based on the CORINE land cover databases 2018 by the European Copernicus Land Monitoring Service.\n", file="clc_2018_perc.csv")
+write.table(perc_18, file = "clc_2018_perc.csv", append=TRUE, quote=FALSE,sep=";",fileEncoding="UTF-8")
 ####################################################
 
 ## clc 2012
 # read clc-shapefile within boundaries from catchment file
-setwd("/Users/.../u2018_clc2012_v2020_20u1_fgdb/DATA/")
+subDir<-"/u2018_clc2012_v2020_20u1_fgdb/DATA/"
+setwd(file.path(mainDir, subDir))
 clc12 <- sf::st_read("U2018_CLC2012_V2020_20u1.gdb",wkt_filter=wkt)
 clc12 <- st_cast(clc12,  "MULTIPOLYGON")
 colnames(clc12)[1] <- "Code"
@@ -280,14 +298,15 @@ reagg_catch_12<-reaggregate(recl_12)
 perc_12<-calculate_percentage(reagg_catch_12)
 
 # save output
-setwd("/Users/...")
-cat("landcover [%]. data source: clc_2012 copernicus server.\n", file="clc_2012_perc.txt")
-write.table(perc_12, file = "clc_2012_perc.txt", append=TRUE, quote=FALSE,sep=";",fileEncoding="UTF-8")
+setwd(mainDir)
+cat("# Land cover attributes as area percentages based on the CORINE land cover databases 2012 by the European Copernicus Land Monitoring Service..\n", file="clc_2012_perc.csv")
+write.table(perc_12, file = "clc_2012_perc.csv", append=TRUE, quote=FALSE,sep=";",fileEncoding="UTF-8")
 ####################################################
 
 ## clc 2006
 # read clc-shapefile within boundaries from catchment file
-setwd("/Users/.../u2012_clc2006_v2020_20u1_fgdb/DATA/")
+subDir<-"/u2012_clc2006_v2020_20u1_fgdb/DATA/"
+setwd(file.path(mainDir, subDir))
 clc06 <- sf::st_read("U2012_CLC2006_V2020_20u1.gdb",wkt_filter=wkt)
 clc06 <- st_cast(clc06,  "MULTIPOLYGON")
 colnames(clc06)[1] <- "Code"
@@ -299,14 +318,15 @@ reagg_catch_06<-reaggregate(recl_06)
 perc_06<-calculate_percentage(reagg_catch_06)
 
 # save output
-setwd("/Users/...")
-cat("landcover [%]. data source: clc_2006 copernicus server.\n", file="clc_2006_perc.txt")
-write.table(perc_06, file = "clc_2006_perc.txt", append=TRUE, quote=FALSE,sep=";",fileEncoding="UTF-8")
+setwd(mainDir)
+cat("# Land cover attributes as area percentages based on the CORINE land cover databases 2006 by the European Copernicus Land Monitoring Service.\n", file="clc_2006_perc.csv")
+write.table(perc_06, file = "clc_2006_perc.csv", append=TRUE, quote=FALSE,sep=";",fileEncoding="UTF-8")
 ####################################################
 
 ## clc 2000
 # read clc-shapefile within boundaries from catchment file
-setwd("/Users/.../u2006_clc2000_v2020_20u1_fgdb/DATA/")
+subDir<-"/u2006_clc2000_v2020_20u1_fgdb/DATA/"
+setwd(file.path(mainDir, subDir))
 clc00 <- sf::st_read("U2006_CLC2000_V2020_20u1.gdb",wkt_filter=wkt)
 clc00 <- st_cast(clc00,  "MULTIPOLYGON")
 colnames(clc00)[1] <- "Code"
@@ -318,14 +338,22 @@ reagg_catch_00<-reaggregate(recl_00)
 perc_00<-calculate_percentage(reagg_catch_00)
 
 # save output
-setwd("/Users/...")
-cat("landcover [%]. data source: clc_2000 copernicus server.\n", file="clc_2000_perc.txt")
-write.table(perc_00, file = "clc_2000_perc.txt", append=TRUE, quote=FALSE,sep=";",fileEncoding="UTF-8")
+setwd(mainDir)
+cat("# Land cover attributes as area percentages based on the CORINE land cover databases 2000 by the European Copernicus Land Monitoring Service.\n", file="clc_2000_perc.csv")
+write.table(perc_00, file = "clc_2000_perc.csv", append=TRUE, quote=FALSE,sep=";",fileEncoding="UTF-8")
+
+# create static attribute table and save it
+setwd(mainDir)
+perc_00_static<-create_static_attribute(perc_00)
+cat("# Land cover attributes as area percentages based on the CORINE land cover databases 2000 by the European Copernicus Land Monitoring Service.\n", file="CAMELS_CH_landcover_attributes.csv")
+write.table(perc_00_static, file = "clc_2000_perc_static.csv", append=TRUE, quote=FALSE,sep=";",fileEncoding="UTF-8")
+
 ####################################################
 
 ## clc 1990
 # read clc-shapefile within boundaries from catchment file
-setwd("/Users/.../u2000_clc1990_v2020_20u1_fgdb/DATA/")
+subDir<-"/u2000_clc1990_v2020_20u1_fgdb/DATA/"
+setwd(file.path(mainDir, subDir))
 clc90 <- sf::st_read("U2000_CLC1990_V2020_20u1.gdb",wkt_filter=wkt)
 clc90 <- st_cast(clc90,  "MULTIPOLYGON")
 colnames(clc90)[1] <- "Code"
@@ -337,6 +365,6 @@ reagg_catch_90<-reaggregate(recl_90)
 perc_90<-calculate_percentage(reagg_catch_90)
 
 # save output
-setwd("/Users/...")
-cat("landcover [%]. data source: clc_1990 copernicus server.\n", file="clc_1990_perc.txt")
-write.table(perc_90, file = "clc_1990_perc.txt", append=TRUE, quote=FALSE,sep=";",fileEncoding="UTF-8")
+setwd(mainDir)
+cat("# Land cover attributes as area percentages based on the CORINE land cover databases 1990 by the European Copernicus Land Monitoring Service.\n", file="clc_1990_perc.csv")
+write.table(perc_90, file = "clc_1990_perc.csv", append=TRUE, quote=FALSE,sep=";",fileEncoding="UTF-8")
