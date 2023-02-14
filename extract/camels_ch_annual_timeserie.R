@@ -7,6 +7,7 @@
 # ==============================================================================
 
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+# make sure to have input files in the same folder as script
 
 ##################################
 ## prepare lists and variables
