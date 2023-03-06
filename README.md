@@ -22,12 +22,11 @@ To get started, do not forget to:
 
 # Repo structure
 
-The repo has the following structure:
+The repo contains directories for attribute types, time series, plus additional utils (for example, for plotting). Some scripts are prefixed with the following terms:
 
 * **compute**: functions to compute indices or attributes
 * **extract**: functions and scripts to extract data from files
 * **produce**: scripts to generate files with the attributes and corresponding maps
-* **utils**: utility functions (for example, for plotting)
 
 # Style guide
 
