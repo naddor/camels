@@ -1,7 +1,7 @@
 # ==============================================================================
 # Aggregation of glacier volume, mass and area to CAMELS-CH catchments
 # 
-# Eawag, Switzerland, Feb. 2023
+# Eawag, Switzerland, Jan. 2023
 #
 # marvin.hoege@eawag.ch 
 # usula.schoenenberger@eawag.ch
@@ -41,10 +41,10 @@ glaciers_sgi_1973$area_km2 <- area(glaciers_sgi_1973)/1000000  # m^2 to km^2
 glaciers_sgi_1973$sgi.id <- glaciers_sgi_1973$SGI              # rename glacier id label
 
 # load gi-glacier file from 2003 and 2015
-glaciers_gi_2015 <- readOGR(dsn = "./GI_2015/", layer = "GI2015_Paul_korr5")
+glaciers_gi_2015 <- readOGR(dsn = "./GI_2015/", layer = "GI2015_Pauletal")
 glaciers_gi_2015$sgi.id <- glaciers_gi_2015$CAMELS_ID           # rename glacier id label
 
-glaciers_gi_2003 <- readOGR(dsn = "./GI_2003", layer = "GI2003_Paul_korr5")
+glaciers_gi_2003 <- readOGR(dsn = "./GI_2003", layer = "GI2003_Pauletal")
 glaciers_gi_2003$sgi.id <- glaciers_gi_2003$CAMELS_ID           # rename glacier id label
 
 
@@ -315,12 +315,16 @@ replace_expiring_glaciers <- function(ts_old, ts_new){
 }
 
 final_glacier_volume_catchment_CH = replace_expiring_glaciers(catchment_glacier_sgi_1973$volume, catchment_glacier_sgi_2016$volume)
+# volume km3 to m3, then times 850 kg/m3, then to mega tons
+final_glacier_mass_catchment_CH = final_glacier_volume_catchment_CH*850
 final_glacier_area_catchment_CH = replace_expiring_glaciers(catchment_glacier_sgi_1973$area, catchment_glacier_sgi_2016$area)
 final_glacier_area_catchment_CH_neighbours = replace_expiring_glaciers(catchment_glacier_gi_2003$area, catchment_glacier_gi_2015$area)
 
 
+
 if (optional_nonnested_hydrol_CH_analysis == TRUE){
   final_glacier_volume_catchment_hydrol_CH = replace_expiring_glaciers(catchment_hydrol_CH_glacier1973$volume, catchment_hydrol_CH_glacier2016$volume)
+  final_glacier_mass_catchment_hydrol_CH = final_glacier_volume_catchment_hydrol_CH*1e9*850
   final_glacier_area_catchment_hydrol_CH = replace_expiring_glaciers(catchment_hydrol_CH_glacier1973$area, catchment_hydrol_CH_glacier2016$area)
   final_glacier_area_catchment_hydrol_CH_neighbours = replace_expiring_glaciers(catchment_hydrol_CH_glacier2003$area, catchment_hydrol_CH_glacier2015$area)
 }
@@ -331,30 +335,29 @@ if (optional_nonnested_hydrol_CH_analysis == TRUE){
 # SAVE matrices
 
 if (save_results == TRUE){
-  write.table(final_glacier_volume_catchment_CH,"glacier_volume_catchment_camels_ch.csv",sep=";",quote=FALSE)
+  write.table(final_glacier_volume_catchment_CH,"glacier_volume_catchment_camels_ch.csv",sep=";",quote=FALSE,fileEncoding="UTF-8")
   # header: annual glacier volume (km3) evolution per catchment between 1980 and 2021 
   
-  write.table(final_glacier_area_catchment_CH,"glacier_area_catchment_camels_ch.csv",sep=";",quote=FALSE)
-  write.table(final_glacier_area_catchment_CH_neighbours,"glacier_area_catchment_camels_ch_neighbours.csv",sep=";",quote=FALSE)
+  write.table(final_glacier_area_catchment_CH,"glacier_area_catchment_camels_ch.csv",sep=";",quote=FALSE,fileEncoding="UTF-8")
+  write.table(final_glacier_area_catchment_CH_neighbours,"glacier_area_catchment_camels_ch_neighbours.csv",sep=";",quote=FALSE,fileEncoding="UTF-8")
   # header: annual glacier area (km2) evolution per catchment between 1980 and 2021 
   
-  # volume km3 to m3, then times 850 kg/m3, then to mega tons
-  final_glacier_mass_catchment_CH = final_glacier_volume_catchment_CH*850
-  write.table(final_glacier_mass_catchment_CH,"glacier_mass_catchment_camels_ch.csv",sep=";",quote=FALSE)
+  
+  write.table(final_glacier_mass_catchment_CH,"glacier_mass_catchment_camels_ch.csv",sep=";",quote=FALSE,fileEncoding="UTF-8")
   # header: annual glacier mass (mega tons) evolution per catchment between 1980 and 2021 
   
   
   if (optional_nonnested_hydrol_CH_analysis == TRUE){
-    write.table(final_glacier_volume_catchment_hydrol_CH,"glacier_volume_catchment_camels_hydrol_ch.csv",sep=";",quote=FALSE)
+    write.table(final_glacier_volume_catchment_hydrol_CH,"glacier_volume_catchment_camels_hydrol_ch.csv",sep=";",quote=FALSE,fileEncoding="UTF-8")
     # header: annual glacier volume (km3) evolution per catchment between 1980 and 2021 
     
-    write.table(final_glacier_area_catchment_hydrol_CH,"glacier_area_catchment_camels_hydrol_ch.csv",sep=";",quote=FALSE)
-    write.table(final_glacier_area_catchment_hydrol_CH_neighbours,"glacier_area_catchment_camels_hydrol_ch_neighbours.csv",sep=";",quote=FALSE)
+    write.table(final_glacier_area_catchment_hydrol_CH,"glacier_area_catchment_camels_hydrol_ch.csv",sep=";",quote=FALSE,fileEncoding="UTF-8")
+    write.table(final_glacier_area_catchment_hydrol_CH_neighbours,"glacier_area_catchment_camels_hydrol_ch_neighbours.csv",sep=";",quote=FALSE,fileEncoding="UTF-8")
     # header: annual glacier area (km2) evolution per catchment between 1980 and 2021 
     
     # volume km3 to m3, then times 850 kg/m3, then to mega tons
-    final_glacier_mass_catchment_hydrol_CH = final_glacier_volume_catchment_hydrol_CH*1e9*850
-    write.table(final_glacier_mass_catchment_hydrol_CH,"glacier_mass_catchment_camels_hydrol_ch.csv",sep=";",quote=FALSE)
+    
+    write.table(final_glacier_mass_catchment_hydrol_CH,"glacier_mass_catchment_camels_hydrol_ch.csv",sep=";",quote=FALSE,fileEncoding="UTF-8")
     # header: annual glacier mass (mega tons) evolution per catchment between 1980 and 2021 
   }
   
@@ -378,4 +381,4 @@ rownames(stat_attr)<-rownames(final_glacier_area_catchment_CH)
 
 # save as csv file
 # header: Glacier attributes about area (km2), volume (km3) and mass (mega tons) and area in neighbouring countries (km2) based on the Swiss glacier inventory (GLAMOS) and GI from Paul et al, 2020.
-write.table(stat_attr,"CAMELS_CH_glacier_attributes.csv",sep=";", quote=FALSE)  
+write.table(stat_attr,"CAMELS_CH_glacier_attributes.csv",sep=";", quote=FALSE,fileEncoding="UTF-8")  
