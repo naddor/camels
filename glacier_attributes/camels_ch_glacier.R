@@ -28,7 +28,7 @@ save_results = TRUE
 # Load data
 
 # load catchment shape files
-EZG_CH <- readOGR(dsn = "./EZG", layer = "CAMELS_CH_EZG_76")
+EZG_CH <- readOGR(dsn = "./EZG", layer = "CAMELS_CH_catchments")
 
 
 # load sgi-glacier files from 2016 and 1973
