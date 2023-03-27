@@ -7,16 +7,15 @@
 # jan.schwanbeck@giub.unibe.ch
 # ==============================================================================
 
-# install library sf and load it
+
 library(sf)
 
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 mainDir <- getwd()
-# make sure to have input files in the same folder as script
 
 
 # read catchment file and change coordinate system to 
-camels_catch <- st_read("EZG/CAMELS_CH_EZG_76.shp")
+camels_catch <- st_read("EZG/CAMELS_CH_catchments.shp")
 camels_catch <- st_transform(camels_catch, "EPSG:3035")
 
 # create boundary
@@ -343,11 +342,19 @@ setwd(mainDir)
 cat("# Land cover attributes as area percentages based on the CORINE land cover databases 2000 by the European Copernicus Land Monitoring Service.\n", file="clc_2000_perc.csv")
 write.table(perc_00, file = "clc_2000_perc.csv", append=TRUE, quote=FALSE,sep=";",fileEncoding="UTF-8")
 
-# create static attribute table and save it
+
+## create and save static attribute data
 setwd(mainDir)
 perc_00_static<-create_static_attribute(perc_00)
+
+# new order of columns
+perc_00_static_2<-cbind(rownames(perc_00_static),perc_00_static[,c(1,4,10,2,8,3,12,6,5,7,9,11,13)])
+colnames(perc_00_static_2)<-c("gauge_id",colnames(perc_00_static_2)[2:14])
+
+# save output of attribute file with dominant landcover
 cat("# Land cover attributes as area percentages based on the CORINE land cover databases 2000 by the European Copernicus Land Monitoring Service.\n", file="CAMELS_CH_landcover_attributes.csv")
-write.table(perc_00_static, file = "clc_2000_perc_static.csv", append=TRUE, quote=FALSE,sep=";",fileEncoding="UTF-8")
+write.table(perc_00_static_2, file = "CAMELS_CH_landcover_attributes.csv", append=TRUE,row.names=FALSE, quote=FALSE,sep=";",fileEncoding="UTF-8")
+
 
 ####################################################
 
