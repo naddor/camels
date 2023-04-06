@@ -11,7 +11,7 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 ##################################
 ## prepare lists and variables
 list_files_clc<-c("crop_perc", "dwood_perc", "ewood_perc", "grass_perc", "ice_perc","inwater_perc", "loose_rock_perc", "mix_wood_perc", "rock_perc", "shrub_perc", "urban_perc", "wetlands_perc","blank_perc")
-list_files_glacier<-c("glac_area_ch_[km2]","glac_vol_ch_[km3]","glac_mass_ch_[Mt]","glac_area_neighbours_[km2]")
+list_files_glacier<-c("glac_area_ch","glac_vol_ch","glac_mass_ch","glac_area_neighbours")
 list_parameter_name<-c(list_files_clc,list_files_glacier)
 
 # set up time sequence
@@ -171,7 +171,7 @@ for (k in 1:length(catch_names)){
   # change order of columns and add column names (attributes)
   colnames(data_catchment) <- list_parameter_name
   data_catchment_2<-cbind(rownames(data_catchment),data_catchment[,c(1,4,10,2,8,3,12,6,5,7,9,11,13,14,15,16,17)])
-  colnames(data_catchment_2)<-c("year",colnames(data_catchment_2)[2:17])
+  colnames(data_catchment_2)<-c("year",colnames(data_catchment_2)[2:18])
   # save as file
   file_name<-(paste0("CAMELS_CH_annual_data_",catch_ID,".csv"))
   first_row_text<-paste0("gauge_id=",catch_ID,", Land cover attributes as area percentages based on the CORINE land cover databases by the European Copernicus Land Monitoring Service: 1990, 2000, 2006, 2012 and 2018. The years inbetween were interpolated by linear regression. In 1990 only areas outside Switzerland were covered by clc_1990, therefore only catchments with more then 95% data in clc_1990 were calculated. glaciers source: Swiss Glacier Inventory 1973/2016 and Paul et al, 2020. glacier_mass = glacier_volume*850.")
