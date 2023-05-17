@@ -53,7 +53,7 @@ plot_map_catch_attr <- function(dat, c2p, n_classes = 6, col_scheme = 'RdYlBu', 
 
     if (color_bar) {
       nf <- layout(matrix(1:(n_panels * 2), layout_nrow * 2, layout_ncol),
-                    heights = rep(c(1, 0.22), times = layout_nrow), widths = 1)
+                   heights = rep(c(1, 0.22), times = layout_nrow), widths = 1)
       # layout.show(nf)
     } else {
       nf <- layout(matrix(1:n_panels, layout_nrow, layout_ncol), heights = 1, widths = 1)
@@ -93,11 +93,11 @@ plot_map_catch_attr <- function(dat, c2p, n_classes = 6, col_scheme = 'RdYlBu', 
     }
 
     plot_points_basins(dat[, c(1, v)], n_classes, col_scheme = my_col_scheme,
-                          col_rev = my_col_rev, color_bar, subplot_hist = my_subplot_hist,
-                          col_trans, b_round = my_b_round, text_legend = colnames(dat)[v],
-                          cex, pch, qual = my_qual, force_zero_center = my_force_zero_center,
-                          force_n_classes = my_force_n_classes, set_breaks = my_set_breaks,
-                          breaks = my_breaks, layout_on = layout_on, country = country)
+                       col_rev = my_col_rev, color_bar, subplot_hist = my_subplot_hist,
+                       col_trans, b_round = my_b_round, text_legend = colnames(dat)[v],
+                       cex, pch, qual = my_qual, force_zero_center = my_force_zero_center,
+                       force_n_classes = my_force_n_classes, set_breaks = my_set_breaks,
+                       breaks = my_breaks, layout_on = layout_on, country = country)
 
   }
 

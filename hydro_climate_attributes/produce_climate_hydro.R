@@ -148,7 +148,6 @@ for (i in seq_along(list_catch)) {
   } else if (Sys.getenv('CAMELS_COUNTRY') == 'CH') {
 
 
-
   }
 
   # Select sub-period over which indices will be computed

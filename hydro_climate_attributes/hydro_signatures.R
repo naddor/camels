@@ -241,8 +241,8 @@ comp_i_bf <- function(q, d, alpha, passes, tol) {
     q_dat <- data.frame(flow = q, day = as.numeric(format(d, '%d')),
                         month = as.numeric(format(d, '%m')),
                         year = format(d, '%Y'))
-    lf_dat <- createlfobj(q_dat, hyearstart = 10) # hyearstart, integer between 1 and 12, indicating
-                                                  # the start of the hydrological year, 10 for october
+    # hyearstart, integer between 1 and 12, indicating the start of the hydrological year, 10 for october
+    lf_dat <- createlfobj(q_dat, hyearstart = 10)
     bf_lfstat <- lf_dat$baseflow
 
     # Compute IBF

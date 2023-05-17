@@ -13,10 +13,7 @@ gauge_table <- read.table(file.path(Sys.getenv('CAMELS_DIR_DATA'), 'gauge_inform
 )
 
 colnames(gauge_table) <- c('huc_02', 'gage_id', 'gage_name', 'gage_lat', 'gage_lon',
-                           'area_usgs_km2') # I didn't manage to import the header from the original
-                                            # file because of spaces in "DRAINAGE AREA (KM^2)"
-
-#gauge_table<<-gauge_table[order(gauge_table$gage_id),] # Sort catchments by ID
+                           'area_usgs_km2')
 
 ### Load data for desired catchment into individual arrays (prec, temp, etc)
 
@@ -128,10 +125,6 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
   streamflow <- streamflow_table$Q * (0.3048^3)
   streamflow <- streamflow * 3600 * 24 * 1000 /
     (camels_topo$area_geospa_fabric[camels_name$gauge_id == id] * 1E6) # Convert m^3/sec to mm/day
-  #streamflow <- streamflow * 3600 * 24 * 1000 /
-  #  (gauge_table$area_usgs_km2[gauge_table$gage_id == id] * 1E6) # Convert m^3/sec to mm/day
-  #streamflow <- streamflow * 3600 * 24 * 1000 /
-  #  (camels_topo$area_gages2[camels_name$gauge_id == id] * 1E6) # Convert m^3/sec to mm/day
 
   # Import et and pet from sacramento output
   output_hydro_files <- system(paste0('ls ', file.path(Sys.getenv('CAMELS_DIR_DATA'), 'flow_timeseries',
@@ -253,10 +246,10 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
     }
   } else if (min(t_forcing) > min(t_input)) {
     stop(paste('Forcing data start on', min(t_forcing), 'so forcing for',
-                min(t_input), 'cannot be extracted.'))
+               min(t_input), 'cannot be extracted.'))
   } else if (max(t_forcing) < max(t_input)) {
     stop(paste('Forcing data end on', max(t_forcing), 'so forcing for',
-                max(t_input), 'cannot be extracted.'))
+               max(t_input), 'cannot be extracted.'))
   }
 
   # Streamflow: trim or add na using merge - # all.x adds NA when obs not available
