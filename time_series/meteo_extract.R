@@ -8,7 +8,7 @@
 ####### Time: 332 catchments: for 1 para with 2 years:  4 minutes
 ########################################################
 ######
-"rgdal_show_exportToProj4_warnings" = "none"
+options("rgdal_show_exportToProj4_warnings"="none")
 library(raster)
 library(rgdal)
 library(ncdf4)
@@ -43,8 +43,8 @@ for (j in 1:nrow(shp))
   id <- poly@data$ID12  ######write out ID
   print(id)
   e <- extent(poly)
-  my_date = c()
-  my_id = c()
+  my_date <- c()
+  my_id <- c()
   col.names <- c()
 
   for (k in 1:length(mylist))
@@ -53,7 +53,7 @@ for (j in 1:nrow(shp))
     Pfiles <- mylist[[k]]
     #print(Pfiles)
     #print (paraname)
-    my_vector = c()
+    my_vector <- c()
     ##print(my_vector)
 
     for (i in 1:length(Pfiles))
@@ -67,11 +67,11 @@ for (j in 1:nrow(shp))
       id2 <- rep(id, (length(Y_extr))) ####Repeat id
       T_extr <- t(Y_extr)
       date1 <- rownames(T_extr)
-      date2 = substr(date1, 2, 30)
+      date2 <- substr(date1, 2, 30)
       date3 <- as.character(as.Date(date2, "%Y.%m.%d"))  ####Date Format
       my_id <- c(my_id, id2)
       my_vector <- c(my_vector, T_extr)
-      my_date = c(my_date, date3) }
+      my_date <- c(my_date, date3) }
 
     ##write in data.frame
     ##print(k) ###for first run (list) write id and date

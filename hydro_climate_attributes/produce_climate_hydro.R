@@ -61,7 +61,7 @@ if (Sys.getenv('CAMELS_COUNTRY') == 'US') {
 
   # Set preferences
   hydro_year_cal <- 'oct'
-  tol_na <- ...
+  tol_na <- 0.05
   list_files <- system(paste('ls', Sys.getenv('CAMELS_DIR_DATA')), intern = TRUE)
   list_catch <- rapply(strsplit(list_files, '_'), function(x) x[1])
 
@@ -72,7 +72,7 @@ if (Sys.getenv('CAMELS_COUNTRY') == 'US') {
   per_all <- seq(per_start, per_end, by = 'day')
 
   # Load gauge coordinates
-  camels_topo <- ...
+  camels_topo <- read.table(file.path(Sys.getenv('CAMELS_DIR_DATA'), 'ch_gauges_coordinates.txt'), header = TRUE)
 
 } else {
   stop(paste('Country code unknown:', Sys.getenv('CAMELS_COUNTRY')))

@@ -8,7 +8,7 @@
 ###### How could this be done faster?????
 ########################################################
 ######
-"rgdal_show_exportToProj4_warnings" = "none"
+"rgdal_show_exportToProj4_warnings" <- "none"
 library(raster)
 library(rgdal)
 library(ncdf4)
@@ -24,7 +24,7 @@ path <- "./zappa_sim"
 Nfiles <- c(list.files(path, full.names = T, pattern = "asc$"))
 #######create lists for variable: "EI", "EPT" etc
 
-varlist = c()
+varlist <- c()
 for (i in 1:length(Nfiles)) {
   find1 <- which(strsplit(Nfiles[i], "")[[1]] == ".")
   var <- substr(Nfiles[i], find1[2] + 1, find1[3] - 1)
@@ -38,14 +38,14 @@ for (var in varlist2)
   print(var) ###EI
 
   ##dir.create(file.path(path, var), showWarnings = FALSE)
-  Mfiles = c()
+  Mfiles <- c()
   for (i in 1:length(Nfiles))
   {
     find1 <- which(strsplit(Nfiles[i], "")[[1]] == ".")
     varNeu <- substr(Nfiles[i], find1[2] + 1, find1[3] - 1)
     ##print(varNeu)
     if (varNeu == var)
-    { Mfiles = c(Mfiles, Nfiles[i]) }
+    { Mfiles <- c(Mfiles, Nfiles[i]) }
     ##print (Mfiles)
     ##mylist<-append(mylist,list(Mfiles))
   }
@@ -63,9 +63,9 @@ for (j in 1:nrow(shp))
   id <- poly@data$ID12  ######write out ID
   print(id)
   e <- extent(poly)
-  my_date = c()
-  my_id = c()
-  my_vector = c()
+  my_date <- c()
+  my_id <- c()
+  my_vector <- c()
   col.names <- c()
 
   for (k in 1:length(mylist))
@@ -83,7 +83,7 @@ for (j in 1:nrow(shp))
       Y_extr <- raster::extract(Y_crop, poly, weights = TRUE, fun = mean, na.rm = TRUE, progress = 'text')
       T_extr <- t(Y_extr)
       date1 <- rownames(T_extr)
-      date2 = substr(date1, 7, 14)
+      date2 <- substr(date1, 7, 14)
       my_date <- as.Date(date2, "%Y%m%d")
       id2 <- rep(id, (length(Y_extr))) }
     my_vector <- cbind(my_vector, T_extr)

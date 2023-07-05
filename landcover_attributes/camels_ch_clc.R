@@ -20,7 +20,7 @@ camels_catch <- st_transform(camels_catch, "EPSG:3035")
 
 # create boundary
 camels_boundary <- st_boundary(st_union(camels_catch))
-wkt = st_as_text(st_geometry(camels_boundary))
+wkt <- st_as_text(st_geometry(camels_boundary))
 
 ######################################################
 # functions
@@ -30,10 +30,7 @@ catchments_clc_clip <- function(camels_catch, shp_clc) {
   # extract clc data for each catchment
   df_all <- NULL
 
-
   for (i in 1:nrow(camels_catch)) {
-    df_i <- NULL
-    id_i <- NULL
     print(i)
     catch_i <- camels_catch[i,]
     clc_i <- st_intersection(shp_clc, catch_i)
@@ -210,7 +207,6 @@ reaggregate <- function(recl_catch) {
   clc_aggr <- NULL
 
   for (i in 2:(ncol(recl_catch) - 1)) {
-    clc_aggr_i <- NULL
     clc_aggr_i <- aggregate(recl_catch[, i] ~ camels_class, recl_catch, sum, na.rm = TRUE, na.action = NULL)
 
     clc_aggr_i <- data.frame(clc_aggr_i)
@@ -232,13 +228,11 @@ calculate_percentage <- function(reagg_catch) {
   # create dataframe and fill it with catchment area with the dimensions of clc_aggr
   catch_area <- st_area(camels_catch)
   nr <- nrow(reagg_catch)
-  df_sum <- NULL
 
   df_row <- as.data.frame(t(data.frame(row = catch_area)))
   df_sum <- df_row
 
   for (m in 1:(nr - 1)) {
-    df_row <- NULL
     df_row <- as.data.frame(t(data.frame(row = catch_area)))
     df_sum <- rbind(df_sum, df_row)
   }

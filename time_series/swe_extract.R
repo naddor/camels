@@ -72,7 +72,7 @@ for (j in 1:length(EZGlist)) {
   listID <- data.h1h2$ID_Short
   listarea <- data.h1h2$Area_NEW
   ######select columns of subezg
-  colnam = c()
+  colnam <- c()
   for (i in listID) { a <- (paste0("X", i)); colnam <- c(colnam, a) }
   data.sel <- as.matrix(data[, c(colnam)]); data.sel ###sonst vector, keine
 

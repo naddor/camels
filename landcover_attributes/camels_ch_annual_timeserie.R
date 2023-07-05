@@ -157,7 +157,7 @@ if (file.exists(subDir)) {
 }
 
 # prepare container for for output file
-data_catchment = data.frame(matrix(nrow = 41, ncol = length(list_parameter_name)))
+data_catchment <- data.frame(matrix(nrow = 41, ncol = length(list_parameter_name)))
 colnames(data_catchment) <- list_parameter_name
 rownames(data_catchment) <- years_all
 
