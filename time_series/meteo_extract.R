@@ -15,7 +15,7 @@ library(ncdf4)
 library(sp)
 
 ####set working directory 
-setwd("C:/A_Data/Camels/Scripting")
+setwd(Sys.getenv('CAMELS_DIR_DATA'))
 
 ###########################Input###################3
 #########Input: create list in list for netcdf files (in subfolders)
