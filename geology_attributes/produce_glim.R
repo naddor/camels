@@ -1,34 +1,26 @@
 rm(list = ls())
 
-require(raster)
-require("rgdal") # For readOGR
-require(RColorBrewer)
-require(maps)
-require(maptools)
-require(mapdata)  # Contains the hi-resolution points that mark out the countries
+library(dotenv)
+library(raster)
+library(rgdal)
+library(RColorBrewer)
+library(maps)
+library(maptools)
+library(mapdata)  # Contains the hi-resolution points that mark out the countries
 
-# Set paths
-hostname <- system('hostname', intern = TRUE)
-
-if (hostname == 'uncertainty.rap.ucar.edu' | substr(hostname, 1, 3) == 'vpn') {
-  source('/Volumes/d1/naddor/hc1_home/scripts/r_scripts/set_paths.R')  # Set all paths
-} else {
-  source('/home/naddor/scripts/r_scripts/set_paths.R')  # Set all paths
-}
-
-# Set country
-country <- 'cl'
+dir_data <- Sys.getenv('CAMELS_DIR_DATA')
+dir_results <- Sys.getenv('CAMELS_DIR_RESULTS')
+dir_plots <- Sys.getenv('CAMELS_DIR_PLOTS')
+dir_tmp <- Sys.getenv('CAMELS_DIR_TMP')
+country <- Sys.getenv('CAMELS_COUNTRY')
 
 # Load GLiM data previously clipped for the country of interest and saved in R format
-load(paste0('/d7/naddor/data/geol/limw_wgs84_', country, '.Rdata'))
+load(file.path(dir_data, paste0('limw_wgs84_', country, '.Rdata')))
 
-if (country == 'us') {
-
-  # Load catchment attributes
-  load_camels_data('2.0')
+if (country == 'US') {
 
   # Load shapefiles
-  load(file = '/home/naddor/data/shp_catch_wgs84.Rdata')
+  load(file = file.path(dir_data, 'shp_catch_wgs84.Rdata'))
 
   # Rename geol to a standard name
   limw_wgs84 <- limw_wgs84_us
@@ -38,10 +30,10 @@ if (country == 'us') {
   width_pdf <- 20
   height_pdf <- 16
 
-} else if (country == 'cl') {
+} else if (country == 'CL') {
 
   # Load shapefiles
-  shp_catch <- readShapePoly('/d7/naddor/data/camels_cl/catchments_chile_cag_v2.shp')
+  shp_catch <- readShapePoly(file.path(dir_data, 'catchments_chile_cag_v2.shp'))
   crs(shp_catch) # No crs...
   crs(shp_catch) <- "+proj=longlat +datum=WGS84"
 
@@ -60,27 +52,30 @@ if (country == 'us') {
 }
 
 # Define colors for GLiM
-table_glim_classes <- read.table(paste0(dir_data, 'GLiM/GLiM_classes_colors.txt'),
+table_glim_classes <- read.table(file.path('../utils', 'GLiM_classes_colors.txt'),
                                  sep = ';', header = TRUE)
 table_glim_classes$short_name <- as.factor(table_glim_classes$short_name)
 
-glim_classes <- data.frame(short_name = limw_wgs84@data$xx, order = seq_along(limw_wgs84@data$xx))
-glim_classes_col <- merge(glim_classes, table_glim_classes, sort = FALSE) # Add column with color
+glim_classes <- data.frame(short_name = limw_wgs84@data$xx,
+                           order = seq_along(limw_wgs84@data$xx))
+glim_classes_col <- merge(glim_classes, table_glim_classes,
+                          sort = FALSE) # Add column with color
 
-# Merge does not maintain order, so data must be sorted using the column "order" created for this purpose
+# Merge does not maintain order, so data must be sorted using the
+# column "order" created for this purpose
 glim_classes_col <- glim_classes_col[order(glim_classes_col$order),]
 
 # Plot a map with catchments
-pdf(paste0(dir_plots, 'camels/geol/glim_', country, '_overview.pdf', sep = ''),
+pdf(file.path(dir_plots, paste0('/glim_', country, '_overview.pdf', sep = '')),
     width = width_pdf,
     height = height_pdf)
 
 plot(limw_wgs84, col = as.character(glim_classes_col$R_col), border = NA)
 
-if (country == 'us') {
+if (country == 'US') {
   map('state', col = 'gray36', lwd = 1, add = TRUE)
   map('worldHires', 'USA', add = TRUE)
-} else if (country == 'cl') {
+} else if (country == 'CL') {
   map('worldHires', 'Chile', lwd = 1, col = 'gray36', add = TRUE)
   plot(shp_catch, add = TRUE, lwd = 0.5)
 }
@@ -98,17 +93,17 @@ glim_2nd_class <- array()
 glim_2nd_frac <- array()
 glim_carbonate_rocks_frac <- array()
 
-pdf(paste0(dir_plots, 'camels/geol/glim_', country, '_extraction.pdf', sep = ''),
+pdf(file.path(dir_plots, paste0('/glim_', country, '_extraction.pdf', sep = '')),
     width = width_pdf,
     height = height_pdf
 )
 
 plot(limw_wgs84, col = as.character(glim_classes_col$R_col), border = NA)
 
-if (country == 'us') {
+if (country == 'US') {
   map('state', col = 'black', lwd = 1, add = TRUE)
   map('worldHires', 'USA', add = TRUE)
-} else if (country == 'cl') {
+} else if (country == 'CL') {
   map('worldHires', 'Chile', add = TRUE)
 }
 
@@ -117,7 +112,7 @@ legend('bottomleft', col = as.character(table_glim_classes$R_col),
        ncol = 2, pch = 15, bty = 'n', cex = 0.7
 )
 
-for (e in 1:nrow(catch_topo)) {
+for (e in seq_len(nrow(catch_topo))) {
 
   catch_id <- catch_topo$gauge_id[e]
   print(paste(e, catch_id))
@@ -128,7 +123,7 @@ for (e in 1:nrow(catch_topo)) {
   inter_data <- data.frame(inter_data,
                            area = area(inter),
                            area_frac = area(inter) / sum(area(inter)),
-                           sort = 1:nrow(inter_data)
+                           sort = seq_len(nrow(inter_data))
   )
   inter_data <- merge(inter_data, table_glim_classes, by.x = 'xx', by.y = 'short_name') # Does not preserve row order
   inter_data <- inter_data[order(inter_data$sort),] # Re-sort data to match order in inter
@@ -136,10 +131,10 @@ for (e in 1:nrow(catch_topo)) {
   #plot(inter,col=as.character(inter_data$R_color),add=TRUE,lwd=0.1)
 
   # Compute error in area
-  if (country == 'us') {
+  if (country == 'US') {
     area_gf <- catch_topo[catch_topo$gage_id == catch_id, 'area_geospa_fabric']
     rel_area_error <- sum(inter_data$area) / 1E6 / area_gf - 1
-  } else if (country == 'cl') {
+  } else if (country == 'CL') {
     rel_area_error <- sum(inter_data$area) / 1E6 / catch_topo$area_km2[e] - 1
   }
 
@@ -195,10 +190,10 @@ catch_geol_glim <- data.frame(gauge_id = catch_topo$gauge_id, glim_1st_class, gl
                               glim_2nd_class, glim_2nd_frac, glim_carbonate_rocks_frac)
 
 # Save data to temp directory
-save(catch_geol_glim, file = paste0(dir_catch_attr_temp, 'catch_geol_glim_', country, '.Rdata'))
+save(catch_geol_glim, file = file.path(dir_tmp, paste0('catch_geol_glim_', country, '.Rdata')))
 
 write.table(catch_geol_glim,
-            file = paste0(dir_catch_attr, 'catch_geol_glim_', country, '.txt'),
+            file = file.path(dir_results, paste0('catch_geol_glim_', country, '.txt')),
             row.names = FALSE,
             quote = FALSE,
             sep = ';'

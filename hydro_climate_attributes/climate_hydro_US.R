@@ -1,6 +1,12 @@
+rm(list = ls())
+
+library(dotenv)
+
+dir_data <- Sys.getenv('CAMELS_DIR_DATA')
+
 ### Load catchment metadata to retrive catchment area and compute specific discharge
 
-gauge_table <- read.table(paste0(dir_basin_dataset, 'basin_metadata/gauge_information.txt'),
+gauge_table <- read.table(file.path(dir_data, 'gauge_information.txt'),
                           sep = '\t',
                           quote = '',
                           header = FALSE,
@@ -9,20 +15,19 @@ gauge_table <- read.table(paste0(dir_basin_dataset, 'basin_metadata/gauge_inform
 )
 
 colnames(gauge_table) <- c('huc_02', 'gage_id', 'gage_name', 'gage_lat', 'gage_lon',
-                           'area_usgs_km2') # I didn't manage to import the header from the original
-                                            # file because of spaces in "DRAINAGE AREA (KM^2)"
-
-#gauge_table<<-gauge_table[order(gauge_table$gage_id),] # Sort catchments by ID
+                           'area_usgs_km2')
 
 ### Load data for desired catchment into individual arrays (prec, temp, etc)
 
-get_catchment_data_arrays <- function(huc, id, date_start, date_end, forcing_dataset = 'daymet',
+get_catchment_data_arrays <- function(huc, id, date_start, date_end,
+                                      forcing_dataset = 'daymet',
                                       ens_method = 'mean') {
 
   # ARGUMENTS
   # ens_method: should the SAC runs be averaged ('mean') or should only the best one be used ('best')?
 
-  catch_data <- get_catchment_data_dataframe(huc, id, date_start, date_end, forcing_dataset, ens_method)
+  catch_data <- get_catchment_data_dataframe(huc, id, date_start, date_end,
+                                             forcing_dataset, ens_method)
 
   prec <<- catch_data$prec
   temp <<- (catch_data$temp_min + catch_data$temp_max) / 2
@@ -36,21 +41,27 @@ get_catchment_data_arrays <- function(huc, id, date_start, date_end, forcing_dat
 # Return data for desired catchment into a single dataframe (with columns prec, temp, etc)
 # and save day as global array
 
-get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_end = '20080930',
-                                         forcing_dataset = 'daymet', ens_method = 'mean') {
+get_catchment_data_dataframe <- function(huc, id, date_start = '19801001',
+                                         date_end = '20080930',
+                                         forcing_dataset = 'daymet',
+                                         ens_method = 'mean') {
+
+  dir_data <- Sys.getenv('CAMELS_DIR_DATA')
 
   # Import forcing data
   if (forcing_dataset == 'daymet') {
 
-    forcing_table <- read.table(paste0(dir_basin_dataset, 'basin_mean_forcing/daymet/', huc, '/',
-                                       id, '_lump_cida_forcing_leap.txt'), skip = 3, header = TRUE)
+    forcing_table <- read.table(file.path(dir_data, 'daymet', huc,
+                                          paste0(id, '_lump_cida_forcing_leap.txt')),
+                                skip = 3,
+                                header = TRUE)
 
   } else if (forcing_dataset == 'maurer') {
 
     if (id %in% c('02108000', '05120500', '07067000', '09492400')) { # Header is incomplete in original files
 
-      forcing_table <- read.table(paste0(dir_basin_dataset, 'basin_mean_forcing/maurer/', huc, '/',
-                                         id, '_lump_maurer_forcing_leap.txt'),
+      forcing_table <- read.table(file.path(dir_data, 'maurer', huc,
+                                            paste0(id, '_lump_maurer_forcing_leap.txt')),
                                   skip = 4,
                                   header = FALSE
       )
@@ -60,11 +71,10 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
 
     } else {
 
-      forcing_table <- read.table(paste0(dir_basin_dataset, 'basin_mean_forcing/maurer/', huc, '/',
-                                         id, '_lump_maurer_forcing_leap.txt'),
+      forcing_table <- read.table(file.path(dir_data, 'maurer', huc,
+                                            paste0(id, '_lump_maurer_forcing_leap.txt')),
                                   skip = 3,
                                   header = TRUE)
-
     }
 
   } else {
@@ -91,8 +101,8 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
   # Import streamflow data
   # A ->  streaflow value is certified by USGS as the actual daily mean flow
   # A:e -> streamflow value is certified by the USGS as the actual ESTIMATED daily mean flow
-  streamflow_table <- read.table(paste0(dir_basin_dataset, 'usgs_streamflow/', huc, '/', id,
-                                        '_streamflow_qc.txt'),
+  streamflow_table <- read.table(file.path(dir_data, 'usgs_streamflow', huc,
+                                           paste0(id, '_streamflow_qc.txt')),
                                  header = FALSE,
                                  col.names = c('ID', 'Y', 'M', 'D', 'Q', 'QC_FLAG'),
                                  fill = TRUE # fill=TRUE handles cases QC_FLAG is missing
@@ -123,14 +133,10 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
   streamflow <- streamflow_table$Q * (0.3048^3)
   streamflow <- streamflow * 3600 * 24 * 1000 /
     (camels_topo$area_geospa_fabric[camels_name$gauge_id == id] * 1E6) # Convert m^3/sec to mm/day
-  #streamflow <- streamflow * 3600 * 24 * 1000 /
-  #  (gauge_table$area_usgs_km2[gauge_table$gage_id == id] * 1E6) # Convert m^3/sec to mm/day
-  #streamflow <- streamflow * 3600 * 24 * 1000 /
-  #  (camels_topo$area_gages2[camels_name$gauge_id == id] * 1E6) # Convert m^3/sec to mm/day
 
   # Import et and pet from sacramento output
-  output_hydro_files <- system(paste0('ls ', dir_basin_dataset, 'model_output/flow_timeseries/',
-                                      forcing_dataset, '/', huc, '/', id, '_??_model_output.txt'),
+  output_hydro_files <- system(paste0('ls ', file.path(dir_data, 'flow_timeseries',
+                                                       forcing_dataset, huc, paste0(id, '_??_model_output.txt'))),
                                intern = TRUE
   )
 
@@ -248,10 +254,10 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
     }
   } else if (min(t_forcing) > min(t_input)) {
     stop(paste('Forcing data start on', min(t_forcing), 'so forcing for',
-                min(t_input), 'cannot be extracted.'))
+               min(t_input), 'cannot be extracted.'))
   } else if (max(t_forcing) < max(t_input)) {
     stop(paste('Forcing data end on', max(t_forcing), 'so forcing for',
-                max(t_input), 'cannot be extracted.'))
+               max(t_input), 'cannot be extracted.'))
   }
 
   # Streamflow: trim or add na using merge - # all.x adds NA when obs not available
@@ -268,9 +274,6 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
                            by.x = 't_input', by.y = 't_hydro_sim', all.x = TRUE)
   q_sim_sac_input <- merge(data.frame(t_input), data.frame(q_sim_sac, t_hydro_sim),
                            by.x = 't_input', by.y = 't_hydro_sim', all.x = TRUE)
-
-  # Check consistence of q_obs and sac_q_obs
-  # if(any(abs(q_obs_sac-streamflow)>1,na.rm=TRUE)){stop('q_obs_sac and streamflow do not match')}
 
   # Create table with all data
   data.frame(date = format(t_input, '%Y%m%d'),

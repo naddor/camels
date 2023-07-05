@@ -1,9 +1,19 @@
-plot_map_catch_attr <- function(dat, c2p, n_classes = 6, col_scheme = 'RdYlBu', col_rev = FALSE,
-                                color_bar = TRUE, subplot_hist = TRUE, col_trans = 0, b_round = 2,
-                                text_legend = '', cex = 1, pch = 16, qual = FALSE,
-                                force_zero_center = FALSE, force_n_classes = FALSE,
-                                set_breaks = FALSE, breaks = NA, layout_on = FALSE,
-                                layout_ncol = 3, layout_nrow = 1) {
+rm(list = ls())
+
+library(dotenv)
+library(RColorBrewer)
+library(maps)
+library(TeachingDemos) # For subplot
+
+
+plot_map_catch_attr <- function(dat, c2p, n_classes = 6, col_scheme = 'RdYlBu',
+                                col_rev = FALSE, color_bar = TRUE, subplot_hist = TRUE,
+                                col_trans = 0, b_round = 2, text_legend = '', cex = 1,
+                                pch = 16, qual = FALSE, force_zero_center = FALSE,
+                                force_n_classes = FALSE, set_breaks = FALSE,
+                                breaks = NA, layout_on = FALSE, layout_ncol = 3,
+                                layout_nrow = 1,
+                                country = Sys.getenv('CAMELS_COUNTRY')) {
 
   # Arguments:
   # dat: data as data.frame
@@ -43,16 +53,14 @@ plot_map_catch_attr <- function(dat, c2p, n_classes = 6, col_scheme = 'RdYlBu', 
     n_panels <- layout_ncol * layout_nrow
 
     if (color_bar) {
-      nf <- layout(matrix(1:(n_panels * 2), layout_nrow * 2, layout_ncol),
-                    heights = rep(c(1, 0.22), times = layout_nrow), widths = 1)
-      # layout.show(nf)
+      layout(matrix(1:(n_panels * 2), layout_nrow * 2, layout_ncol),
+             heights = rep(c(1, 0.22), times = layout_nrow), widths = 1)
     } else {
-      nf <- layout(matrix(1:n_panels, layout_nrow, layout_ncol), heights = 1, widths = 1)
-      # layout.show(nf)
+      layout(matrix(1:n_panels, layout_nrow, layout_ncol), heights = 1, widths = 1)
     }
   }
 
-  # Loop through colums and plot corresponding maps
+  # Loop through colums and plot corresponding plots
   for (v in c2p) {
 
     # Set plotting details
@@ -83,12 +91,12 @@ plot_map_catch_attr <- function(dat, c2p, n_classes = 6, col_scheme = 'RdYlBu', 
       my_breaks <- breaks
     }
 
-    plot_points_us_basins(dat[, c(1, v)], n_classes, col_scheme = my_col_scheme,
-                          col_rev = my_col_rev, color_bar, subplot_hist = my_subplot_hist,
-                          col_trans, b_round = my_b_round, text_legend = colnames(dat)[v],
-                          cex, pch, qual = my_qual, force_zero_center = my_force_zero_center,
-                          force_n_classes = my_force_n_classes, set_breaks = my_set_breaks,
-                          breaks = my_breaks, layout_on = layout_on)
+    plot_points_basins(dat[, c(1, v)], n_classes, col_scheme = my_col_scheme,
+                       col_rev = my_col_rev, color_bar, subplot_hist = my_subplot_hist,
+                       col_trans, b_round = my_b_round, text_legend = colnames(dat)[v],
+                       cex, pch, qual = my_qual, force_zero_center = my_force_zero_center,
+                       force_n_classes = my_force_n_classes, set_breaks = my_set_breaks,
+                       breaks = my_breaks, layout_on = layout_on, country = country)
 
   }
 
@@ -96,11 +104,12 @@ plot_map_catch_attr <- function(dat, c2p, n_classes = 6, col_scheme = 'RdYlBu', 
 
 }
 
-plot_points_us_basins <- function(dat, n_classes = 6, col_scheme = 'RdYlBu', col_rev = FALSE,
-                                  color_bar = TRUE, subplot_hist = TRUE, col_trans = 0, b_round = 2,
-                                  text_legend = '', cex = 1, pch = 16, qual = FALSE,
-                                  force_zero_center = FALSE, force_n_classes = FALSE,
-                                  set_breaks = FALSE, breaks = NA, layout_on = FALSE) {
+plot_points_basins <- function(dat, n_classes = 6, col_scheme = 'RdYlBu', col_rev = FALSE,
+                               color_bar = TRUE, subplot_hist = TRUE, col_trans = 0, b_round = 2,
+                               text_legend = '', cex = 1, pch = 16, qual = FALSE,
+                               force_zero_center = FALSE, force_n_classes = FALSE,
+                               set_breaks = FALSE, breaks = NA, layout_on = FALSE,
+                               country = Sys.getenv('CAMELS_COUNTRY')) {
 
   # Purpose: merge coordinates with variables to plot based on camels_topo
 
@@ -117,7 +126,7 @@ plot_points_us_basins <- function(dat, n_classes = 6, col_scheme = 'RdYlBu', col
 
   # Load coordinates
   if (!exists('camels_topo')) {
-    load(paste0(dir_catch_attr, 'camels_topo.Rdata'))
+    load(file.path(Sys.getenv('CAMELS_DIR_RESULTS'), 'camels_topo.Rdata'))
   }
 
   dat2plot <- merge(dat, camels_topo, by = 'gauge_id')
@@ -127,17 +136,17 @@ plot_points_us_basins <- function(dat, n_classes = 6, col_scheme = 'RdYlBu', col
   plot_points(x = dat2plot$gauge_lon, y = dat2plot$gauge_lat, z = dat2plot[, 2], n_classes,
               col_scheme, col_rev, color_bar, subplot_hist, col_trans, b_round, text_legend,
               cex, pch, qual, force_zero_center, force_n_classes, set_breaks, breaks,
-              layout_on = layout_on)
+              layout_on = layout_on, country = country)
 
 }
 
-### Plot points on us map
-
+### Plot points on map
 plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev = FALSE,
                         color_bar = TRUE, subplot_hist = TRUE, col_trans = 0, b_round = 2,
                         text_legend = '', cex = 1, pch = 16, qual = FALSE,
                         force_zero_center = FALSE, force_n_classes = FALSE,
-                        set_breaks = FALSE, breaks = NA, country = 'us', layout_on = FALSE) {
+                        set_breaks = FALSE, breaks = NA, layout_on = FALSE,
+                        country = Sys.getenv('CAMELS_COUNTRY')) {
 
   # Purpose: plot map for chosen country and add a dot per catchment
 
@@ -151,10 +160,6 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
   # col_trans: use transparent colors (0 is opaque 255 is transparent)
   # b_round: number of decimals to keep for the break values
   # text_legend: text to add above the color bar
-
-  require(RColorBrewer)
-  require(maps)
-  require(TeachingDemos) # For subplot
 
   if (length(x) != length(y) | length(x) != length(z)) {
     stop('x,y and z must have the same length')
@@ -177,14 +182,14 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
   par(mar = c(0, 0, 0, 0), cex = 1)
 
   # Plot background map
-  if (country == 'us') {
+  if (country == 'US') {
     map("state", col = 'gray60', fill = TRUE, border = NA, xlim = c(-125, -67), ylim = c(25, 50))
     map("state", col = 'gray89', add = TRUE, lwd = 1, resolution = 0)
     map("state", col = 'black', add = TRUE, lwd = 0.8, resolution = 0, interior = FALSE)
 
     coor_legend <- c(-122, 25.5)
     coor_hist <- c(69, 28.5)
-  } else if (country == 'br') {
+  } else if (country == 'BR') {
     map('world', xlim = c(-75, -35), ylim = c(-35, 10))
     map('world', col = 'gray89', fill = TRUE, add = TRUE)
 
@@ -199,14 +204,15 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
     if (set_breaks) {
       b <- breaks
       # Show breaks
-      message(paste0('set_breaks=TRUE, using these values'))
+      message('set_breaks=TRUE, using these values')
 
     } else {
 
-      b <- unique(round(quantile(z,
-                                 seq(1 / n_classes, 1 - 1 / n_classes, length.out = n_classes - 1),
-                                 na.rm = TRUE),
-                        b_round)
+      b <- unique(round(
+        quantile(z,
+                 seq(1 / n_classes, 1 - 1 / n_classes, length.out = n_classes - 1),
+                 na.rm = TRUE),
+        b_round)
       )
 
       if (b[1] == 0 & length(b) > 1) { b <- b[-1] }
@@ -215,10 +221,11 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
 
         z_temp <- z[z > b[1]] # Only works if first class is the most populated one (e.g. no snow).
         # TODO: use which.max(table(findInterval))
-        b_temp <- unique(round(quantile(z_temp,
-                                        seq(1 / n_classes, 1 - 1 / n_classes, length.out = n_classes - 2),
-                                        na.rm = TRUE),
-                               b_round)
+        b_temp <- unique(round(
+          quantile(z_temp,
+                   seq(1 / n_classes, 1 - 1 / n_classes, length.out = n_classes - 2),
+                   na.rm = TRUE),
+          b_round)
         )
         b <- c(b[1], b_temp)
 
@@ -229,7 +236,7 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
       }
 
       # Show breaks
-      message(paste0('set_breaks=FALSE, using these values for breaks'))
+      message('set_breaks=FALSE, using these values for breaks')
     }
 
     print(b)
@@ -258,11 +265,12 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
       }
 
       col_table <- data.frame(categ = c('djf', 'mam', 'jja', 'son'),
-                              R_color = c('lightskyblue', 'darkolivegreen2', 'darkgoldenrod1', 'sienna2'))
+                              R_color = c('lightskyblue', 'darkolivegreen2',
+                                          'darkgoldenrod1', 'sienna2'))
 
     } else if (col_scheme == 'glim') {
 
-      file_glim_colors <- paste0(dir_data, 'GLiM/GLiM_classes_colors.txt')
+      file_glim_colors <- file.path('', 'GLiM_classes_colors.txt')
 
       if (!file.exists(file_glim_colors)) {
         stop(paste('File with glim colors is missing:', file_glim_colors))
@@ -386,14 +394,11 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
              pch = pch, ncol = 2, bty = 'n')
     }
   }
-
-  # Reset par
-  # par(mar=c(0,0,0,0),cex=1)
-
 }
 
 # Function to plot horizontal or vertical color bar
-plot.legend.na <- function(col, breaks, vert = TRUE, density = NULL, angle = 45, slwd = par("lwd"), cex.leg = 1) {
+plot.legend.na <- function(col, breaks, vert = TRUE, density = NULL, angle = 45,
+                           slwd = par("lwd"), cex.leg = 1) {
 
   nbrk <- length(breaks)
   ncol <- length(col)
@@ -437,9 +442,7 @@ plot.legend.na <- function(col, breaks, vert = TRUE, density = NULL, angle = 45,
     }
 
     axis(1, lwd = 0, at = seq(2, ncol), labels = breaks, las = 1, tick = FALSE, cex.axis = cex.leg)
-
   }
 
   box()
-
 }

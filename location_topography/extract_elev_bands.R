@@ -1,7 +1,13 @@
+rm(list = ls())
+
+library(dotenv)
+
 extract_elev_bands <- function(id, huc, keep_absolute_area = FALSE) {
 
+  dir_data <- Sys.getenv('CAMELS_DIR_DATA')
+
   # Locate file in which elevations bands are stored
-  file_elev <- paste0(dir_basin_dataset, 'elev_bands_forcing/daymet/', huc, '/', id, '.list')
+  file_elev <- file.path(dir_data, paste0('daymet/', huc, '/', id, '.list'))
 
   # Get number of elevation zones from first line
   n_elevation_zones <- as.numeric(read.table(file_elev, header = FALSE, nrows = 1))
@@ -23,7 +29,8 @@ extract_elev_bands <- function(id, huc, keep_absolute_area = FALSE) {
   # Create table in FUSE format
   elev_tab_format <- data.frame(array(dim = c(n_elevation_zones, 4)))
 
-  colnames(elev_tab_format) <- c('indice_elevation_zone', 'mid_point_elevation', 'area_fraction', 'area_m2')
+  colnames(elev_tab_format) <- c('indice_elevation_zone', 'mid_point_elevation',
+                                 'area_fraction', 'area_m2')
 
   for (z in 1:n_elevation_zones) {
     # First colum: indice of elevation zone

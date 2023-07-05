@@ -9,9 +9,10 @@
 # returned as a data.frame. Alternative formulations can be added. The objective is to assess the
 # sensitvity of the results to the formulation of the hydrological signatures.
 
-### Load functions
+library(here)
 
-source(paste0(dir_r_scripts, 'camels/time/time_tools.R')) # For month2sea and get_hydro_year
+### Load functions
+source(here::here('utils/time_tools.R')) # For month2sea and get_hydro_year
 
 ### Wrapper and parameter values to compute standard camels hydrological signatures
 
@@ -32,14 +33,14 @@ source(paste0(dir_r_scripts, 'camels/time/time_tools.R')) # For month2sea and ge
 #                  the mean daily flow)
 # zero_q_freq    - Frequency of days with Q = 0 mm/day
 
-compute_hydro_signatures_camels <- function(q, p, d, tol, hy_cal) {
+compute_hydro_signatures_camels <- function(q, p, d, tol, hydro_year_cal) {
 
   # Input variables:
   # q: discharge time series
   # p: precipitation time series
   # d: date array of class "Date"
   # tol: tolerated fraction of NA values in time series
-  # hy_cal: hydrological year calendar: oct_us_gb OR sep_br OR apr_cl
+  # hydro_year_cal: hydrological year calendar: oct OR sep OR apr
 
   qxx <- compute_qXX(q, thres = c(0.05, 0.95), tol)
   hf_stats <- compute_hf_freq_dur(q, d, tol)
@@ -48,11 +49,11 @@ compute_hydro_signatures_camels <- function(q, p, d, tol, hy_cal) {
 
   data.frame(q_mean = compute_q_mean(q, d, tol)$q_mean_yea,
              runoff_ratio = comp_r_qp(q, p, tol),
-             stream_elas = comp_e_qp(q, p, d, tol, hy_cal)$e_qp_sanka,
+             stream_elas = comp_e_qp(q, p, d, tol, hydro_year_cal)$e_qp_sanka,
              slope_fdc = comp_s_fdc(q, tol)$sfdc_sawicz_2011,
              baseflow_index_landson = bfi$i_bf_landson,
              baseflow_index_lfstat = bfi$i_bf_lfstat,
-             hfd_mean = compute_hfd_mean_sd(q, d, tol, hy_cal)$hfd_mean,
+             hfd_mean = compute_hfd_mean_sd(q, d, tol, hydro_year_cal)$hfd_mean,
              Q5 = qxx$q95,
              Q95 = qxx$q5,
              high_q_freq = hf_stats$hf_freq,
@@ -114,16 +115,20 @@ comp_r_qp <- function(q, p, tol) {
 # stream_elas - Streamflow precipitation elasticity (sensitivity of streamflow to changes in
 # precipitation at the annual time scale)
 
-comp_e_qp <- function(q, p, d, tol, hy_cal) {
+comp_e_qp <- function(q, p, d, tol, hydro_year_cal) {
 
-  if (length(q) != length(d) | length(p) != length(d)) { stop('P, Q and D must have the same length') }
+  if (length(q) != length(d) | length(p) != length(d)) {
+    stop('P, Q and D must have the same length')
+  }
 
   # Time steps for which precipitation and streamflow data are available
   avail_data <- find_avail_data_df(data.frame(q, p), tol)
 
-  hy <- get_hydro_year(d, hy_cal)
+  hy <- get_hydro_year(d, hydro_year_cal)
 
-  if (any(table(hy) < 365)) { warning('Not all the hydrological years are complete') }
+  if (any(table(hy) < 365)) {
+    warning('Not all the hydrological years are complete')
+  }
 
   mp_tot <- mean(p[avail_data], na.rm = TRUE) # Mean long-term precip
   mq_tot <- mean(q[avail_data], na.rm = TRUE) # Mean long-term discharge
@@ -226,7 +231,7 @@ comp_i_bf <- function(q, d, alpha, passes, tol) {
 
   } else {
 
-    require(lfstat)
+    library(lfstat)
     # Ladson et al. (2013). “A standard approach to baseflow separation using the Lyne and
     # Hollick filter.” Australian Journal of Water Resources 17(1): 173-180.
     # https://shorturl.at/hixzA
@@ -240,8 +245,8 @@ comp_i_bf <- function(q, d, alpha, passes, tol) {
     q_dat <- data.frame(flow = q, day = as.numeric(format(d, '%d')),
                         month = as.numeric(format(d, '%m')),
                         year = format(d, '%Y'))
-    lf_dat <- createlfobj(q_dat, hyearstart = 10) # hyearstart, integer between 1 and 12, indicating
-                                                  # the start of the hydrological year, 10 for october
+    # hyearstart, integer between 1 and 12, indicating the start of the hydrological year, 10 for october
+    lf_dat <- createlfobj(q_dat, hyearstart = 10)
     bf_lfstat <- lf_dat$baseflow
 
     # Compute IBF
@@ -273,7 +278,7 @@ comp_i_bf <- function(q, d, alpha, passes, tol) {
 # to the end of the calendar year, as it leads to both large (e.g. 360) and small (e.g. 10) HFDs
 # depending on the year, which biases the mean HFD.
 
-compute_hfd_mean_sd <- function(q, d, tol, hy_cal) {
+compute_hfd_mean_sd <- function(q, d, tol, hydro_year_cal) {
 
   # Check data availibility
   avail_data <- find_avail_data_array(q, tol)
@@ -285,7 +290,7 @@ compute_hfd_mean_sd <- function(q, d, tol, hy_cal) {
   } else {
 
     # Determine hydrological year for given calendar
-    hy_stats <- get_hydro_year_stats(d, hy_cal)
+    hy_stats <- get_hydro_year_stats(d, hydro_year_cal)
 
     # Discharge for each hydrological year
     hy_q <- split(q[avail_data], hy_stats$hy[avail_data])
