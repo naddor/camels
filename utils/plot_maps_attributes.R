@@ -6,12 +6,13 @@ library(maps)
 library(TeachingDemos) # For subplot
 
 
-plot_map_catch_attr <- function(dat, c2p, n_classes = 6, col_scheme = 'RdYlBu', col_rev = FALSE,
-                                color_bar = TRUE, subplot_hist = TRUE, col_trans = 0, b_round = 2,
-                                text_legend = '', cex = 1, pch = 16, qual = FALSE,
-                                force_zero_center = FALSE, force_n_classes = FALSE,
-                                set_breaks = FALSE, breaks = NA, layout_on = FALSE,
-                                layout_ncol = 3, layout_nrow = 1,
+plot_map_catch_attr <- function(dat, c2p, n_classes = 6, col_scheme = 'RdYlBu',
+                                col_rev = FALSE, color_bar = TRUE, subplot_hist = TRUE,
+                                col_trans = 0, b_round = 2, text_legend = '', cex = 1,
+                                pch = 16, qual = FALSE, force_zero_center = FALSE,
+                                force_n_classes = FALSE, set_breaks = FALSE,
+                                breaks = NA, layout_on = FALSE, layout_ncol = 3,
+                                layout_nrow = 1,
                                 country = Sys.getenv('CAMELS_COUNTRY')) {
 
   # Arguments:
@@ -52,12 +53,10 @@ plot_map_catch_attr <- function(dat, c2p, n_classes = 6, col_scheme = 'RdYlBu', 
     n_panels <- layout_ncol * layout_nrow
 
     if (color_bar) {
-      nf <- layout(matrix(1:(n_panels * 2), layout_nrow * 2, layout_ncol),
-                   heights = rep(c(1, 0.22), times = layout_nrow), widths = 1)
-      # layout.show(nf)
+      layout(matrix(1:(n_panels * 2), layout_nrow * 2, layout_ncol),
+             heights = rep(c(1, 0.22), times = layout_nrow), widths = 1)
     } else {
-      nf <- layout(matrix(1:n_panels, layout_nrow, layout_ncol), heights = 1, widths = 1)
-      # layout.show(nf)
+      layout(matrix(1:n_panels, layout_nrow, layout_ncol), heights = 1, widths = 1)
     }
   }
 
@@ -209,10 +208,11 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
 
     } else {
 
-      b <- unique(round(quantile(z,
-                                 seq(1 / n_classes, 1 - 1 / n_classes, length.out = n_classes - 1),
-                                 na.rm = TRUE),
-                        b_round)
+      b <- unique(round(
+        quantile(z,
+                 seq(1 / n_classes, 1 - 1 / n_classes, length.out = n_classes - 1),
+                 na.rm = TRUE),
+        b_round)
       )
 
       if (b[1] == 0 & length(b) > 1) { b <- b[-1] }
@@ -221,10 +221,11 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
 
         z_temp <- z[z > b[1]] # Only works if first class is the most populated one (e.g. no snow).
         # TODO: use which.max(table(findInterval))
-        b_temp <- unique(round(quantile(z_temp,
-                                        seq(1 / n_classes, 1 - 1 / n_classes, length.out = n_classes - 2),
-                                        na.rm = TRUE),
-                               b_round)
+        b_temp <- unique(round(
+          quantile(z_temp,
+                   seq(1 / n_classes, 1 - 1 / n_classes, length.out = n_classes - 2),
+                   na.rm = TRUE),
+          b_round)
         )
         b <- c(b[1], b_temp)
 
@@ -264,7 +265,8 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
       }
 
       col_table <- data.frame(categ = c('djf', 'mam', 'jja', 'son'),
-                              R_color = c('lightskyblue', 'darkolivegreen2', 'darkgoldenrod1', 'sienna2'))
+                              R_color = c('lightskyblue', 'darkolivegreen2',
+                                          'darkgoldenrod1', 'sienna2'))
 
     } else if (col_scheme == 'glim') {
 
@@ -392,14 +394,11 @@ plot_points <- function(x, y, z, n_classes = 6, col_scheme = 'RdYlBu', col_rev =
              pch = pch, ncol = 2, bty = 'n')
     }
   }
-
-  # Reset par
-  # par(mar=c(0,0,0,0),cex=1)
-
 }
 
 # Function to plot horizontal or vertical color bar
-plot.legend.na <- function(col, breaks, vert = TRUE, density = NULL, angle = 45, slwd = par("lwd"), cex.leg = 1) {
+plot.legend.na <- function(col, breaks, vert = TRUE, density = NULL, angle = 45,
+                           slwd = par("lwd"), cex.leg = 1) {
 
   nbrk <- length(breaks)
   ncol <- length(col)
@@ -443,9 +442,7 @@ plot.legend.na <- function(col, breaks, vert = TRUE, density = NULL, angle = 45,
     }
 
     axis(1, lwd = 0, at = seq(2, ncol), labels = breaks, las = 1, tick = FALSE, cex.axis = cex.leg)
-
   }
 
   box()
-
 }

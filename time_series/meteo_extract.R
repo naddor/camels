@@ -8,7 +8,7 @@
 ####### Time: 332 catchments: for 1 para with 2 years:  4 minutes
 ########################################################
 ######
-options("rgdal_show_exportToProj4_warnings"="none")
+options("rgdal_show_exportToProj4_warnings" = "none")
 library(raster)
 library(rgdal)
 library(ncdf4)
@@ -24,7 +24,6 @@ mylist <- list()
 for (var in Varlist)
 {
   path <- paste("./Meteo_2022", var, sep = "/")
-  ##print (path)
   ##list of netcdf files for each parameter
   Pfiles3 <- c(list.files(path, full.names = T, pattern = "nc$"))
   mylist <- append(mylist, list(Pfiles3)) #list in list 
@@ -33,7 +32,6 @@ for (var in Varlist)
 
 ####Input Catchment
 shp <- shapefile("./shapefile/CAMELS_EZG_V5.shp")
-##shp <- shapefile("./shapefile/CAMELS_EZG_V3.shp")  
 
 ###########Loop through all subcatchment in the shapefile
 for (j in 1:nrow(shp))
@@ -51,19 +49,16 @@ for (j in 1:nrow(shp))
   {
     paraname <- Varlist[k]
     Pfiles <- mylist[[k]]
-    #print(Pfiles)
-    #print (paraname)
     my_vector <- c()
-    ##print(my_vector)
 
     for (i in 1:length(Pfiles))
     {
       my_brick <- brick((Pfiles[i]), varname = paraname)
       ###### Crop the raster
       Y_crop <- crop(my_brick, extent(poly), snap = "out")
-      ##Y_mask <- mask(Y_crop, poly)
 
-      Y_extr <- raster::extract(Y_crop, poly, weights = TRUE, fun = mean, na.rm = TRUE, progress = 'text')
+      Y_extr <- raster::extract(Y_crop, poly, weights = TRUE, fun = mean,
+                                na.rm = TRUE, progress = 'text')
       id2 <- rep(id, (length(Y_extr))) ####Repeat id
       T_extr <- t(Y_extr)
       date1 <- rownames(T_extr)
@@ -74,7 +69,7 @@ for (j in 1:nrow(shp))
       my_date <- c(my_date, date3) }
 
     ##write in data.frame
-    ##print(k) ###for first run (list) write id and date
+    ###for first run (list) write id and date
     if (k == 1) {
       df <- data.frame(my_id, my_date, my_vector)
       col.names <- c(col.names, paraname)
@@ -83,7 +78,7 @@ for (j in 1:nrow(shp))
       df <- cbind(df, my_vector)
     }
   }
-  ##print(col.names)
+
   colnames(df) <- c("ID12", "Date", col.names)
   my_filename <- paste("new_", id, ".csv", sep = "")
   my_file <- paste("Meteo_2022/output", my_filename, sep = "/")

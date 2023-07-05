@@ -9,12 +9,10 @@ library(maptools)
 library(mapdata)  # Contains the hi-resolution points that mark out the countries
 
 # Load GLiM data previously clipped for the country of interest and saved in R format
-load(file.path(Sys.getenv('CAMELS_DIR_DATA'), paste0('limw_wgs84_', Sys.getenv('CAMELS_COUNTRY'), '.Rdata')))
+load(file.path(Sys.getenv('CAMELS_DIR_DATA'),
+               paste0('limw_wgs84_', Sys.getenv('CAMELS_COUNTRY'), '.Rdata')))
 
 if (Sys.getenv('CAMELS_COUNTRY') == 'US') {
-
-  # Load catchment attributes
-  # load_camels_data('2.0') -> broken
 
   # Load shapefiles
   load(file = file.path(Sys.getenv('CAMELS_DIR_DATA'), 'shp_catch_wgs84.Rdata'))
@@ -30,7 +28,8 @@ if (Sys.getenv('CAMELS_COUNTRY') == 'US') {
 } else if (Sys.getenv('CAMELS_COUNTRY') == 'CL') {
 
   # Load shapefiles
-  shp_catch <- readShapePoly(file.path(Sys.getenv('CAMELS_DIR_DATA'), 'catchments_chile_cag_v2.shp'))
+  shp_catch <- readShapePoly(file.path(Sys.getenv('CAMELS_DIR_DATA'),
+                                        'catchments_chile_cag_v2.shp'))
   crs(shp_catch) # No crs...
   crs(shp_catch) <- "+proj=longlat +datum=WGS84"
 
@@ -53,14 +52,18 @@ table_glim_classes <- read.table(file.path('../utils', 'GLiM_classes_colors.txt'
                                  sep = ';', header = TRUE)
 table_glim_classes$short_name <- as.factor(table_glim_classes$short_name)
 
-glim_classes <- data.frame(short_name = limw_wgs84@data$xx, order = seq_along(limw_wgs84@data$xx))
-glim_classes_col <- merge(glim_classes, table_glim_classes, sort = FALSE) # Add column with color
+glim_classes <- data.frame(short_name = limw_wgs84@data$xx,
+                           order = seq_along(limw_wgs84@data$xx))
+glim_classes_col <- merge(glim_classes, table_glim_classes,
+                          sort = FALSE) # Add column with color
 
-# Merge does not maintain order, so data must be sorted using the column "order" created for this purpose
+# Merge does not maintain order, so data must be sorted using the
+# column "order" created for this purpose
 glim_classes_col <- glim_classes_col[order(glim_classes_col$order),]
 
 # Plot a map with catchments
-pdf(file.path(Sys.getenv('CAMELS_DIR_PLOTS'), paste0('/glim_', Sys.getenv('CAMELS_COUNTRY'), '_overview.pdf', sep = '')),
+pdf(file.path(Sys.getenv('CAMELS_DIR_PLOTS'),
+              paste0('/glim_', Sys.getenv('CAMELS_COUNTRY'), '_overview.pdf', sep = '')),
     width = width_pdf,
     height = height_pdf)
 
@@ -87,7 +90,8 @@ glim_2nd_class <- array()
 glim_2nd_frac <- array()
 glim_carbonate_rocks_frac <- array()
 
-pdf(file.path(Sys.getenv('CAMELS_DIR_PLOTS'), paste0('/glim_', Sys.getenv('CAMELS_COUNTRY'), '_extraction.pdf', sep = '')),
+pdf(file.path(Sys.getenv('CAMELS_DIR_PLOTS'),
+              paste0('/glim_', Sys.getenv('CAMELS_COUNTRY'), '_extraction.pdf', sep = '')),
     width = width_pdf,
     height = height_pdf
 )
@@ -184,10 +188,12 @@ catch_geol_glim <- data.frame(gauge_id = catch_topo$gauge_id, glim_1st_class, gl
                               glim_2nd_class, glim_2nd_frac, glim_carbonate_rocks_frac)
 
 # Save data to temp directory
-save(catch_geol_glim, file = file.path(Sys.getenv('CAMELS_DIR_TMP'), paste0('catch_geol_glim_', Sys.getenv('CAMELS_COUNTRY'), '.Rdata')))
+save(catch_geol_glim, file = file.path(Sys.getenv('CAMELS_DIR_TMP'),
+                                       paste0('catch_geol_glim_', Sys.getenv('CAMELS_COUNTRY'), '.Rdata')))
 
 write.table(catch_geol_glim,
-            file = file.path(Sys.getenv('CAMELS_DIR_RESULTS'), paste0('catch_geol_glim_', Sys.getenv('CAMELS_COUNTRY'), '.txt')),
+            file = file.path(Sys.getenv('CAMELS_DIR_RESULTS'),
+                             paste0('catch_geol_glim_', Sys.getenv('CAMELS_COUNTRY'), '.txt')),
             row.names = FALSE,
             quote = FALSE,
             sep = ';'

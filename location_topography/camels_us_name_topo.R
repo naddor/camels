@@ -24,10 +24,6 @@ if (readLines(file_usgs_data, 1) ==
 
 gauge_table$gauge_name <- str_trim(gauge_table$gauge_name, 'left') # Remove leading white spaces
 
-# Attempt to separate catchment name from state
-# catchment_name<-rapply(strsplit(as.character(gauge_table$gauge_name),','),function(x) x[1])
-# catchment_state<-rapply(strsplit(as.character(gauge_table$gauge_name),','),function(x) x[2])
-
 # Load basin physical characteristics - produced by Andy
 file_catchment_table <- file.path(Sys.getenv('CAMELS_DIR_DATA'), 'basin_physical_characteristics.txt')
 catchment_table <- read.table(file_catchment_table, header = TRUE,

@@ -14,9 +14,8 @@ library(rgdal)
 library(ncdf4)
 library(sp)
 
-####set working directory 
-wd <- "C:/A_Data/Camels/Scripting"
-setwd(wd)
+####set working directory
+setwd(Sys.getenv('CAMELS_DIR_DATA'))
 
 ###########################Input###################3
 path <- "./zappa_sim"
@@ -31,31 +30,26 @@ for (i in 1:length(Nfiles)) {
   varlist <- c(varlist, var)
 }
 varlist2 <- unique(varlist); print(varlist2)
-##varlist2<-("EI")
+
 mylist <- list()
 for (var in varlist2)
 {
-  print(var) ###EI
+  print(var)
 
-  ##dir.create(file.path(path, var), showWarnings = FALSE)
   Mfiles <- c()
   for (i in 1:length(Nfiles))
   {
     find1 <- which(strsplit(Nfiles[i], "")[[1]] == ".")
     varNeu <- substr(Nfiles[i], find1[2] + 1, find1[3] - 1)
-    ##print(varNeu)
-    if (varNeu == var)
-    { Mfiles <- c(Mfiles, Nfiles[i]) }
-    ##print (Mfiles)
-    ##mylist<-append(mylist,list(Mfiles))
+    if (varNeu == var) {
+      Mfiles <- c(Mfiles, Nfiles[i])
+    }
   }
-  ##file.copy(Mfiles, file.path(path, var))
   mylist <- append(mylist, list(Mfiles))
-} ##########
+}
 
 ####Input Catchment
 shp <- shapefile("./shapefile/CAMELS_EZG_4.shp")
-##shp <- shapefile("./shapefile/CAMELS_EZG_V5_klein.shp")
 for (j in 1:nrow(shp))
 {
   poly <- shp[j,]
@@ -77,10 +71,10 @@ for (j in 1:nrow(shp))
       s <- stack(Pfiles)
       b <- brick(s)
       raster::crs(b) <- "EPSG:21781" ##Define drs
-      b_pr <- projectRaster(b, crs = "EPSG:2056"); ##print (crs(b_pr))#Reproject
+      b_pr <- projectRaster(b, crs = "EPSG:2056"); #Reproject
       Y_crop <- crop(b_pr, extent(poly), snap = "out")
-      ##plot(Y_crop)
-      Y_extr <- raster::extract(Y_crop, poly, weights = TRUE, fun = mean, na.rm = TRUE, progress = 'text')
+      Y_extr <- raster::extract(Y_crop, poly, weights = TRUE, fun = mean,
+                                na.rm = TRUE, progress = 'text')
       T_extr <- t(Y_extr)
       date1 <- rownames(T_extr)
       date2 <- substr(date1, 7, 14)

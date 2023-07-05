@@ -49,16 +49,19 @@ glaciers_gi_2003$sgi.id <- glaciers_gi_2003$CAMELS_ID  # rename glacier id label
 
 
 # load glacier masses and areas from sgi
-df_glacier_sgi_volumes <- data.frame(read.table("volume_evolution_single.dat", header = TRUE, skip = 1))
+df_glacier_sgi_volumes <- data.frame(read.table("volume_evolution_single.dat",
+                                                header = TRUE, skip = 1))
 colnames(df_glacier_sgi_volumes) <- c(1980:2021)
 
-df_glacier_sgi_areas <- data.frame(read.table("area_evolution_single.dat", header = TRUE, skip = 1))
+df_glacier_sgi_areas <- data.frame(read.table("area_evolution_single.dat",
+                                              header = TRUE, skip = 1))
 colnames(df_glacier_sgi_areas) <- c(1980:2021)
 
 glacier_names_sgi <- rownames(df_glacier_sgi_volumes)  # get names of glaciers of sgi table
 
 # load glacier areas from gi
-df_glacier_gi_areas <- data.frame(read.table("area_evolution_single_gi.dat", header = TRUE, skip = 1))
+df_glacier_gi_areas <- data.frame(read.table("area_evolution_single_gi.dat",
+                                             header = TRUE, skip = 1))
 glacier_names_gi <- df_glacier_gi_areas[, 1]  # get names of glaciers of gi table
 rownames(df_glacier_gi_areas) <- glacier_names_gi  # rearrange table
 df_glacier_gi_areas <- df_glacier_gi_areas[, -1]
@@ -80,13 +83,11 @@ if (optional_nonnested_hydrol_CH_analysis == TRUE) {
   coverage_hydrol_CH_ID <- c(2613, 2217, 3033, 6011, 2617, 2078, 2210, 2349, 2620, 2485)
   EZG_coverage_hydrol_CH <- EZG_CH[EZG_CH$gauge_id %in% coverage_hydrol_CH_ID,]
 
-
   df_EZG_hydrol_CH <- data.frame(EZG_coverage_hydrol_CH)
 
   # plot
   plot(EZG_coverage_hydrol_CH)
   lines(glaciers, col = "blue")
-
 }
 
 # ==============================================================================
@@ -108,7 +109,6 @@ catchments_glaciers_clip <- function(shp_basin, shp_glacier, area_scaling) {
       }else {
         EZG_glacier_clip <- rbind(EZG_glacier_clip, intrsct)
       }
-
     }
     next
   }
@@ -122,9 +122,6 @@ catchments_glaciers_clip <- function(shp_basin, shp_glacier, area_scaling) {
   # 2016 data
   if (is.element("area_km2", names(data_EZG_glacier_clip))) {
     glacier_area <- data_EZG_glacier_clip$area_km2
-    # 1976 data
-    #}else if(is.element("Shape_Area.1", names(data_EZG_glacier_clip))){
-    #  glacier_area = (data_EZG_glacier_clip$Shape_Area.1/area_scaling)
   }else {
     print("Invalid field names in input data.")
     break
@@ -133,42 +130,50 @@ catchments_glaciers_clip <- function(shp_basin, shp_glacier, area_scaling) {
   # add area fraction of glacier coverage fraction to respective catchment-clip
   data_EZG_glacier_clip$glacier_frac_area <- data_EZG_glacier_clip$area_clip / glacier_area
 
-  # rename and extract relevant columns
-  #if (is.element("area_km2", names(data_EZG_glacier_clip))){
-  #  data_EZG_glacier_clip = data_EZG_glacier_clip[, c("gauge_id", "sgi.id", "area_km2","area_clip", "glacier_frac_area")]
-  #}else{
-  #  print("Invalid field names in input data.")
-  #  break
-  #}
-
   # return
   data_EZG_glacier_clip
 }
 
 
 # clip shape files
-data_EZG_glacier_sgi_2016_clip <- catchments_glaciers_clip(EZG_CH, glaciers_sgi_2016, 1000000)
-data_EZG_glacier_sgi_1973_clip <- catchments_glaciers_clip(EZG_CH, glaciers_sgi_1973, 1000000)
-data_EZG_glacier_gi_2015_clip <- catchments_glaciers_clip(EZG_CH, glaciers_gi_2015, 1000000)
-data_EZG_glacier_gi_2003_clip <- catchments_glaciers_clip(EZG_CH, glaciers_gi_2003, 1000000)
+data_EZG_glacier_sgi_2016_clip <- catchments_glaciers_clip(
+  EZG_CH, glaciers_sgi_2016, 1000000)
+data_EZG_glacier_sgi_1973_clip <- catchments_glaciers_clip(
+  EZG_CH, glaciers_sgi_1973, 1000000)
+data_EZG_glacier_gi_2015_clip <- catchments_glaciers_clip(
+  EZG_CH, glaciers_gi_2015, 1000000)
+data_EZG_glacier_gi_2003_clip <- catchments_glaciers_clip(
+  EZG_CH, glaciers_gi_2003, 1000000)
 
 if (optional_nonnested_hydrol_CH_analysis == TRUE) {
-  data_EZG_glacier_sgi_2016_hydrol_CH_clip <- catchments_glaciers_clip(EZG_coverage_hydrol_CH, glaciers_sgi_2016, 1000000)
-  data_EZG_glacier_sgi_1973_hydrol_CH_clip <- catchments_glaciers_clip(EZG_coverage_hydrol_CH, glaciers_sgi_1973, 1000000)
-  data_EZG_glacier_gi_2015_hydrol_CH_clip <- catchments_glaciers_clip(EZG_coverage_hydrol_CH, glaciers_gi_2015, 1000000)
-  data_EZG_glacier_gi_2003_hydrol_CH_clip <- catchments_glaciers_clip(EZG_coverage_hydrol_CH, glaciers_gi_2003, 1000000)
+  data_EZG_glacier_sgi_2016_hydrol_CH_clip <- catchments_glaciers_clip(
+    EZG_coverage_hydrol_CH, glaciers_sgi_2016, 1000000)
+  data_EZG_glacier_sgi_1973_hydrol_CH_clip <- catchments_glaciers_clip(
+    EZG_coverage_hydrol_CH, glaciers_sgi_1973, 1000000)
+  data_EZG_glacier_gi_2015_hydrol_CH_clip <- catchments_glaciers_clip(
+    EZG_coverage_hydrol_CH, glaciers_gi_2015, 1000000)
+  data_EZG_glacier_gi_2003_hydrol_CH_clip <- catchments_glaciers_clip(
+    EZG_coverage_hydrol_CH, glaciers_gi_2003, 1000000)
 }
 
 if (save_results == TRUE) {
-  save(data_EZG_glacier_sgi_2016_clip, file = "data_EZG_glacier_sgi_2016_clip.Rda")
-  save(data_EZG_glacier_sgi_1973_clip, file = "data_EZG_glacier_sgi_1973_clip.Rda")
-  save(data_EZG_glacier_gi_2015_clip, file = "data_EZG_glacier_gi_2015_clip.Rda")
-  save(data_EZG_glacier_gi_2003_clip, file = "data_EZG_glacier_gi_2003_clip.Rda")
+  save(data_EZG_glacier_sgi_2016_clip,
+       file = "data_EZG_glacier_sgi_2016_clip.Rda")
+  save(data_EZG_glacier_sgi_1973_clip,
+       file = "data_EZG_glacier_sgi_1973_clip.Rda")
+  save(data_EZG_glacier_gi_2015_clip,
+       file = "data_EZG_glacier_gi_2015_clip.Rda")
+  save(data_EZG_glacier_gi_2003_clip,
+       file = "data_EZG_glacier_gi_2003_clip.Rda")
   if (optional_nonnested_hydrol_CH_analysis == TRUE) {
-    save(data_EZG_glacier_sgi_2016_hydrol_CH_clip, file = "data_EZG_glacier_sgi_2016_hydrol_CH_clip.Rda")
-    save(data_EZG_glacier_sgi_1973_hydrol_CH_clip, file = "data_EZG_glacier_sgi_1973_hydrol_CH_clip.Rda")
-    save(data_EZG_glacier_gi_2015_hydrol_CH_clip, file = "data_EZG_glacier_gi_2015_hydrol_CH_clip.Rda")
-    save(data_EZG_glacier_gi_2003_hydrol_CH_clip, file = "data_EZG_glacier_gi_2003_hydrol_CH_clip.Rda")
+    save(data_EZG_glacier_sgi_2016_hydrol_CH_clip,
+         file = "data_EZG_glacier_sgi_2016_hydrol_CH_clip.Rda")
+    save(data_EZG_glacier_sgi_1973_hydrol_CH_clip,
+         file = "data_EZG_glacier_sgi_1973_hydrol_CH_clip.Rda")
+    save(data_EZG_glacier_gi_2015_hydrol_CH_clip,
+         file = "data_EZG_glacier_gi_2015_hydrol_CH_clip.Rda")
+    save(data_EZG_glacier_gi_2003_hydrol_CH_clip,
+         file = "data_EZG_glacier_gi_2003_hydrol_CH_clip.Rda")
   }
 }
 
@@ -265,22 +270,39 @@ aggregate_glacier_features <- function(data, df_EZG, glacier_volumes, glacier_ar
   }
 
   # return
-  return(list("volume" = glacier_volume_catchment, "area" = glacier_area_catchment, "lost_glacier_parts" = lost_glacier_parts))
+  return(list("volume" = glacier_volume_catchment, "area" = glacier_area_catchment,
+              "lost_glacier_parts" = lost_glacier_parts))
 
 }
 
 
 # aggregate glacier data for catchments
-catchment_glacier_sgi_2016 <- aggregate_glacier_features(data_EZG_glacier_sgi_2016_clip, df_EZG, df_glacier_sgi_volumes, df_glacier_sgi_areas, glacier_names_sgi)
-catchment_glacier_sgi_1973 <- aggregate_glacier_features(data_EZG_glacier_sgi_1973_clip, df_EZG, df_glacier_sgi_volumes, df_glacier_sgi_areas, glacier_names_sgi)
-catchment_glacier_gi_2015 <- aggregate_glacier_features(data_EZG_glacier_gi_2015_clip, df_EZG, NULL, df_glacier_gi_areas, glacier_names_gi)
-catchment_glacier_gi_2003 <- aggregate_glacier_features(data_EZG_glacier_gi_2003_clip, df_EZG, NULL, df_glacier_gi_areas, glacier_names_gi)
+catchment_glacier_sgi_2016 <- aggregate_glacier_features(
+  data_EZG_glacier_sgi_2016_clip, df_EZG, df_glacier_sgi_volumes,
+  df_glacier_sgi_areas, glacier_names_sgi)
+catchment_glacier_sgi_1973 <- aggregate_glacier_features(
+  data_EZG_glacier_sgi_1973_clip, df_EZG, df_glacier_sgi_volumes,
+  df_glacier_sgi_areas, glacier_names_sgi)
+catchment_glacier_gi_2015 <- aggregate_glacier_features(
+  data_EZG_glacier_gi_2015_clip, df_EZG, NULL,
+  df_glacier_gi_areas, glacier_names_gi)
+catchment_glacier_gi_2003 <- aggregate_glacier_features(
+  data_EZG_glacier_gi_2003_clip, df_EZG, NULL,
+  df_glacier_gi_areas, glacier_names_gi)
 
 if (optional_nonnested_hydrol_CH_analysis == TRUE) {
-  catchment_hydrol_CH_glacier2016 <- aggregate_glacier_features(data_EZG_glacier_sgi_2016_hydrol_CH_clip, df_EZG_hydrol_CH, df_glacier_sgi_volumes, df_glacier_sgi_areas)
-  catchment_hydrol_CH_glacier1973 <- aggregate_glacier_features(data_EZG_glacier_sgi_1973_hydrol_CH_clip, df_EZG_hydrol_CH, df_glacier_sgi_volumes, df_glacier_sgi_areas)
-  catchment_hydrol_CH_glacier2015 <- aggregate_glacier_features(data_EZG_glacier_gi_2015_hydrol_CH_clip, df_EZG_hydrol_CH, NULL, df_glacier_areas_gi)
-  catchment_hydrol_CH_glacier2003 <- aggregate_glacier_features(data_EZG_glacier_gi_2003_hydrol_CH_clip, df_EZG_hydrol_CH, NULL, df_glacier_areas_gi)
+  catchment_hydrol_CH_glacier2016 <- aggregate_glacier_features(
+    data_EZG_glacier_sgi_2016_hydrol_CH_clip, df_EZG_hydrol_CH,
+    df_glacier_sgi_volumes, df_glacier_sgi_areas)
+  catchment_hydrol_CH_glacier1973 <- aggregate_glacier_features(
+    data_EZG_glacier_sgi_1973_hydrol_CH_clip, df_EZG_hydrol_CH,
+    df_glacier_sgi_volumes, df_glacier_sgi_areas)
+  catchment_hydrol_CH_glacier2015 <- aggregate_glacier_features(
+    data_EZG_glacier_gi_2015_hydrol_CH_clip, df_EZG_hydrol_CH,
+    NULL, df_glacier_areas_gi)
+  catchment_hydrol_CH_glacier2003 <- aggregate_glacier_features(
+    data_EZG_glacier_gi_2003_hydrol_CH_clip, df_EZG_hydrol_CH,
+    NULL, df_glacier_areas_gi)
 }
 
 
@@ -310,18 +332,24 @@ replace_expiring_glaciers <- function(ts_old, ts_new) {
 
 }
 
-final_glacier_volume_catchment_CH <- replace_expiring_glaciers(catchment_glacier_sgi_1973$volume, catchment_glacier_sgi_2016$volume)
+final_glacier_volume_catchment_CH <- replace_expiring_glaciers(
+  catchment_glacier_sgi_1973$volume, catchment_glacier_sgi_2016$volume)
 # volume km3 to m3, then times 850 kg/m3, then to mega tons
 final_glacier_mass_catchment_CH <- final_glacier_volume_catchment_CH * 850
-final_glacier_area_catchment_CH <- replace_expiring_glaciers(catchment_glacier_sgi_1973$area, catchment_glacier_sgi_2016$area)
-final_glacier_area_catchment_CH_neighbours <- replace_expiring_glaciers(catchment_glacier_gi_2003$area, catchment_glacier_gi_2015$area)
+final_glacier_area_catchment_CH <- replace_expiring_glaciers(
+  catchment_glacier_sgi_1973$area, catchment_glacier_sgi_2016$area)
+final_glacier_area_catchment_CH_neighbours <- replace_expiring_glaciers(
+  catchment_glacier_gi_2003$area, catchment_glacier_gi_2015$area)
 
 
 if (optional_nonnested_hydrol_CH_analysis == TRUE) {
-  final_glacier_volume_catchment_hydrol_CH <- replace_expiring_glaciers(catchment_hydrol_CH_glacier1973$volume, catchment_hydrol_CH_glacier2016$volume)
+  final_glacier_volume_catchment_hydrol_CH <- replace_expiring_glaciers(
+    catchment_hydrol_CH_glacier1973$volume, catchment_hydrol_CH_glacier2016$volume)
   final_glacier_mass_catchment_hydrol_CH <- final_glacier_volume_catchment_hydrol_CH * 1e9 * 850
-  final_glacier_area_catchment_hydrol_CH <- replace_expiring_glaciers(catchment_hydrol_CH_glacier1973$area, catchment_hydrol_CH_glacier2016$area)
-  final_glacier_area_catchment_hydrol_CH_neighbours <- replace_expiring_glaciers(catchment_hydrol_CH_glacier2003$area, catchment_hydrol_CH_glacier2015$area)
+  final_glacier_area_catchment_hydrol_CH <- replace_expiring_glaciers(
+    catchment_hydrol_CH_glacier1973$area, catchment_hydrol_CH_glacier2016$area)
+  final_glacier_area_catchment_hydrol_CH_neighbours <- replace_expiring_glaciers(
+    catchment_hydrol_CH_glacier2003$area, catchment_hydrol_CH_glacier2015$area)
 }
 
 
@@ -329,29 +357,45 @@ if (optional_nonnested_hydrol_CH_analysis == TRUE) {
 # SAVE matrices
 
 if (save_results == TRUE) {
-  write.table(final_glacier_volume_catchment_CH, "glacier_volume_catchment_camels_ch.csv", sep = ";", quote = FALSE, fileEncoding = "UTF-8")
+  write.table(final_glacier_volume_catchment_CH,
+              "glacier_volume_catchment_camels_ch.csv",
+              sep = ";", quote = FALSE, fileEncoding = "UTF-8")
   # header: annual glacier volume (km3) evolution per catchment between 1980 and 2021 
 
-  write.table(final_glacier_area_catchment_CH, "glacier_area_catchment_camels_ch.csv", sep = ";", quote = FALSE, fileEncoding = "UTF-8")
-  write.table(final_glacier_area_catchment_CH_neighbours, "glacier_area_catchment_camels_ch_neighbours.csv", sep = ";", quote = FALSE, fileEncoding = "UTF-8")
+  write.table(final_glacier_area_catchment_CH,
+              "glacier_area_catchment_camels_ch.csv",
+              sep = ";", quote = FALSE, fileEncoding = "UTF-8")
+  write.table(final_glacier_area_catchment_CH_neighbours,
+              "glacier_area_catchment_camels_ch_neighbours.csv",
+              sep = ";", quote = FALSE, fileEncoding = "UTF-8")
   # header: annual glacier area (km2) evolution per catchment between 1980 and 2021 
 
 
-  write.table(final_glacier_mass_catchment_CH, "glacier_mass_catchment_camels_ch.csv", sep = ";", quote = FALSE, fileEncoding = "UTF-8")
+  write.table(final_glacier_mass_catchment_CH,
+              "glacier_mass_catchment_camels_ch.csv",
+              sep = ";", quote = FALSE, fileEncoding = "UTF-8")
   # header: annual glacier mass (mega tons) evolution per catchment between 1980 and 2021 
 
 
   if (optional_nonnested_hydrol_CH_analysis == TRUE) {
-    write.table(final_glacier_volume_catchment_hydrol_CH, "glacier_volume_catchment_camels_hydrol_ch.csv", sep = ";", quote = FALSE, fileEncoding = "UTF-8")
+    write.table(final_glacier_volume_catchment_hydrol_CH,
+                "glacier_volume_catchment_camels_hydrol_ch.csv",
+                sep = ";", quote = FALSE, fileEncoding = "UTF-8")
     # header: annual glacier volume (km3) evolution per catchment between 1980 and 2021 
 
-    write.table(final_glacier_area_catchment_hydrol_CH, "glacier_area_catchment_camels_hydrol_ch.csv", sep = ";", quote = FALSE, fileEncoding = "UTF-8")
-    write.table(final_glacier_area_catchment_hydrol_CH_neighbours, "glacier_area_catchment_camels_hydrol_ch_neighbours.csv", sep = ";", quote = FALSE, fileEncoding = "UTF-8")
+    write.table(final_glacier_area_catchment_hydrol_CH,
+                "glacier_area_catchment_camels_hydrol_ch.csv",
+                sep = ";", quote = FALSE, fileEncoding = "UTF-8")
+    write.table(final_glacier_area_catchment_hydrol_CH_neighbours,
+                "glacier_area_catchment_camels_hydrol_ch_neighbours.csv",
+                sep = ";", quote = FALSE, fileEncoding = "UTF-8")
     # header: annual glacier area (km2) evolution per catchment between 1980 and 2021 
 
     # volume km3 to m3, then times 850 kg/m3, then to mega tons
 
-    write.table(final_glacier_mass_catchment_hydrol_CH, "glacier_mass_catchment_camels_hydrol_ch.csv", sep = ";", quote = FALSE, fileEncoding = "UTF-8")
+    write.table(final_glacier_mass_catchment_hydrol_CH,
+                "glacier_mass_catchment_camels_hydrol_ch.csv",
+                sep = ";", quote = FALSE, fileEncoding = "UTF-8")
     # header: annual glacier mass (mega tons) evolution per catchment between 1980 and 2021 
   }
 
@@ -374,5 +418,8 @@ colnames(stat_attr)[1:4] <- c("glac_area", "glac_vol", "glac_mass", "glac_area_n
 rownames(stat_attr) <- rownames(final_glacier_area_catchment_CH)
 
 # save as csv file
-# header: Glacier attributes about area (km2), volume (km3) and mass (mega tons) and area in neighbouring countries (km2) based on the Swiss glacier inventory (GLAMOS) and GI from Paul et al, 2020.
-write.table(stat_attr, "CAMELS_CH_glacier_attributes.csv", sep = ";", quote = FALSE, fileEncoding = "UTF-8")
+# header: Glacier attributes about area (km2), volume (km3) and mass (mega tons) and
+# area in neighbouring countries (km2) based on the Swiss glacier inventory (GLAMOS)
+# and GI from Paul et al, 2020.
+write.table(stat_attr, "CAMELS_CH_glacier_attributes.csv", sep = ";",
+            quote = FALSE, fileEncoding = "UTF-8")

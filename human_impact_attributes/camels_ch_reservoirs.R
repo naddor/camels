@@ -20,11 +20,7 @@ library(rgeos)
 library(sp)
 library(rgdal)
 
-### list environmental variables
-# Sys.getenv()
 
-### use individual variables
-# setwd(Sys.getenv('CAMELS_DIR_DATA'))
 ###===============================###===============================###
 ### (1) Read in catchment shapes and reservoir information
 ###===============================###===============================###
@@ -42,6 +38,7 @@ reservoirs <- spTransform(reservoirs, crs(catch))
 plot(reservoirs, add = TRUE, col = 'blue')
 reservoirs@data
 length(reservoirs)
+
 ###===============================###===============================###
 ### (2) compute human influence characteristics
 ###===============================###===============================###
@@ -151,5 +148,3 @@ df_reservoirs <- data.frame('gauge_id' = catch@data$ID_BAFU, 'num_reservoir' = n
 ### write to file, use semicolon for separation
 setwd(Sys.getenv('CAMELS_DIR_RESULTS'))
 write.table(file = 'CAMELS_CH_humaninfluence_attributes.txt', df_reservoirs, sep = ';')
-
-

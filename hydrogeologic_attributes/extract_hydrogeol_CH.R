@@ -77,11 +77,6 @@ dir.create('Hydrogeology')
 library(sf)
 library(dplyr)
 
-### list environmental variables
-# Sys.getenv()
-
-### use individual variables
-# setwd(Sys.getenv('CAMELS_DIR_DATA'))
 ###===============================###===============================###
 ### (1) Read in catchment shapes
 ###===============================###===============================###
@@ -91,10 +86,9 @@ catch <- st_read('CAMELS_CH_EZG_76.shp')
 
 #Plot catchments' overview
 plot(st_geometry(catch))
-#plot(catch)
+
 #Look at data attached
 head(catch)
-#head(catch@data)
 
 ### generate mask of all catchments
 catch.mask <- st_union(catch)
@@ -148,126 +142,6 @@ hydrogeo.CH <- hydrogeo.CH %>%
 #Check data visually
 plot(hydrogeo.CH)
 
-#  Define function to clip hydrogeological map over CAMELS catchments
-#catchments_clip <- function (catch, hydrogeo_map){
-# extract hydrogeo data for each catchment
-#  df_all <- NULL
-
-#  for(i in 1:nrow(catch)){
-#    df_i <- NULL
-#    id_i <- NULL
-#    print(i)
-#    catch_i <- catch[i,]
-
-#    hg_i<-try(st_intersection(hydrogeo_map,catch_i ) )
-# check if the catchment catch_i result any clipping, if not fill with "NA". if yes, aggregate clipping result
-#    if(nrow(hg_i)==0){
-#      hg_agg[1:nrow(hg_agg),2]<-NaN
-#    }else{
-#      hg_agg <- aggregate(st_area(hg_i) ~ H2_ID, FUN = sum, data = hg_i, na.rm = TRUE)
-#    } 
-
-# build dataframe
-#    df_i <- data.frame(hg_agg)
-
-#insert catchment ID
-#    id_i <- catch$gauge_id[i]
-#    colnames(df_i) <- c("H2_ID",id_i)
-
-#    if (i==1) {
-#      df_all <- df_i
-#    } else {df_all <- merge.data.frame(df_all,df_i, all.x=TRUE, all.y=TRUE) }
-
-#  }
-
-#  df_all
-#}
-
-# Define fuction to reclassify data
-#reclass_table <- function (hydrogeo_table){
-# insert extra column for new classes
-#  reclass_table<-cbind(data.frame("camels_class"=c(rep("na",nrow(hydrogeo_table)))),hydrogeo_table)
-## loop for new class
-#  for(i in 1:nrow(hydrogeo_table)){
-#    class_i <- reclass_table$H2_ID[i]
-
-#    if (class_i==0) {
-#      reclass_table$camels_class[i]<-"hygeol_null_perc"
-#    }
-#    if (class_i==1) {
-#      reclass_table$camels_class[i]<-"hygeol_unconsol_coarse_perc"
-#    }
-#    if (class_i==2) {
-#      reclass_table$camels_class[i]<-"hygeol_unconsol_coarse_perc"
-#    }
-#    if (class_i==3) {
-#      reclass_table$camels_class[i]<-"hygeol_unconsol_medium_perc"
-#    }
-#    if (class_i==4) {
-#      reclass_table$camels_class[i]<-"hygeol_unconsol_fine_perc"
-#    }
-#    if (class_i==5) {
-#      reclass_table$camels_class[i]<-"hygeol_unconsol_fine_perc"
-#    }
-#    if (class_i==6) {
-#      reclass_table$camels_class[i]<-"hygeol_unconsol_imperm_perc"
-#    }
-#    if (class_i==8) {
-#      reclass_table$camels_class[i]<-"hygeol_karst_perc"
-#    }
-#    if (class_i==9) {
-#      reclass_table$camels_class[i]<-"hygeol_hardrock_perc"
-#    }
-#    if (class_i==10) {
-#      reclass_table$camels_class[i]<-"hygeol_hardrock_perc"
-#    }
-#    if (class_i==11) {
-#      reclass_table$camels_class[i]<-"hygeol_hardrock_imperm_perc"
-#    }
-#    if (class_i==98) {
-#      reclass_table$camels_class[i]<-"hygeol_water_perc"
-#    }
-#    if (class_i==99) {
-#      reclass_table$camels_class[i]<-"hygeol_water_perc"
-#    }
-
-#  }
-#  reclass_table<-reclass_table[,-2]
-#}
-
-# Define fuction to aggregate by the new CAMELS-CH classes
-#reaggregate <- function (recl_catch){
-# aggregate over new classes
-#  hg_aggr<-NULL
-
-#  for(i in 2:(ncol(recl_catch))){
-#    hg_aggr_i<-NULL
-#    hg_aggr_i<-aggregate(recl_catch[,i]~camels_class, recl_catch, sum, na.rm = TRUE, na.action=NULL)
-
-#    hg_aggr_i <- data.frame(hg_aggr_i)
-#    id_i <- colnames(recl_catch[i])
-#    colnames(hg_aggr_i) <- c("camels_class",id_i)
-
-#    if (i==2) {
-#      hg_aggr <- hg_aggr_i
-#    } else {hg_aggr <- merge.data.frame(hg_aggr,hg_aggr_i, all.x=TRUE, all.y=TRUE) }
-#  }
-
-# create row names from content in last column (with new classes) and delete last column
-#  rownames(hg_aggr) <- c(hg_aggr[,1])
-#  hg_aggr<-hg_aggr[-c(1)]
-#}
-
-# Clip hydrogeological map over CAMELS catchments
-#hydrogeo.CH.clip <- catchments_clip(catch,hydrogeo.CH)
-
-# Reclassify data to CAMELS hydrogeology classes
-#hydrogeo.CH.recl <- reclass_table(hydrogeo.CH.clip)
-
-# Aggregate by the new CAMELS-CH classes
-#hydrogeo.CAMELS.CH <- reaggregate(hydrogeo.CH.recl)
-
-
 ###===============================###===============================###
 ### (3) Get and crop german hydrogeological data, merge the karst area
 ###     with the swiss karst area
@@ -290,16 +164,16 @@ hydrogeo.DE.proj <- st_transform(hydrogeo.DE, crs = st_crs(hydrogeo.CH))
 rm(hydrogeo.DE)
 
 ### Retain only german data not overlapping with swiss data
-hydrogeo.DE.HydroCH <- st_difference(st_crop(hydrogeo.DE.proj,
-                                             st_bbox(st_buffer(st_as_sfc(st_bbox(catch.mask)), 100))),
-                                     st_union(hydrogeo.CH))
+hydrogeo.DE.HydroCH <- st_difference(
+  st_crop(hydrogeo.DE.proj, st_bbox(st_buffer(st_as_sfc(st_bbox(catch.mask)), 100))),
+  st_union(hydrogeo.CH))
 
 rm(hydrogeo.DE.proj)
 
-hydrogeo.DE.HydroCH <- hydrogeo.DE.HydroCH %>% mutate(CAMELS.hygeol = 'hygeol_null', .before = I_CompMat1)
-hydrogeo.DE.HydroCH <- hydrogeo.DE.HydroCH %>% mutate(CAMELS.hygeol = replace(CAMELS.hygeol,
-                                                                              I_CompMat1 == 'limestone',
-                                                                              'hygeol_karst'))
+hydrogeo.DE.HydroCH <- hydrogeo.DE.HydroCH %>% mutate(
+  CAMELS.hygeol = 'hygeol_null', .before = I_CompMat1)
+hydrogeo.DE.HydroCH <- hydrogeo.DE.HydroCH %>% mutate(
+  CAMELS.hygeol = replace(CAMELS.hygeol, I_CompMat1 == 'limestone', 'hygeol_karst'))
 
 ### Aggregate data to the CAMELS classses 
 hydrogeo.DE.HydroCH <- hydrogeo.DE.HydroCH %>%
@@ -329,7 +203,8 @@ hydrogeo.HydroCH <- hydrogeo.HydroCH %>% group_by(CAMELS.hygeol) %>% summarise(g
 
 ### Write data to a shapefile 
 st_write(st_zm(hydrogeo.HydroCH),
-         paste(Sys.getenv('CAMELS_DIR_DATA'), 'Hydrogeology', 'hydrogeoHydroCH.shp', sep = '/'), layer_options = "ENCODING=UTF-8")
+         paste(Sys.getenv('CAMELS_DIR_DATA'), 'Hydrogeology', 'hydrogeoHydroCH.shp', sep = '/'),
+         layer_options = "ENCODING=UTF-8")
 
 ### clear workspace
 rm(list = ls())

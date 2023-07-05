@@ -11,7 +11,8 @@ compute_nse <- function(obs, sim, tol = 0.05) {
   # Time steps for which obs and sim are available
   avail_data <- find_avail_data_df(cbind(obs, sim), tol)
 
-  1 - sum((sim[avail_data] - obs[avail_data])^2) / sum((obs[avail_data] - mean(obs[avail_data]))^2)
+  1 - sum((sim[avail_data] - obs[avail_data])^2) /
+    sum((obs[avail_data] - mean(obs[avail_data]))^2)
 }
 
 ### RMSE
@@ -19,7 +20,8 @@ compute_rmse <- function(obs, sim, tol = 0.05) {
   # Time steps for which obs and sim are available
   avail_data <- find_avail_data_df(cbind(obs, sim), tol)
 
-  sqrt(sum((sim[avail_data] - obs[avail_data])^2) / length(obs[avail_data]))
+  sqrt(sum((sim[avail_data] - obs[avail_data])^2) /
+         length(obs[avail_data]))
 }
 
 ### Error in water balance

@@ -20,12 +20,6 @@ library(dplyr)
 library(raster)
 library(exactextractr)
 
-
-### list environmental variables
-# Sys.getenv()
-
-### use individual variables
-# setwd(Sys.getenv('CAMELS_DIR_DATA'))
 ###===============================###===============================###
 ### (1) Read in catchment shapes
 ###===============================###===============================###
@@ -35,10 +29,8 @@ catch <- st_read('CAMELS_CH_EZG_76.shp')
 
 #Plot catchments' overview
 plot(st_geometry(catch))
-#plot(catch)
 #Look at data attached
 head(catch)
-#head(catch@data)
 
 ###===============================###===============================###
 ### (2) Compute soil attributes
@@ -88,7 +80,8 @@ attr.nm.all <- melt(attr.nm.all)
 attr.nm.all <- as.character(attr.nm.all$value)
 
 ### preallocate data frame to store soil attributes
-df_soilattr <- as.data.frame(matrix(NA, dim(catch)[1], 1 + length(attr.nm) * length(attr.nm.spec)), stringsAsFactors = FALSE)
+df_soilattr <- as.data.frame(matrix(NA, dim(catch)[1], 1 + length(attr.nm) * length(attr.nm.spec)),
+                             stringsAsFactors = FALSE)
 df_soilattr[, 1] <- catch$gauge_id
 colnames(df_soilattr) <- c('gauge_id', attr.nm.all)
 rm(attr.nm.spec)
@@ -120,8 +113,9 @@ ext.param.attr <- function(rs, perc, col.nm) {
 }
 
 ### set variables needed for computing soil attributes 
-variables <- c('SNDPPT', 'SLTPPT', 'CLYPPT', 'ORCDRC', 'BLDFIE', 'AWCh1', 'THS', 'KS', 'BDTICM', 'BDRICM',
-               'SAND', 'SILT', 'CLAY', 'OC', 'BD', 'GRAVEL', 'TAWC', 'DEPTH_ROOTS')
+variables <- c('SNDPPT', 'SLTPPT', 'CLYPPT', 'ORCDRC', 'BLDFIE', 'AWCh1', 'THS',
+               'KS', 'BDTICM', 'BDRICM', 'SAND', 'SILT', 'CLAY', 'OC', 'BD',
+               'GRAVEL', 'TAWC', 'DEPTH_ROOTS')
 
 for (var.nm in variables) {
 
@@ -359,14 +353,10 @@ save(file = 'soil_attributes.RData', df_soilattr)
 
 ### write to file, use semicolon for separation
 setwd(Sys.getenv('CAMELS_DIR_RESULTS'))
-#write.table(file='CAMELS_CH_soil_attributes.txt',
-#            round(df_soilattr,3),
-#            sep=';',quote=FALSE, row.names=FALSE)
 
 write.table(file = 'CAMELS_CH_soil_attributes.csv',
             round(df_soilattr, 3),
             sep = ';', quote = FALSE, row.names = FALSE, fileEncoding = "UTF-8")
-
 
 ### clear workspace
 rm(list = ls())

@@ -10,7 +10,9 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
 ##################################
 ## prepare lists and variables
-list_files_clc <- c("crop_perc", "dwood_perc", "ewood_perc", "grass_perc", "ice_perc", "inwater_perc", "loose_rock_perc", "mix_wood_perc", "rock_perc", "shrub_perc", "urban_perc", "wetlands_perc", "blank_perc")
+list_files_clc <- c("crop_perc", "dwood_perc", "ewood_perc", "grass_perc", "ice_perc",
+                    "inwater_perc", "loose_rock_perc", "mix_wood_perc", "rock_perc",
+                    "shrub_perc", "urban_perc", "wetlands_perc", "blank_perc")
 list_files_glacier <- c("glac_area_ch", "glac_vol_ch", "glac_mass_ch", "glac_area_neighbours")
 list_parameter_name <- c(list_files_clc, list_files_glacier)
 
@@ -92,7 +94,9 @@ add_clc <- function(list_attr, list_pos, end_list) {
       }else {
         fill_value_4 <- seq(value_2012, value_2018, by = ((value_2018 - value_2012) / 6)) }
       # merge values to time serie and round to two digits
-      data_1990_2018 <- round(rbind(data_1990_2018, c(fill_value_1[1:10], fill_value_2[1:6], fill_value_3[1:6], fill_value_4[1:7])), 2)
+      data_1990_2018 <- round(
+        rbind(data_1990_2018, c(fill_value_1[1:10], fill_value_2[1:6],
+                                fill_value_3[1:6], fill_value_4[1:7])), 2)
     }
     # add row and column names
     data_1990_2018 <- data.frame(t(data_1990_2018))
@@ -138,7 +142,10 @@ add_glacier <- function(glacier_file_csv, list_pos, end_list, round_num) {
 }
 
 # create list with all glacier-files
-glacier_file_csv <- c("glacier_area_catchment_camels_ch.csv", "glacier_volume_catchment_camels_ch.csv", "glacier_mass_catchment_camels_ch.csv", "glacier_area_catchment_camels_ch_neighbours.csv")
+glacier_file_csv <- c("glacier_area_catchment_camels_ch.csv",
+                      "glacier_volume_catchment_camels_ch.csv",
+                      "glacier_mass_catchment_camels_ch.csv",
+                      "glacier_area_catchment_camels_ch_neighbours.csv")
 
 # run function "glacier_file_csv" for glacier-files
 data_list_all <- add_glacier(glacier_file_csv, c(14, 15, 16, 17), data_list_clc, c(4, 5, 3, 4))
@@ -170,12 +177,14 @@ for (k in 1:length(catch_names)) {
   }
   # change order of columns and add column names (attributes)
   colnames(data_catchment) <- list_parameter_name
-  data_catchment_2 <- cbind(rownames(data_catchment), data_catchment[, c(1, 4, 10, 2, 8, 3, 12, 6, 5, 7, 9, 11, 13, 14, 15, 16, 17)])
+  data_catchment_2 <- cbind(rownames(data_catchment), data_catchment[,
+    c(1, 4, 10, 2, 8, 3, 12, 6, 5, 7, 9, 11, 13, 14, 15, 16, 17)])
   colnames(data_catchment_2) <- c("year", colnames(data_catchment_2)[2:18])
   # save as file
   file_name <- (paste0("CAMELS_CH_annual_data_", catch_ID, ".csv"))
   first_row_text <- paste0("gauge_id=", catch_ID, ", Land cover attributes as area percentages based on the CORINE land cover databases by the European Copernicus Land Monitoring Service: 1990, 2000, 2006, 2012 and 2018. The years inbetween were interpolated by linear regression. In 1990 only areas outside Switzerland were covered by clc_1990, therefore only catchments with more then 95% data in clc_1990 were calculated. glaciers source: Swiss Glacier Inventory 1973/2016 and Paul et al, 2020. glacier_mass = glacier_volume*850.")
   cat(first_row_text, "\n", file = file_name)
-  write.table(data_catchment_2, file = file_name, append = TRUE, row.names = FALSE, quote = FALSE, sep = ";", fileEncoding = "UTF-8")
+  write.table(data_catchment_2, file = file_name, append = TRUE, row.names = FALSE,
+              quote = FALSE, sep = ";", fileEncoding = "UTF-8")
 }
 

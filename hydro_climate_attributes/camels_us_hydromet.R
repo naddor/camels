@@ -17,13 +17,15 @@ colnames(gauge_table) <- c('huc_02', 'gage_id', 'gage_name', 'gage_lat', 'gage_l
 
 ### Load data for desired catchment into individual arrays (prec, temp, etc)
 
-get_catchment_data_arrays <- function(huc, id, date_start, date_end, forcing_dataset = 'daymet',
+get_catchment_data_arrays <- function(huc, id, date_start, date_end,
+                                      forcing_dataset = 'daymet',
                                       ens_method = 'mean') {
 
   # ARGUMENTS
   # ens_method: should the SAC runs be averaged ('mean') or should only the best one be used ('best')?
 
-  catch_data <- get_catchment_data_dataframe(huc, id, date_start, date_end, forcing_dataset, ens_method)
+  catch_data <- get_catchment_data_dataframe(huc, id, date_start, date_end,
+                                             forcing_dataset, ens_method)
 
   prec <<- catch_data$prec
   temp <<- (catch_data$temp_min + catch_data$temp_max) / 2
@@ -37,8 +39,10 @@ get_catchment_data_arrays <- function(huc, id, date_start, date_end, forcing_dat
 # Return data for desired catchment into a single dataframe (with columns prec, temp, etc)
 # and save day as global array
 
-get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_end = '20080930',
-                                         forcing_dataset = 'daymet', ens_method = 'mean') {
+get_catchment_data_dataframe <- function(huc, id, date_start = '19801001',
+                                         date_end = '20080930',
+                                         forcing_dataset = 'daymet',
+                                         ens_method = 'mean') {
 
   # Import forcing data
   if (forcing_dataset == 'daymet') {
@@ -266,9 +270,6 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001', date_
                            by.x = 't_input', by.y = 't_hydro_sim', all.x = TRUE)
   q_sim_sac_input <- merge(data.frame(t_input), data.frame(q_sim_sac, t_hydro_sim),
                            by.x = 't_input', by.y = 't_hydro_sim', all.x = TRUE)
-
-  # Check consistence of q_obs and sac_q_obs
-  # if(any(abs(q_obs_sac-streamflow)>1,na.rm=TRUE)){stop('q_obs_sac and streamflow do not match')}
 
   # Create table with all data
   data.frame(date = format(t_input, '%Y%m%d'),

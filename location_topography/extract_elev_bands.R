@@ -27,7 +27,8 @@ extract_elev_bands <- function(id, huc, keep_absolute_area = FALSE) {
   # Create table in FUSE format
   elev_tab_format <- data.frame(array(dim = c(n_elevation_zones, 4)))
 
-  colnames(elev_tab_format) <- c('indice_elevation_zone', 'mid_point_elevation', 'area_fraction', 'area_m2')
+  colnames(elev_tab_format) <- c('indice_elevation_zone', 'mid_point_elevation',
+                                 'area_fraction', 'area_m2')
 
   for (z in 1:n_elevation_zones) {
     # First colum: indice of elevation zone

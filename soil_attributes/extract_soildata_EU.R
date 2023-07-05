@@ -95,12 +95,6 @@ library(sf)
 library(raster)
 library(exactextractr)
 
-### list environmental variables
-# Sys.getenv()
-
-### use individual variables
-# setwd(Sys.getenv('CAMELS_DIR_DATA'))
-
 ### define soil grid resolution
 SoilGrid.res <- '250m'
 
@@ -110,13 +104,10 @@ SoilGrid.res <- '250m'
 ### read in CAMELS-CH catchment shapes
 setwd(paste(Sys.getenv('CAMELS_DIR_DATA'), 'Catchments', 'CAMELS_CH_EZG_7.6', sep = '/'))
 catch <- st_read('CAMELS_CH_EZG_76.shp')
-#catch <- readOGR('CAMELS_CH_EZG_76.shp',encoding='UTF-8',use_iconv = TRUE)
 #plot catchments' overview
 plot(st_geometry(catch))
-#plot(catch)
 #Look at data attached
 head(catch)
-#head(catch@data)
 
 #Swiss projections
 #CH1903: crs("+init=epsg:21781")
@@ -146,7 +137,8 @@ plot(st_geometry(catch.bb), add = TRUE)
 ###===============================###===============================###
 
 ### create directory to store data needed to extract attributes
-dir.create(paste(Sys.getenv('CAMELS_DIR_DATA'), 'Soil/SoilData', Sys.getenv('CAMELS_COUNTRY'), sep = '/'))
+dir.create(paste(Sys.getenv('CAMELS_DIR_DATA'), 'Soil/SoilData',
+                 Sys.getenv('CAMELS_COUNTRY'), sep = '/'))
 
 #**=========***=========***
 #** EU-SoilHydroGrids
@@ -179,22 +171,26 @@ if (SoilGrid.res == '250m') {
   for (dir in dirs) {
     data.list <- list.files(dir, full.names = TRUE)
     file.copy(data.list[grep(paste(variables, collapse = "|"), data.list)],
-              paste(Sys.getenv('CAMELS_DIR_DATA'), 'Soil/SoilData', Sys.getenv('CAMELS_COUNTRY'), sep = '/'))
+              paste(Sys.getenv('CAMELS_DIR_DATA'), 'Soil/SoilData',
+                    Sys.getenv('CAMELS_COUNTRY'), sep = '/'))
   }
 
   ### merge copied data to one single file
   ### (you will produce 1 raster for each of the 7 layers)  
-  setwd(paste(Sys.getenv('CAMELS_DIR_DATA'), 'Soil/SoilData', Sys.getenv('CAMELS_COUNTRY'), sep = '/'))
+  setwd(paste(Sys.getenv('CAMELS_DIR_DATA'), 'Soil/SoilData',
+              Sys.getenv('CAMELS_COUNTRY'), sep = '/'))
   data.list <- list.files()
 
   for (v in 1:length(variables)) {
     for (l in 1:length(layers)) {
 
-      r.list <- lapply(data.list[grep(variables[v], data.list)][grep(layers[l], data.list[grep(variables[v], data.list)])], raster)
+      r.list <- lapply(data.list[grep(variables[v], data.list)]
+                       [grep(layers[l], data.list[grep(variables[v], data.list)])],
+                       raster)
 
       writeRaster(do.call(merge, r.list),
-                  filename = paste0(variables[v], '_M_', layers[l], '_camels', Sys.getenv('CAMELS_COUNTRY'), '.tif'))
-
+                  filename = paste0(variables[v], '_M_', layers[l], '_camels',
+                                    Sys.getenv('CAMELS_COUNTRY'), '.tif'))
     }
   }
 
@@ -207,20 +203,23 @@ if (SoilGrid.res == '250m') {
               'Soil/SoilData', 'EU_SoilHydroGrids_1km', sep = '/'))
 
   ### copy all data needed to the folder where you will further process data
-
   data.list <- list.files(paste(Sys.getenv('CAMELS_DIR_DATA'),
-                                'Soil/SoilData', 'EU_SoilHydroGrids_1km', sep = '/'), full.names = TRUE)
+                                'Soil/SoilData', 'EU_SoilHydroGrids_1km', sep = '/'),
+                          full.names = TRUE)
   file.copy(data.list[grep(paste(variables, collapse = "|"), data.list)],
-            paste(Sys.getenv('CAMELS_DIR_DATA'), 'Soil/SoilData', Sys.getenv('CAMELS_COUNTRY'), sep = '/'))
+            paste(Sys.getenv('CAMELS_DIR_DATA'), 'Soil/SoilData',
+                  Sys.getenv('CAMELS_COUNTRY'), sep = '/'))
 
   ### extract and save only data covering your catchment
-  setwd(paste(Sys.getenv('CAMELS_DIR_DATA'), 'Soil/SoilData', Sys.getenv('CAMELS_COUNTRY'), sep = '/'))
+  setwd(paste(Sys.getenv('CAMELS_DIR_DATA'), 'Soil/SoilData',
+              Sys.getenv('CAMELS_COUNTRY'), sep = '/'))
 
   for (v in 1:length(variables)) {
 
     for (l in 1:length(layers)) {
 
-      r.EU <- raster(data.list[grep(variables[v], data.list)][grep(layers[l], data.list[grep(variables[v], data.list)])])
+      r.EU <- raster(data.list[grep(variables[v], data.list)]
+                     [grep(layers[l], data.list[grep(variables[v], data.list)])])
 
       ext.catch <- st_bbox(st_transform(catch.mask, crs(r.EU)))
 
@@ -231,11 +230,9 @@ if (SoilGrid.res == '250m') {
 
       r.ext <- crop(r.EU, ext.catch)
 
-      writeRaster(r.ext,
-                  filename = paste0(variables[v], '_', layers[l], '_camels', Sys.getenv('CAMELS_COUNTRY'), '.tif'))
-
+      writeRaster(r.ext, filename = paste0(variables[v], '_', layers[l], '_camels',
+                                           Sys.getenv('CAMELS_COUNTRY'), '.tif'))
     }
-
   }
 
   file.remove(data.list)
@@ -265,13 +262,15 @@ data.list <- data.list[grep(paste(variables, collapse = "|"), data.list)]
 data.list <- data.list[grep('.tif', data.list)]
 
 ### extract and save only data covering your catchment
-setwd(paste(Sys.getenv('CAMELS_DIR_DATA'), 'Soil/SoilData', Sys.getenv('CAMELS_COUNTRY'), sep = '/'))
+setwd(paste(Sys.getenv('CAMELS_DIR_DATA'), 'Soil/SoilData',
+            Sys.getenv('CAMELS_COUNTRY'), sep = '/'))
 
 for (v in 1:length(variables)) {
 
   for (l in 1:length(layers)) {
 
-    r.EU <- raster(data.list[grep(variables[v], data.list)][grep(layers[l], data.list[grep(variables[v], data.list)])])
+    r.EU <- raster(data.list[grep(variables[v], data.list)]
+                   [grep(layers[l], data.list[grep(variables[v], data.list)])])
 
     ext.catch <- st_bbox(st_transform(catch.mask, crs(r.EU)))
 
@@ -282,11 +281,9 @@ for (v in 1:length(variables)) {
 
     r.ext <- crop(r.EU, ext.catch)
 
-    writeRaster(r.ext,
-                filename = paste0(variables[v], '_M_', layers[l], '_camels', Sys.getenv('CAMELS_COUNTRY'), '.tif'))
-
+    writeRaster(r.ext, filename = paste0(variables[v], '_M_', layers[l], '_camels',
+                                         Sys.getenv('CAMELS_COUNTRY'), '.tif'))
   }
-
 }
 
 file.remove(data.list)
@@ -304,7 +301,8 @@ data.list <- data.list[grep(paste(variables, collapse = "|"), data.list)]
 data.list <- data.list[grep('.tif', data.list)]
 
 ### extract and save only data covering your catchment
-setwd(paste(Sys.getenv('CAMELS_DIR_DATA'), 'Soil/SoilData', Sys.getenv('CAMELS_COUNTRY'), sep = '/'))
+setwd(paste(Sys.getenv('CAMELS_DIR_DATA'), 'Soil/SoilData',
+            Sys.getenv('CAMELS_COUNTRY'), sep = '/'))
 
 for (v in 1:length(variables)) {
 
@@ -319,9 +317,8 @@ for (v in 1:length(variables)) {
 
   r.ext <- crop(r.EU, ext.catch)
 
-  writeRaster(r.ext,
-              filename = paste0(variables[v], '_M_camels', Sys.getenv('CAMELS_COUNTRY'), '.tif'))
-
+  writeRaster(r.ext, filename = paste0(variables[v], '_M_camels',
+                                       Sys.getenv('CAMELS_COUNTRY'), '.tif'))
 }
 
 ### finally extract variables with one single layer
@@ -336,7 +333,8 @@ data.list <- data.list[grep(paste(variables, collapse = "|"), data.list)]
 data.list <- data.list[grep('.tif', data.list)]
 
 ### extract and save only data covering your catchment
-setwd(paste(Sys.getenv('CAMELS_DIR_DATA'), 'Soil/SoilData', Sys.getenv('CAMELS_COUNTRY'), sep = '/'))
+setwd(paste(Sys.getenv('CAMELS_DIR_DATA'), 'Soil/SoilData',
+            Sys.getenv('CAMELS_COUNTRY'), sep = '/'))
 
 for (v in 1:length(variables)) {
 
@@ -352,7 +350,8 @@ for (v in 1:length(variables)) {
   r.ext <- crop(r.EU, ext.catch)
 
   writeRaster(r.ext,
-              filename = paste0(variables[v], '_M_camels', Sys.getenv('CAMELS_COUNTRY'), '.tif'))
+              filename = paste0(variables[v], '_M_camels',
+                                Sys.getenv('CAMELS_COUNTRY'), '.tif'))
 
 }
 
@@ -379,13 +378,15 @@ data.list <- data.list[grep('.rst', data.list)]
 data.list <- data.list[-1]
 
 ### extract and save only data covering your catchment
-setwd(paste(Sys.getenv('CAMELS_DIR_DATA'), 'Soil/SoilData', Sys.getenv('CAMELS_COUNTRY'), sep = '/'))
+setwd(paste(Sys.getenv('CAMELS_DIR_DATA'), 'Soil/SoilData',
+            Sys.getenv('CAMELS_COUNTRY'), sep = '/'))
 
 for (v in 1:length(variables)) {
 
   for (l in 1:length(layers)) {
 
-    r.EU <- raster(data.list[grep(variables[v], data.list)][grep(layers[l], data.list[grep(variables[v], data.list)])])
+    r.EU <- raster(data.list[grep(variables[v], data.list)]
+                   [grep(layers[l], data.list[grep(variables[v], data.list)])])
     #crs(r.EU) <- crs("+init=epsg:3035")
     crs(r.EU) <- crs("+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80 +units=m +no_defs")
 
@@ -398,11 +399,9 @@ for (v in 1:length(variables)) {
 
     r.ext <- crop(r.EU, ext.catch)
 
-    writeRaster(r.ext,
-                filename = paste0(layers[l], '_', variables[v], '_camels', Sys.getenv('CAMELS_COUNTRY'), '.tif'))
-
+    writeRaster(r.ext, filename = paste0(layers[l], '_', variables[v], '_camels',
+                                         Sys.getenv('CAMELS_COUNTRY'), '.tif'))
   }
-
 }
 
 ### finally extract variables with one single layer
@@ -420,7 +419,8 @@ data.list <- data.list[grep('.rst', data.list)]
 
 
 ### extract and save only data covering your catchment
-setwd(paste(Sys.getenv('CAMELS_DIR_DATA'), 'Soil/SoilData', Sys.getenv('CAMELS_COUNTRY'), sep = '/'))
+setwd(paste(Sys.getenv('CAMELS_DIR_DATA'), 'Soil/SoilData',
+            Sys.getenv('CAMELS_COUNTRY'), sep = '/'))
 
 for (v in 1:length(variables)) {
 
@@ -437,8 +437,8 @@ for (v in 1:length(variables)) {
 
   r.ext <- crop(r.EU, ext.catch)
 
-  writeRaster(r.ext,
-              filename = paste0('STU_EU_', variables[v], '_camels', Sys.getenv('CAMELS_COUNTRY'), '.tif'))
+  writeRaster(r.ext, filename = paste0('STU_EU_', variables[v], '_camels',
+                                       Sys.getenv('CAMELS_COUNTRY'), '.tif'))
 
 }
 
@@ -483,8 +483,8 @@ for (var.nm in variables) {
   ### reset all NA that are NA at the surface (at 0cm, resp. layer 1)
   var.soil.ti[is.na(r1)] <- NA
 
-  writeRaster(var.soil.ti,
-              filename = paste0(var.nm, '_M_camels', Sys.getenv('CAMELS_COUNTRY'), '.tif'))
+  writeRaster(var.soil.ti, filename = paste0(var.nm, '_M_camels',
+                                             Sys.getenv('CAMELS_COUNTRY'), '.tif'))
 
   rm(var.brick); rm(var.soil.ti);
 
@@ -536,11 +536,10 @@ for (var.nm in variables) {
   ### in the next step. Assumption: where soil depth=0 => NA
   var.soil.wm[r.SD == 0] <- NA
 
-  writeRaster(var.soil.wm,
-              filename = paste0('STU_EU_M_', var.nm, '_camels', Sys.getenv('CAMELS_COUNTRY'), '.tif'))
+  writeRaster(var.soil.wm, filename = paste0('STU_EU_M_', var.nm, '_camels',
+                                             Sys.getenv('CAMELS_COUNTRY'), '.tif'))
 
   rm(var.brick); rm(var.soil.wm);
-
 }
 
 ### clear workspace

@@ -117,14 +117,18 @@ comp_r_qp <- function(q, p, tol) {
 
 comp_e_qp <- function(q, p, d, tol, hydro_year_cal) {
 
-  if (length(q) != length(d) | length(p) != length(d)) { stop('P, Q and D must have the same length') }
+  if (length(q) != length(d) | length(p) != length(d)) {
+    stop('P, Q and D must have the same length')
+  }
 
   # Time steps for which precipitation and streamflow data are available
   avail_data <- find_avail_data_df(data.frame(q, p), tol)
 
   hy <- get_hydro_year(d, hydro_year_cal)
 
-  if (any(table(hy) < 365)) { warning('Not all the hydrological years are complete') }
+  if (any(table(hy) < 365)) {
+    warning('Not all the hydrological years are complete')
+  }
 
   mp_tot <- mean(p[avail_data], na.rm = TRUE) # Mean long-term precip
   mq_tot <- mean(q[avail_data], na.rm = TRUE) # Mean long-term discharge

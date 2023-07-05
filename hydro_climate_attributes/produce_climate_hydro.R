@@ -55,7 +55,8 @@ if (Sys.getenv('CAMELS_COUNTRY') == 'US') {
   per_all <- seq(per_start, per_end, by = 'day')
 
   # Load gauge coordinates
-  camels_topo <- read.table(file.path(Sys.getenv('CAMELS_DIR_DATA'), 'brazil_gauges_coordinates.txt'), header = TRUE)
+  camels_topo <- read.table(file.path(Sys.getenv('CAMELS_DIR_DATA'),
+                                      'brazil_gauges_coordinates.txt'), header = TRUE)
 
 } else if (Sys.getenv('CAMELS_COUNTRY') == 'CH') {
 
@@ -72,7 +73,8 @@ if (Sys.getenv('CAMELS_COUNTRY') == 'US') {
   per_all <- seq(per_start, per_end, by = 'day')
 
   # Load gauge coordinates
-  camels_topo <- read.table(file.path(Sys.getenv('CAMELS_DIR_DATA'), 'ch_gauges_coordinates.txt'), header = TRUE)
+  camels_topo <- read.table(file.path(Sys.getenv('CAMELS_DIR_DATA'),
+                                      'ch_gauges_coordinates.txt'), header = TRUE)
 
 } else {
   stop(paste('Country code unknown:', Sys.getenv('CAMELS_COUNTRY')))
@@ -165,7 +167,8 @@ for (i in seq_along(list_catch)) {
 
   # Compute climate indices
   camels_clim[i, 'gauge_id'] <- as.character(catch_id)
-  dat <- compute_clim_indices_camels(temp = temp, prec = prec, pet = pet, day = day, tol = tol_na)
+  dat <- compute_clim_indices_camels(temp = temp, prec = prec, pet = pet,
+                                     day = day, tol = tol_na)
   camels_clim[i, names(dat)] <- dat
 
   levels(camels_clim$high_prec_timing) <- c('djf', 'mam', 'jja', 'son')
@@ -173,13 +176,15 @@ for (i in seq_along(list_catch)) {
 
   # Compute hydrological signatures for observed Q
   camels_hydro_obs[i, 'gauge_id'] <- as.character(catch_id)
-  dat <- compute_hydro_signatures_camels(q = q_obs, p = prec, d = day, tol = tol_na, hydro_year_cal = hydro_year_cal)
+  dat <- compute_hydro_signatures_camels(q = q_obs, p = prec, d = day, tol = tol_na,
+                                         hydro_year_cal = hydro_year_cal)
   camels_hydro_obs[i, names(dat)] <- dat
 
   if (Sys.getenv('CAMELS_COUNTRY') == 'US') {
     # Compute hydrological signatures for simulated Q
     camels_hydro_sac[i, 'gauge_id'] <- as.character(catch_id)
-    dat <- compute_hydro_signatures_camels(q = q_sim_sac, p = prec, d = day, tol = tol_na, hydro_year_cal = hydro_year_cal)
+    dat <- compute_hydro_signatures_camels(q = q_sim_sac, p = prec, d = day,
+                                           tol = tol_na, hydro_year_cal = hydro_year_cal)
     camels_hydro_sac[i, names(dat)] <- dat
   }
 }
