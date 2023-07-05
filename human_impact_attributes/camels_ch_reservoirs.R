@@ -20,18 +20,20 @@ library(rgeos)
 library(sp)
 library(rgdal)
 
+dir_data <- Sys.getenv('CAMELS_DIR_DATA')
+dir_results <- Sys.getenv('CAMELS_DIR_RESULTS')
 
 ###===============================###===============================###
 ### (1) Read in catchment shapes and reservoir information
 ###===============================###===============================###
 ### read in CAMELS-CH catchment shapes
-setwd(paste(Sys.getenv('CAMELS_DIR_DATA'), '/CAMELS_CH_EZG_95_v6', sep = ''))
+setwd(paste(dir_data, '/CAMELS_CH_EZG_95_v6', sep = ''))
 catch <- readOGR('CAMELS_CH_EZG_95_v6.shp', encoding = 'UTF-8', use_iconv = TRUE)
 plot(catch)
 catch@data
 
 ### load reservoir data provided by BFE
-setwd(Sys.getenv('CAMELS_DIR_DATA'))
+setwd(dir_data)
 reservoirs <- readOGR('reservoirs_BFE_incl_usable.shp', use_iconv = TRUE, encoding = "UTF-8")
 ### transform
 reservoirs <- spTransform(reservoirs, crs(catch))
@@ -62,7 +64,7 @@ reservoirs@data$vol_ML <- reservoirs@data$Totalvolum * (1000)^2 / 1000
 ###===============================###===============================###
 num_reservoirs <- capacity_reservoirs <- perc_hp <- perc_flood <- perc_irr <- perc_nodata <- c()
 reservoir_year_first <- reservoir_year_last <- c()
-setwd(Sys.getenv('CAMELS_DIR_RESULTS'))
+setwd(dir_results)
 pdf('reservoirs_per_catchment.pdf', width = 12, height = 10)
 par(mfrow = c(4, 4), mar = c(1, 1, 1, 1))
 for (l in 1:length(catch)) {
@@ -134,7 +136,7 @@ for (l in 1:length(catch)) {
 dev.off()
 
 ### save extracted characteristics
-setwd(Sys.getenv('CAMELS_DIR_RESULTS'))
+setwd(dir_results)
 save(file = 'human_impact_char.RData', num_reservoirs, capacity_reservoirs, perc_hp, perc_flood,
      perc_irr, perc_nodata, reservoir_year_first, reservoir_year_last)
 
@@ -146,5 +148,5 @@ df_reservoirs <- data.frame('gauge_id' = catch@data$ID_BAFU, 'num_reservoir' = n
                             'reservoir_year_last' = reservoir_year_last)
 
 ### write to file, use semicolon for separation
-setwd(Sys.getenv('CAMELS_DIR_RESULTS'))
+setwd(dir_results)
 write.table(file = 'CAMELS_CH_humaninfluence_attributes.txt', df_reservoirs, sep = ';')

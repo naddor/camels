@@ -2,9 +2,11 @@ rm(list = ls())
 
 library(dotenv)
 
+dir_data <- Sys.getenv('CAMELS_DIR_DATA')
+
 ### Load catchment metadata to retrive catchment area and compute specific discharge
 
-gauge_table <- read.table(file.path(Sys.getenv('CAMELS_DIR_DATA'), 'gauge_information.txt'),
+gauge_table <- read.table(file.path(dir_data, 'gauge_information.txt'),
                           sep = '\t',
                           quote = '',
                           header = FALSE,
@@ -44,10 +46,12 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001',
                                          forcing_dataset = 'daymet',
                                          ens_method = 'mean') {
 
+  dir_data <- Sys.getenv('CAMELS_DIR_DATA')
+
   # Import forcing data
   if (forcing_dataset == 'daymet') {
 
-    forcing_table <- read.table(file.path(Sys.getenv('CAMELS_DIR_DATA'), 'daymet', huc,
+    forcing_table <- read.table(file.path(dir_data, 'daymet', huc,
                                           paste0(id, '_lump_cida_forcing_leap.txt')),
                                 skip = 3,
                                 header = TRUE)
@@ -56,7 +60,7 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001',
 
     if (id %in% c('02108000', '05120500', '07067000', '09492400')) { # Header is incomplete in original files
 
-      forcing_table <- read.table(file.path(Sys.getenv('CAMELS_DIR_DATA'), 'maurer', huc,
+      forcing_table <- read.table(file.path(dir_data, 'maurer', huc,
                                             paste0(id, '_lump_maurer_forcing_leap.txt')),
                                   skip = 4,
                                   header = FALSE
@@ -67,7 +71,7 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001',
 
     } else {
 
-      forcing_table <- read.table(file.path(Sys.getenv('CAMELS_DIR_DATA'), 'maurer', huc,
+      forcing_table <- read.table(file.path(dir_data, 'maurer', huc,
                                             paste0(id, '_lump_maurer_forcing_leap.txt')),
                                   skip = 3,
                                   header = TRUE)
@@ -97,7 +101,7 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001',
   # Import streamflow data
   # A ->  streaflow value is certified by USGS as the actual daily mean flow
   # A:e -> streamflow value is certified by the USGS as the actual ESTIMATED daily mean flow
-  streamflow_table <- read.table(file.path(Sys.getenv('CAMELS_DIR_DATA'), 'usgs_streamflow', huc,
+  streamflow_table <- read.table(file.path(dir_data, 'usgs_streamflow', huc,
                                            paste0(id, '_streamflow_qc.txt')),
                                  header = FALSE,
                                  col.names = c('ID', 'Y', 'M', 'D', 'Q', 'QC_FLAG'),
@@ -131,7 +135,7 @@ get_catchment_data_dataframe <- function(huc, id, date_start = '19801001',
     (camels_topo$area_geospa_fabric[camels_name$gauge_id == id] * 1E6) # Convert m^3/sec to mm/day
 
   # Import et and pet from sacramento output
-  output_hydro_files <- system(paste0('ls ', file.path(Sys.getenv('CAMELS_DIR_DATA'), 'flow_timeseries',
+  output_hydro_files <- system(paste0('ls ', file.path(dir_data, 'flow_timeseries',
                                                        forcing_dataset, huc, paste0(id, '_??_model_output.txt'))),
                                intern = TRUE
   )

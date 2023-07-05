@@ -3,13 +3,18 @@ rm(list = ls())
 library(dotenv)
 library(here)
 
+dir_data <- Sys.getenv('CAMELS_DIR_DATA')
+dir_results <- Sys.getenv('CAMELS_DIR_RESULTS')
+dir_plots <- Sys.getenv('CAMELS_DIR_PLOTS')
+country <- Sys.getenv('CAMELS_COUNTRY')
+
 # Load functions
 source(here::here('compute/climate_indices.R'))
 source(here::here('compute/hydro_signatures.R'))
 source(here::here('utils/plot_maps_camels.R'))
 
 # Define directory for files and list of catchment IDs
-if (Sys.getenv('CAMELS_COUNTRY') == 'US') {
+if (country == 'US') {
 
   source(here::here('extract/camels_us_hydromet.R'))
   source(here::here('compute/hydro_accuracy.R'))
@@ -22,7 +27,7 @@ if (Sys.getenv('CAMELS_COUNTRY') == 'US') {
   start_date_indices <- '19891001'
   end_date_indices <- '20090930'
 
-} else if (Sys.getenv('CAMELS_COUNTRY') == 'GB') {
+} else if (country == 'GB') {
 
   # Set preferences
   hydro_year_cal <- 'oct'
@@ -30,7 +35,7 @@ if (Sys.getenv('CAMELS_COUNTRY') == 'US') {
   # crashes (streamflow elasticity) when there is only a year of available data, which happens for
   # catchments not in CAMELS-GB, now tolerating 85% of missing values (see email from 16 Dec 2019)
 
-  list_files <- system(paste('ls', Sys.getenv('CAMELS_DIR_DATA')), intern = TRUE)
+  list_files <- system(paste('ls', dir_data), intern = TRUE)
   list_catch <- rapply(strsplit(list_files, '_'), function(x) x[5])
 
   # Define period over which indices and signatures will be computed
@@ -40,12 +45,12 @@ if (Sys.getenv('CAMELS_COUNTRY') == 'US') {
   per_end <- as.Date('2015-09-30')
   per_all <- seq(per_start, per_end, by = 'day')
 
-} else if (Sys.getenv('CAMELS_COUNTRY') == 'BR') {
+} else if (country == 'BR') {
 
   # preferences
   hydro_year_cal <- 'sep'
   tol_na <- 0.05
-  list_files <- system(paste('ls', Sys.getenv('CAMELS_DIR_DATA')), intern = TRUE)
+  list_files <- system(paste('ls', dir_data), intern = TRUE)
   list_catch <- rapply(strsplit(list_files, '_'), function(x) x[1])
 
   # Define period over which indices and signatures will be computed
@@ -55,15 +60,15 @@ if (Sys.getenv('CAMELS_COUNTRY') == 'US') {
   per_all <- seq(per_start, per_end, by = 'day')
 
   # Load gauge coordinates
-  camels_topo <- read.table(file.path(Sys.getenv('CAMELS_DIR_DATA'),
-                                      'brazil_gauges_coordinates.txt'), header = TRUE)
+  camels_topo <- read.table(file.path(dir_data, 'brazil_gauges_coordinates.txt'),
+                            header = TRUE)
 
-} else if (Sys.getenv('CAMELS_COUNTRY') == 'CH') {
+} else if (country == 'CH') {
 
   # Set preferences
   hydro_year_cal <- 'oct'
   tol_na <- 0.05
-  list_files <- system(paste('ls', Sys.getenv('CAMELS_DIR_DATA')), intern = TRUE)
+  list_files <- system(paste('ls', dir_data), intern = TRUE)
   list_catch <- rapply(strsplit(list_files, '_'), function(x) x[1])
 
   # Define period over which indices and signatures will be computed
@@ -73,17 +78,17 @@ if (Sys.getenv('CAMELS_COUNTRY') == 'US') {
   per_all <- seq(per_start, per_end, by = 'day')
 
   # Load gauge coordinates
-  camels_topo <- read.table(file.path(Sys.getenv('CAMELS_DIR_DATA'),
-                                      'ch_gauges_coordinates.txt'), header = TRUE)
+  camels_topo <- read.table(file.path(dir_data, 'ch_gauges_coordinates.txt'),
+                            header = TRUE)
 
 } else {
-  stop(paste('Country code unknown:', Sys.getenv('CAMELS_COUNTRY')))
+  stop(paste('Country code unknown:', country))
 }
 
 # Create data.frames
 camels_clim <- data.frame(stringsAsFactors = FALSE)
 camels_hydro_obs <- data.frame(stringsAsFactors = FALSE)
-if (Sys.getenv('CAMELS_COUNTRY') == 'US') {
+if (country == 'US') {
   camels_hydro_sac <- data.frame(stringsAsFactors = FALSE)
 }
 
@@ -95,7 +100,7 @@ for (i in seq_along(list_catch)) {
   print(paste0(i, ') ', catch_id))
 
   # Load data
-  if (Sys.getenv('CAMELS_COUNTRY') == 'US') {
+  if (country == 'US') {
 
     # Import forcing data, obs and sim discharge and collect metadata
     dat <- get_catchment_data_dataframe(huc = list_catch$huc_02[i],
@@ -114,11 +119,10 @@ for (i in seq_along(list_catch)) {
     q_obs <<- dat$q_obs
     q_sim_sac <<- dat$q_sim_sac
 
-  } else if (Sys.getenv('CAMELS_COUNTRY') == 'GB') {
+  } else if (country == 'GB') {
 
-    dat <- read.csv(file.path(Sys.getenv('CAMELS_DIR_DATA'),
-                              paste0('CAMELS_GB_hydromet_timeseries_',
-                                     catch_id, '_19701001-20150930.txt')),
+    dat <- read.csv(file.path(dir_data, paste0('CAMELS_GB_hydromet_timeseries_',
+                                               catch_id, '_19701001-20150930.txt')),
                     header = TRUE,
                     na.strings = 'NaN'
     )
@@ -130,10 +134,9 @@ for (i in seq_along(list_catch)) {
     pet <- dat$pet
     q_obs <- dat$discharge_spec
 
-  } else if (Sys.getenv('CAMELS_COUNTRY') == 'BR') {
+  } else if (country == 'BR') {
 
-    dat <- read.table(file.path(Sys.getenv('CAMELS_DIR_DATA'),
-                                paste0(catch_id, '_pet_p_t_q.txt')),
+    dat <- read.table(file.path(dir_data, paste0(catch_id, '_pet_p_t_q.txt')),
                       header = TRUE,
                       na.strings = 'NaN'
     )
@@ -147,7 +150,7 @@ for (i in seq_along(list_catch)) {
     pet <- dat$PET
     q_obs <- dat$Q
 
-  } else if (Sys.getenv('CAMELS_COUNTRY') == 'CH') {
+  } else if (country == 'CH') {
 
 
   }
@@ -180,7 +183,7 @@ for (i in seq_along(list_catch)) {
                                          hydro_year_cal = hydro_year_cal)
   camels_hydro_obs[i, names(dat)] <- dat
 
-  if (Sys.getenv('CAMELS_COUNTRY') == 'US') {
+  if (country == 'US') {
     # Compute hydrological signatures for simulated Q
     camels_hydro_sac[i, 'gauge_id'] <- as.character(catch_id)
     dat <- compute_hydro_signatures_camels(q = q_sim_sac, p = prec, d = day,
@@ -191,31 +194,28 @@ for (i in seq_along(list_catch)) {
 
 # Save
 save(camels_clim, camels_hydro_obs, list_catch,
-     file = file.path(Sys.getenv('CAMELS_DIR_RESULTS'),
-                      paste0('ci_hs_camels_', Sys.getenv('CAMELS_COUNTRY'), '_',
-                             per_str, '_NAtol', tol_na, '.Rdata')))
+     file = file.path(dir_results, paste0('ci_hs_camels_', country, '_',
+                                          per_str, '_NAtol', tol_na, '.Rdata')))
 
 write.table(camels_clim,
-            file = file.path(Sys.getenv('CAMELS_DIR_RESULTS'),
-                             paste0('clim_indices_camels_', Sys.getenv('CAMELS_COUNTRY'), '_',
-                                    per_str, '_NAtol', tol_na, '.txt')),
+            file = file.path(dir_results, paste0('clim_indices_camels_', country, '_',
+                                                 per_str, '_NAtol', tol_na, '.txt')),
             row.names = FALSE,
             quote = FALSE,
             sep = ';'
 )
 
 write.table(camels_hydro_obs,
-            file = file.path(Sys.getenv('CAMELS_DIR_RESULTS'),
-                             paste0('hydro_sign_camels_', Sys.getenv('CAMELS_COUNTRY'), '_',
-                                    per_str, '_NAtol', tol_na, '.txt')),
+            file = file.path(dir_results, paste0('hydro_sign_camels_', country, '_',
+                                                 per_str, '_NAtol', tol_na, '.txt')),
             row.names = FALSE,
             quote = FALSE,
             sep = ';'
 )
 
-if (Sys.getenv('CAMELS_COUNTRY') == 'US') {
+if (country == 'US') {
   write.table(camels_hydro_sac,
-              file = file.path(Sys.getenv('CAMELS_DIR_RESULTS'), 'camels_us_hydro_sac.txt'),
+              file = file.path(dir_results, 'camels_us_hydro_sac.txt'),
               row.names = FALSE,
               quote = FALSE,
               sep = ';'
@@ -226,7 +226,7 @@ if (Sys.getenv('CAMELS_COUNTRY') == 'US') {
 camels_clim <- merge(camels_topo, camels_clim)
 camels_hydro_obs <- merge(camels_topo, camels_hydro_obs)
 
-pdf(file.path(Sys.getenv('CAMELS_DIR_PLOTS'), 'clim.pdf'), 6, 6, useDingbats = FALSE)
+pdf(file.path(dir_plots, 'clim.pdf'), 6, 6, useDingbats = FALSE)
 
 for (my_var in names(camels_clim[c(-1, -2, -3)])) {
 
@@ -236,7 +236,7 @@ for (my_var in names(camels_clim[c(-1, -2, -3)])) {
               y = camels_clim$gauge_lat,
               z = camels_clim[, my_var],
               text_legend = my_var,
-              country = Sys.getenv('CAMELS_COUNTRY'),
+              country = country,
               qual = qual,
               col_scheme = ifelse(qual, 'seas', 'RdYlBu'),
               color_bar = TRUE
@@ -246,7 +246,7 @@ for (my_var in names(camels_clim[c(-1, -2, -3)])) {
 
 dev.off()
 
-pdf(file.path(Sys.getenv('CAMELS_DIR_PLOTS'), 'hydro.pdf'), 6, 6, useDingbats = FALSE)
+pdf(file.path(dir_plots, 'hydro.pdf'), 6, 6, useDingbats = FALSE)
 
 for (my_var in names(camels_hydro_obs[c(-1, -2, -3)])) {
 
@@ -256,7 +256,7 @@ for (my_var in names(camels_hydro_obs[c(-1, -2, -3)])) {
               y = camels_clim$gauge_lat,
               z = camels_hydro_obs[, my_var],
               text_legend = my_var,
-              country = Sys.getenv('CAMELS_COUNTRY'),
+              country = country,
               qual = qual,
               col_scheme = ifelse(qual, 'seas', 'RdYlBu'),
               color_bar = !qual

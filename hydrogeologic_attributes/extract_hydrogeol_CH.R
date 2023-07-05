@@ -11,7 +11,9 @@
 # First get the data you need and save these in a folder called 
 # Hydrogeology in your 'CAMELS_DIR_DATA' directory
 
-setwd(paste(Sys.getenv('CAMELS_DIR_DATA')))
+dir_data <- Sys.getenv('CAMELS_DIR_DATA')
+
+setwd(dir_data)
 dir.create('Hydrogeology')
 
 # For Switzerland there is a hydrogeological map 1:500'000
@@ -25,7 +27,7 @@ dir.create('Hydrogeology')
 # or also here (here you get both, vectorised and raster data)
 # https://data.geo.admin.ch/ch.swisstopo.geologie-hydrogeologische_karte-grundwasservorkommen/
 
-# Save data in Sys.getenv('CAMELS_DIR_DATA')/Hydrogeology/GK500_V1_3_DE
+# Save data in dir_data/Hydrogeology/GK500_V1_3_DE
 # You find the data you need in the subdirectory LV95/Shapes_LV95
 # shapefile PY_Basis_Flaechen.shp
 
@@ -58,7 +60,7 @@ dir.create('Hydrogeology')
 # For a procuct description see
 # https://www.bgr.bund.de/DE/Themen/Wasser/Projekte/laufend/Beratung/Huek200/huek200_projektbeschr.html
 
-# Save data in Sys.getenv('CAMELS_DIR_DATA')/Hydrogeology/Karst/huek250_v103
+# Save data in dir_data/Hydrogeology/Karst/huek250_v103
 # You find the data you need in the subdirectory shp
 # shapefile huek250__25832_v103_poly.shp
 
@@ -81,7 +83,7 @@ library(dplyr)
 ### (1) Read in catchment shapes
 ###===============================###===============================###
 ### read in CAMELS-CH catchment shapes
-setwd(paste(Sys.getenv('CAMELS_DIR_DATA'), 'Catchments', 'CAMELS_CH_EZG_7.6', sep = '/'))
+setwd(paste(dir_data, 'Catchments', 'CAMELS_CH_EZG_7.6', sep = '/'))
 catch <- st_read('CAMELS_CH_EZG_76.shp')
 
 #Plot catchments' overview
@@ -102,7 +104,7 @@ plot(st_geometry(catch.bb), add = TRUE)
 ###===============================###===============================###
 
 ### read hydrogrological map for Switzerland
-hydrogeo.CH <- st_read(paste(Sys.getenv('CAMELS_DIR_DATA'), 'Hydrogeology', 'GK500_V1_3_DE',
+hydrogeo.CH <- st_read(paste(dir_data, 'Hydrogeology', 'GK500_V1_3_DE',
                              'LV95/Shapes_LV95', 'PY_Basis_Flaechen.shp', sep = '/'))
 
 # Projected CRS: CH1903+ / LV95
@@ -147,7 +149,7 @@ plot(hydrogeo.CH)
 ###     with the swiss karst area
 ###===============================###===============================###
 ### read hydrogrological map for Germany
-hydrogeo.DE <- st_read(paste(Sys.getenv('CAMELS_DIR_DATA'), 'Hydrogeology', 'Karst/huek250_v103',
+hydrogeo.DE <- st_read(paste(dir_data, 'Hydrogeology', 'Karst/huek250_v103',
                              'shp', 'huek250__25832_v103_poly.shp', sep = '/'))
 
 #Projected CRS: ETRS89 / UTM zone 32N
@@ -203,7 +205,7 @@ hydrogeo.HydroCH <- hydrogeo.HydroCH %>% group_by(CAMELS.hygeol) %>% summarise(g
 
 ### Write data to a shapefile 
 st_write(st_zm(hydrogeo.HydroCH),
-         paste(Sys.getenv('CAMELS_DIR_DATA'), 'Hydrogeology', 'hydrogeoHydroCH.shp', sep = '/'),
+         paste(dir_data, 'Hydrogeology', 'hydrogeoHydroCH.shp', sep = '/'),
          layer_options = "ENCODING=UTF-8")
 
 ### clear workspace

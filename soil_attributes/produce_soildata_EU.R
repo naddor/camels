@@ -20,11 +20,15 @@ library(dplyr)
 library(raster)
 library(exactextractr)
 
+dir_data <- Sys.getenv('CAMELS_DIR_DATA')
+dir_results <- Sys.getenv('CAMELS_DIR_RESULTS')
+country <- Sys.getenv('CAMELS_COUNTRY')
+
 ###===============================###===============================###
 ### (1) Read in catchment shapes
 ###===============================###===============================###
 ### read in CAMELS-CH catchment shapes
-setwd(paste(Sys.getenv('CAMELS_DIR_DATA'), 'Catchments', 'CAMELS_CH_EZG_7.6', sep = '/'))
+setwd(paste(dir_data, 'Catchments', 'CAMELS_CH_EZG_7.6', sep = '/'))
 catch <- st_read('CAMELS_CH_EZG_76.shp')
 
 #Plot catchments' overview
@@ -61,7 +65,7 @@ head(catch)
 ###===============================###===============================###
 
 ### set working directory
-setwd(paste(Sys.getenv('CAMELS_DIR_DATA'), 'Soil/SoilData', Sys.getenv('CAMELS_COUNTRY'), sep = '/'))
+setwd(paste(dir_data, 'Soil/SoilData', country, sep = '/'))
 wdir <- getwd()
 
 ### set attribute names
@@ -348,11 +352,11 @@ for (var.nm in variables) {
 }
 
 ### save extracted attributes
-setwd(Sys.getenv('CAMELS_DIR_RESULTS'))
+setwd(dir_results)
 save(file = 'soil_attributes.RData', df_soilattr)
 
 ### write to file, use semicolon for separation
-setwd(Sys.getenv('CAMELS_DIR_RESULTS'))
+setwd(dir_results)
 
 write.table(file = 'CAMELS_CH_soil_attributes.csv',
             round(df_soilattr, 3),

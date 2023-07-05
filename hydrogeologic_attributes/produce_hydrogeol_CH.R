@@ -17,11 +17,14 @@
 library(sf)
 library(dplyr)
 
+dir_data <- Sys.getenv('CAMELS_DIR_DATA')
+dir_results <- Sys.getenv('CAMELS_DIR_RESULTS')
+
 ###===============================###===============================###
 ### (1) Read in catchment shapes
 ###===============================###===============================###
 ### read in CAMELS-CH catchment shapes
-setwd(paste(Sys.getenv('CAMELS_DIR_DATA'), 'Catchments', 'CAMELS_CH_EZG_7.6', sep = '/'))
+setwd(paste(dir_data, 'Catchments', 'CAMELS_CH_EZG_7.6', sep = '/'))
 catch <- st_read('CAMELS_CH_EZG_76.shp')
 
 ###===============================###===============================###
@@ -29,7 +32,7 @@ catch <- st_read('CAMELS_CH_EZG_76.shp')
 ###===============================###===============================###
 ### read in hydrogeological data for hydrological Switzerland (prepared in the previous step)
 hydrogeo.HydroCH <- st_read(
-  paste(Sys.getenv('CAMELS_DIR_DATA'), 'Hydrogeology', 'hydrogeoHydroCH.shp', sep = '/'),
+  paste(dir_data, 'Hydrogeology', 'hydrogeoHydroCH.shp', sep = '/'),
   stringsAsFactors = FALSE)
 
 ### Intersect data with catchmet shapes
@@ -103,7 +106,7 @@ any(round(rowSums(df_hygeoattr[, attr.nm]), 0) != 100)
 rm(test)
 
 ### save extracted attributes
-setwd(Sys.getenv('CAMELS_DIR_RESULTS'))
+setwd(dir_results)
 save(file = 'hydrogeol_attributes.RData', df_hygeoattr)
 
 ### write to file, use semicolon for separation

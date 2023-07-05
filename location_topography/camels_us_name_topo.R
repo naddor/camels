@@ -5,12 +5,16 @@ library(here)
 library(maps)
 library(stringr) # To remove leading blank spaces
 
+dir_data <- Sys.getenv('CAMELS_DIR_DATA')
+dir_results <- Sys.getenv('CAMELS_DIR_RESULTS')
+dir_tmp <- Sys.getenv('CAMELS_DIR_TMP')
+
 source(here::here('extract/extract_elev_bands.R'))
 
 ### Load gauge information and basin characteristics for all basins
 
 # Load gauge information - USGS data
-file_usgs_data <- file.path(Sys.getenv('CAMELS_DIR_DATA'), 'gauge_information.txt')
+file_usgs_data <- file.path(dir_data, 'gauge_information.txt')
 gauge_table <- read.table(file_usgs_data, sep = '\t', quote = '', skip = 1, header = FALSE,
                           colClasses = c(rep("factor", 3), rep("numeric", 3)))
 
@@ -25,7 +29,7 @@ if (readLines(file_usgs_data, 1) ==
 gauge_table$gauge_name <- str_trim(gauge_table$gauge_name, 'left') # Remove leading white spaces
 
 # Load basin physical characteristics - produced by Andy
-file_catchment_table <- file.path(Sys.getenv('CAMELS_DIR_DATA'), 'basin_physical_characteristics.txt')
+file_catchment_table <- file.path(dir_data, 'basin_physical_characteristics.txt')
 catchment_table <- read.table(file_catchment_table, header = TRUE,
                               colClasses = c(rep("factor", 2), rep("numeric", 4)))
 
@@ -46,8 +50,8 @@ rm(gauge_table, catchment_table)
 ### Create camels_name
 camels_name <- camels_merge[, c('gauge_id', 'huc_02.x', 'gauge_name')]
 colnames(camels_name)[2] <- 'huc_02'
-save(camels_name, file = file.path(Sys.getenv('CAMELS_DIR_RESULTS'), 'camels_name.Rdata'))
-write.table(camels_name, file = file.path(Sys.getenv('CAMELS_DIR_RESULTS'), 'camels_name.txt'),
+save(camels_name, file = file.path(dir_results, 'camels_name.Rdata'))
+write.table(camels_name, file = file.path(dir_results, 'camels_name.txt'),
             row.names = FALSE, quote = FALSE, sep = ';')
 
 ### Create camels_topo
@@ -55,13 +59,13 @@ camels_topo <- camels_merge[, c('gauge_id', 'gauge_lat', 'gauge_lon', 'basin_mea
                                 'area_geospa_fabric', 'mean_slope')]
 camels_topo <- data.frame(camels_topo, abs_rel_error_area = abs((camels_topo$area_geospa_fabric -
   camels_topo$area_usgs) / camels_topo$area_usgs))
-save(camels_topo, file = file.path(Sys.getenv('CAMELS_DIR_RESULTS'), 'camels_topo.Rdata'))
-write.table(camels_topo, file = file.path(Sys.getenv('CAMELS_DIR_RESULTS'), 'camels_topo.txt'),
+save(camels_topo, file = file.path(dir_results, 'camels_topo.Rdata'))
+write.table(camels_topo, file = file.path(dir_results, 'camels_topo.txt'),
             row.names = FALSE, quote = FALSE, sep = ';')
 
 ### Create camels_vege_usgs
 camels_vege_usgs <- camels_merge[, c('gauge_id', 'frac_forest')]
-save(camels_vege_usgs, file = file.path(Sys.getenv('CAMELS_DIR_TMP'), 'camels_vege_usgs.Rdata'))
+save(camels_vege_usgs, file = file.path(dir_tmp, 'camels_vege_usgs.Rdata'))
 
 ### Create camels_meta_data_elev_bands
 if (any(camels_topo$gauge_id != camels_name$gauge_id)) {
@@ -105,4 +109,4 @@ camels_metadata_elev_bands <- data.frame(gauge_id = camels_name$gauge_id,
                                          elev_bands_rerr_area = rerr_area,
                                          elev_bands_aerr_elev = aerr_elev)
 save(camels_metadata_elev_bands,
-     file = file.path(Sys.getenv('CAMELS_DIR_TMP'), 'camels_metadata_elev_bands.Rdata'))
+     file = file.path(dir_tmp, 'camels_metadata_elev_bands.Rdata'))
