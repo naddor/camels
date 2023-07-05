@@ -9,7 +9,7 @@ dir_data <- Sys.getenv('CAMELS_DIR_DATA')
 dir_results <- Sys.getenv('CAMELS_DIR_RESULTS')
 dir_tmp <- Sys.getenv('CAMELS_DIR_TMP')
 
-source(here::here('extract/extract_elev_bands.R'))
+source(here::here('location_topography/extract_elev_bands.R'))
 
 ### Load gauge information and basin characteristics for all basins
 

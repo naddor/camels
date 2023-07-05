@@ -9,15 +9,15 @@ dir_plots <- Sys.getenv('CAMELS_DIR_PLOTS')
 country <- Sys.getenv('CAMELS_COUNTRY')
 
 # Load functions
-source(here::here('compute/climate_indices.R'))
-source(here::here('compute/hydro_signatures.R'))
+source(here::here('hydro_climate_attributes/climate_indices.R'))
+source(here::here('hydro_climate_attributes/hydro_signatures.R'))
 source(here::here('utils/plot_maps_camels.R'))
 
 # Define directory for files and list of catchment IDs
 if (country == 'US') {
 
-  source(here::here('extract/camels_us_hydromet.R'))
-  source(here::here('compute/hydro_accuracy.R'))
+  source(here::here('hydro_climate_attributes/climate_hydro_US.R'))
+  source(here::here('utils/hydro_accuracy.R'))
 
   tol_na <- 0.0502 # Two CAMELS catchments have ~5.01% of missing values, this threshold includes them
 
